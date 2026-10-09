@@ -2,7 +2,6 @@
 const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_URL.supabase.co'; // Вставьте ваш URL Supabase
 const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';                 // Вставьте ваш Anon Key Supabase
 
-// Инициализация клиента Supabase
 if (typeof supabase !== 'undefined') {
   window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
