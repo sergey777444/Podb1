@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="words-data.js?v=1"></script>
+<script src="app.js?v=7"></script>
+<title>🇬🇧 Слова для устного английского — ФЛ1-ПОДб-11</title>
+<script>
+  if (localStorage.getItem('user-theme') === 'light') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', 'dark');
+</script>
+<style>
+:root{--bg:#080b14;--bg2:#0e1320;--card:rgba(19,25,40,.78);--text:#f4f7ff;--text2:#aeb8cc;--muted:#78839a;--border:rgba(255,255,255,.09);--accent:#7c6cff;--accent3:#8b5cf6;--ok:#22c55e;--shadow:0 20px 70px rgba(0,0,0,.35);--rl:20px;--rm:14px}
+[data-theme="light"]{--bg:#f3f6fb;--bg2:#fff;--card:rgba(255,255,255,.84);--text:#172033;--text2:#5d687b;--muted:#7c8799;--border:rgba(20,30,50,.09);--accent:#6557e8;--accent3:#7848dc;--shadow:0 20px 60px rgba(40,50,80,.12)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(124,108,255,.17),transparent 28%),radial-gradient(circle at 90% 20%,rgba(69,202,255,.12),transparent 25%),var(--bg);padding:20px 10px 60px}
+button,input{font:inherit}button{cursor:pointer}
+.container{width:min(900px,calc(100% - 20px));margin:0 auto}
+.hero{padding:30px;margin-bottom:20px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(124,108,255,.14),rgba(69,202,255,.05) 45%,var(--card));box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(124,108,255,.13);border:1px solid rgba(124,108,255,.24);color:#bdb6ff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+[data-theme="light"] .badge{color:#5c50c9}
+.hero h1{font-size:clamp(22px,4vw,32px);letter-spacing:-.03em}
+.hero p{color:var(--text2);font-size:13px;margin-top:6px}
+.theme-btn{height:48px;padding:0 16px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.05);font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.panel{border:1px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:18px;background:var(--card);box-shadow:var(--shadow)}
+.stat{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:600}
+.bar{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#45caff);border-radius:6px;transition:width .3s}
+.form-control{width:100%;padding:12px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--rm);background:rgba(255,255,255,.035);color:var(--text);outline:none;margin-top:14px}
+.form-control:focus{border-color:rgba(124,108,255,.65)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{padding:8px 13px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.045);color:var(--text2)}
+.chip.on{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent3));border-color:transparent}
+.hint{text-align:center;font-size:12px;color:var(--muted);margin:4px 0 14px}
+.group{margin-bottom:22px}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 10px}
+.gh h2{font-size:16px}
+.gh small{color:var(--muted);font-weight:700;white-space:nowrap}
+.gh button{background:none;border:1px solid var(--border);color:var(--text2);border-radius:99px;padding:5px 10px;font-size:11px;font-weight:700}
+.w{display:flex;gap:12px;align-items:center;padding:13px 14px;margin-bottom:8px;border:1px solid var(--border);border-radius:var(--rm);background:var(--card);cursor:pointer;user-select:none;-webkit-user-select:none;transition:background .15s,border-color .15s}
+.w.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.45)}
+.chk{flex:0 0 28px;height:28px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center;color:transparent;font-size:15px;font-weight:800}
+.w.ok .chk{background:var(--ok);border-color:var(--ok);color:#fff}
+.txt{min-width:0;flex:1}
+.en{font-size:16px;font-weight:800;word-break:break-word}
+.ru{font-size:13px;color:var(--accent);font-weight:600;margin-top:1px}
+.def{font-size:12.5px;color:var(--text2);margin-top:3px;line-height:1.4}
+.w.ok .en{color:#86efac}
+[data-theme="light"] .w.ok .en{color:#15803d}
+.empty{text-align:center;color:var(--muted);padding:30px 0;font-style:italic}
+.note{text-align:center;font-size:12px;color:var(--muted);margin-bottom:12px;min-height:16px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="hero">
+    <div>
+      <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
+      <h1>🇬🇧 Слова для устного английского</h1>
+      <p>Unit 1 · Entertainment · Шкода Ю.Д.</p>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeText">Светлая</span></button>
+  </header>
+
+  <div class="panel">
+    <div class="stat"><span id="st1">Выучено 0 из 0</span><span id="st2">0%</span></div>
+    <div class="bar"><i id="prog"></i></div>
+    <input type="search" id="q" class="form-control" placeholder="🔍 Поиск по слову или переводу…" autocomplete="off">
+    <div class="chips" id="stChips"></div>
+    <div class="chips" id="grChips"></div>
+  </div>
+
+  <div class="hint">Нажми на слово, чтобы отметить его выученным · ещё раз — вернуть в «не выучено»</div>
+  <div class="note" id="note"></div>
+  <div id="list"></div>
+</div>
+
+<script>
+  const html = document.documentElement;
+  function applyTheme(t) {
+    const i = document.getElementById('themeIcon'), x = document.getElementById('themeText');
+    if (t === 'light') { html.removeAttribute('data-theme'); i.textContent = '🌙'; x.textContent = 'Тёмная'; }
+    else { html.setAttribute('data-theme', 'dark'); i.textContent = '☀️'; x.textContent = 'Светлая'; }
+  }
+  function toggleTheme() {
+    const t = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('user-theme', t); applyTheme(t);
+  }
+  applyTheme(localStorage.getItem('user-theme') || 'dark');
+
+  const KEY = 'english_learned_words';
+  const GROUPS = window.EN_WORDS || [];
+  const ALL = GROUPS.flatMap(g => g.words.map(w => w[0]));
+  let learned = new Set();
+  let fStatus = 'all', fGroup = 'all', fQuery = '';
+  const $ = s => document.querySelector(s);
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* сохранение: сначала в браузер (работает всегда), затем в облако (профиль) */
+  function saveLocal() {
+    try { localStorage.setItem(KEY, JSON.stringify([...learned])); } catch (e) {}
+  }
+  let saveTimer;
+  function saveCloud() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try {
+        if (window.userData && window.currentUser) {
+          await window.userData.set(KEY, [...learned]);
+          $('#note').textContent = '☁️ Сохранено в профиле';
+        } else {
+          $('#note').textContent = 'Войдите в аккаунт, чтобы прогресс сохранялся в профиле';
+        }
+      } catch (e) { console.error(e); $('#note').textContent = '❌ Не удалось сохранить в облако'; }
+      setTimeout(() => { $('#note').textContent = ''; }, 2500);
+    }, 400);
+  }
+  function loadLocal() {
+    try { const a = JSON.parse(localStorage.getItem(KEY) || '[]'); if (Array.isArray(a)) learned = new Set(a); } catch (e) {}
+  }
+  async function loadCloud() {
+    try {
+      if (window.userData && window.currentUser) {
+        const saved = await window.userData.get(KEY);
+        if (Array.isArray(saved)) learned = new Set(saved);
+      }
+    } catch (e) { console.error(e); }
+    render();
+  }
+
+  function toggle(word) {
+    learned.has(word) ? learned.delete(word) : learned.add(word);
+    saveLocal(); saveCloud(); render();
+  }
+  function setGroup(gid, value) {
+    const g = GROUPS.find(x => x.id === gid);
+    g.words.forEach(w => value ? learned.add(w[0]) : learned.delete(w[0]));
+    saveLocal(); saveCloud(); render();
+  }
+
+  function chips() {
+    const st = [['all', 'Все'], ['new', '⏳ Не выучено'], ['done', '✅ Выучено']];
+    $('#stChips').innerHTML = st.map(([k, t]) => `<button class="chip${fStatus === k ? ' on' : ''}" data-s="${k}">${t}</button>`).join('');
+    $('#grChips').innerHTML = [`<button class="chip${fGroup === 'all' ? ' on' : ''}" data-g="all">Все темы</button>`]
+      .concat(GROUPS.map(g => `<button class="chip${fGroup === g.id ? ' on' : ''}" data-g="${g.id}">${esc(g.title.split(' · ')[0])}${g.title.includes(' · ') ? ' · ' + esc(g.title.split(' · ')[1].slice(0, 22)) : ''}</button>`)).join('');
+  }
+
+  function render() {
+    const done = ALL.filter(w => learned.has(w)).length;
+    const pct = ALL.length ? Math.round(done / ALL.length * 100) : 0;
+    $('#st1').textContent = `Выучено ${done} из ${ALL.length}`;
+    $('#st2').textContent = pct + '%';
+    $('#prog').style.width = pct + '%';
+    chips();
+
+    const q = fQuery.trim().toLowerCase();
+    let out = '';
+    GROUPS.forEach(g => {
+      if (fGroup !== 'all' && fGroup !== g.id) return;
+      const list = g.words.filter(([w, d, r]) => {
+        const isDone = learned.has(w);
+        if (fStatus === 'new' && isDone) return false;
+        if (fStatus === 'done' && !isDone) return false;
+        return !q || (w + ' ' + d + ' ' + r).toLowerCase().includes(q);
+      });
+      if (!list.length) return;
+      const n = g.words.filter(w => learned.has(w[0])).length;
+      const allDone = n === g.words.length;
+      out += `<div class="group"><div class="gh"><h2>${esc(g.title)}</h2><small>${n} / ${g.words.length}</small>
+        <button data-all="${g.id}" data-v="${allDone ? 0 : 1}">${allDone ? 'Сбросить все' : 'Отметить все'}</button></div>` +
+        list.map(([w, d, r]) => `<div class="w${learned.has(w) ? ' ok' : ''}" data-w="${esc(w)}" role="button" tabindex="0">
+          <div class="chk">✓</div>
+          <div class="txt"><div class="en">${esc(w)}</div><div class="ru">${esc(r)}</div><div class="def">${esc(d)}</div></div></div>`).join('') + '</div>';
+    });
+    $('#list').innerHTML = out || '<div class="empty">Ничего не найдено</div>';
+  }
+
+  $('#list').addEventListener('click', e => {
+    const b = e.target.closest('[data-all]');
+    if (b) { setGroup(b.dataset.all, b.dataset.v === '1'); return; }
+    const w = e.target.closest('.w');
+    if (w) toggle(w.dataset.w);
+  });
+  $('#list').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const w = e.target.closest('.w');
+    if (w) { e.preventDefault(); toggle(w.dataset.w); }
+  });
+  $('#stChips').addEventListener('click', e => { const k = e.target.dataset.s; if (k) { fStatus = k; render(); } });
+  $('#grChips').addEventListener('click', e => { const k = e.target.dataset.g; if (k) { fGroup = k; render(); } });
+  $('#q').addEventListener('input', e => { fQuery = e.target.value; render(); });
+
+  loadLocal();
+  render();
+  document.addEventListener('auth-ready', loadCloud);
+  if (window.currentUser) loadCloud();
+</script>
+</body>
+</html>
