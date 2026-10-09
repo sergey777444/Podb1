@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<title>Say it right — фонетика — ФЛ1-ПОДб-11</title>
+<style>
+:root{--paper:#fbf7ec;--grid:#d5e3f3;--ink:#1b1f3b;--soft:#5b6078;--card:#fff;--blue:#2563eb;--blue-s:#bcd2fb;--red:#ee2b45;--red-s:#f9c0c7;--yel:#ffd84d;--line:#1b1f3b;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15172b;--grid:#23274a;--ink:#f1efe6;--soft:#9ca0bd;--card:#1f2340;--blue-s:#27407f;--red-s:#6b2a39;--line:#f1efe6}}
+:root[data-theme="dark"]{--paper:#15172b;--grid:#23274a;--ink:#f1efe6;--soft:#9ca0bd;--card:#1f2340;--blue-s:#27407f;--red-s:#6b2a39;--line:#f1efe6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;border-left:2px solid var(--red);margin-left:10px}
+header{padding:22px 16px 6px;max-width:640px;margin:auto}
+h1{font:italic 800 44px/1 Georgia,serif;margin:0}
+h1 span{background:linear-gradient(transparent 55%,var(--yel) 55%);padding:0 6px}
+.sub{color:var(--soft);font-size:13px;margin:8px 0 0}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;max-width:640px;margin:10px auto 0;padding:8px 16px;background:var(--paper)}
+nav button{flex:1;font:700 13px system-ui;padding:10px 6px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:2px 2px 0 var(--line);cursor:pointer}
+nav button[aria-selected=true]{background:var(--yel);color:#1b1f3b}
+main{max-width:640px;margin:auto;padding:8px 16px 60px}
+section{display:none}section.on{display:block}
+h2{font:italic 800 20px Georgia,serif;margin:22px 0 12px;display:flex;gap:10px;align-items:center}
+h2 i{font:700 13px system-ui;font-style:normal;background:var(--ink);color:var(--paper);width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
+.legend{font-size:12.5px;color:var(--soft);display:flex;gap:14px;flex-wrap:wrap}
+.legend b{display:inline-block;width:14px;height:8px;border-radius:4px;margin-right:5px}
+.row{display:flex;flex-direction:column;margin:0 0 12px}
+.row.b{align-items:flex-end}
+.tag{font:800 9.5px system-ui;letter-spacing:.08em;color:#fff;padding:3px 9px;border-radius:8px;margin-bottom:3px}
+.a .tag{background:var(--blue)}.b .tag{background:var(--red)}
+.bub{max-width:86%;background:var(--card);border:2px solid;border-radius:14px;padding:8px 12px}
+.a .bub{border-color:var(--blue);box-shadow:3px 3px 0 var(--blue-s)}
+.b .bub{border-color:var(--red);box-shadow:3px 3px 0 var(--red-s)}
+.tw{background:var(--card);border:2px solid var(--line);border-radius:14px;box-shadow:3px 3px 0 var(--line);padding:14px 14px 14px 16px;margin:0 0 16px;font:17px/1.9 Georgia,serif;position:relative}
+.tw small{position:absolute;top:-10px;right:12px;background:var(--yel);color:#1b1f3b;font:700 11px ui-monospace,monospace;padding:2px 8px;border-radius:8px;border:1.5px solid var(--line)}
+.tw u{text-decoration:none;background:var(--yel);color:#1b1f3b;border-radius:3px;padding:0 2px}
+.tw b{font:800 22px Georgia;margin-right:8px;color:var(--soft)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.chips button{font:700 13px ui-monospace,monospace;padding:7px 12px;border-radius:20px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.bar{height:8px;border-radius:4px;background:var(--grid);overflow:hidden;margin:10px 0 4px}
+.bar div{height:100%;width:0;background:var(--blue);transition:width .3s}
+.stat{display:flex;justify-content:space-between;font-size:12.5px;color:var(--soft)}
+.deck{position:relative;height:300px;margin:18px 4px 14px;perspective:900px;touch-action:pan-y}
+.card{position:absolute;inset:0;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.card.under{transform:scale(.94) translateY(14px);opacity:.7;pointer-events:none}
+.card.under2{transform:scale(.88) translateY(28px);opacity:.4;pointer-events:none}
+.inner{position:absolute;inset:0;transition:transform .45s;transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:2.5px solid var(--line);border-radius:22px;box-shadow:5px 5px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center}
+.face.back{transform:rotateY(180deg);background:var(--yel);color:#1b1f3b}
+.word{font:800 clamp(30px,10vw,46px)/1.1 Georgia,serif;word-break:break-word}
+.ipa{font:600 clamp(24px,8vw,36px)/1.2 "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif}
+.hint{font-size:12px;color:var(--soft)}.back .hint{color:#4a4520}
+.badge{position:absolute;top:14px;left:16px;font:700 12px ui-monospace,monospace;background:var(--yel);color:#1b1f3b;padding:2px 9px;border-radius:9px;border:1.5px solid var(--line)}
+.stampL,.stampR{position:absolute;top:18px;font:800 15px system-ui;letter-spacing:.06em;padding:4px 10px;border:3px solid;border-radius:8px;opacity:0;z-index:2}
+.stampR{left:16px;color:#16a34a;border-color:#16a34a;transform:rotate(-12deg)}
+.stampL{right:16px;color:var(--red);border-color:var(--red);transform:rotate(12deg)}
+.ctl{display:flex;justify-content:center;gap:16px;margin-top:6px}
+.ctl button{width:62px;height:62px;border-radius:50%;border:2.5px solid var(--line);background:var(--card);color:var(--ink);font-size:24px;box-shadow:3px 3px 0 var(--line);cursor:pointer}
+.ctl .no{color:var(--red)}.ctl .ok{color:#16a34a}.ctl .sm{width:46px;height:46px;align-self:center;font-size:18px}
+.done{text-align:center;padding:50px 10px}
+.done h3{font:italic 800 28px Georgia;margin:0 0 8px}
+.done button{margin-top:14px;font:700 14px system-ui;padding:12px 20px;border-radius:14px;border:2px solid var(--line);background:var(--yel);color:#1b1f3b;box-shadow:3px 3px 0 var(--line);cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <h1>Say it <span>right.</span></h1>
+  <p class="sub">Диалоги, скороговорки и карточки со словами · звуки [iː] [ɪ] [e] [æ]</p>
+</header>
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-t="d">Диалоги</button>
+  <button role="tab" aria-selected="false" data-t="s">Скороговорки</button>
+  <button role="tab" aria-selected="false" data-t="c">Карточки</button>
+</nav>
+<main>
+  <section id="d" class="on"></section>
+  <section id="s"></section>
+  <section id="c">
+    <div class="chips" id="chips"></div>
+    <div class="bar"><div id="prog"></div></div>
+    <div class="stat"><span id="st1"></span><span id="st2"></span></div>
+    <div class="deck" id="deck"></div>
+    <div class="ctl">
+      <button class="no" id="bNo" aria-label="Повторить">✕</button>
+      <button class="sm" id="bUndo" aria-label="Вернуть">↺</button>
+      <button class="ok" id="bOk" aria-label="Выучил">✓</button>
+    </div>
+    <p class="hint" style="text-align:center;margin-top:14px">Тап — перевернуть · вправо — выучил · влево — повторить</p>
+  </section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const A="a",B="b";
+const DL=[
+["In a restaurant",[["PETER","What would you like to eat, Edith?",A],["EDITH","A meat sandwich.",B],["PETER","Jean, would you like a meat sandwich or a cheese sandwich?",A],["JEAN","A cheese sandwich please, Peter.",B],["WAITER","Good evening.",B],["PETER","Good evening. We'll have one meat sandwich and two cheese sandwiches.",A],["EDITH","And three teas, please.",B],["WAITER","One meat sandwich, two cheese sandwiches and three teas.",B]]],
+["An expensive holiday",[["EDDIE","Hello Ellen. Hello Ben. Hello Jenny.",A],["BEN","Hello Eddie. Have a cigarette.",B],["EDDIE","Thanks, Ben.",A],["ELLEN","Help yourself to whisky.",B],["JENNY","It's on the shelf.",A],["BEN","How did you spend your holiday, Eddie?",B],["EDDIE","I went to America, with a friend.",A],["EVERYBODY","Well!",B],["ELLEN","We are all jealous.",A],["BEN","Was it expensive?",B],["EDDIE","Yes, very. I've spent everything.",A],["JENNY","Haven't you any money left?",B],["EDDIE","Yes, Jenny. Ten pence!",A]]],
+["An interesting film",[["BILL","Is Tim in?",B],["LYN","Is he coming to the pictures?",A],["MRS. SMITH","Tim’s ill.",B],["BILL","Here he is! Hello, Tim.",A],["TIM","Hello, Bill.",B],["LYN","Are you ill, Tim?",A],["TIM","Is it an interesting film?",B],["LYN","It’s “Big Jim and the Indians”.",A],["BILL","And it begins in six minutes.",B],["MRS. SMITH","If you’re ill, Tim…",A],["TIM","Quick! Or we’ll miss the beginning of the film!",B]]],
+["A bad hijacker",[["HOSTESS BRADLEY","Alice! Perhaps that passenger is a hijacker!",A],["HOSTESS ALLEN","Which passenger, Anne? That sad man with the camera? He’s wearing black slacks and a jacket.",B],["HOSTESS BRADLEY","No. That fat lady with the big black handbag in her left hand.",A],["HOSTESS ALLEN","Is she standing next to the lavatory?",B],["HOSTESS BRADLEY","Yes. She’s travelling to Amsterdam.",A],["HOSTESS ALLEN","You’re mad, Anne, I don’t understand. You see, when she went into the lavatory, she didn’t have that handbag in her hand, and now she’s…",B],["FAT LADY","EVERYBODY STAND! I’m a hijacker. And in this handbag, I have a…",A],["BAG","BANG!!!",A]]]];
+
+$("#d").innerHTML='<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
+DL.map((d,i)=>`<h2><i>${i+1}</i>${d[0]}</h2>`+d[1].map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")).join("");
+
+const TW=[["These three sheep have eaten three green leaves each.","[iː]","These|three|sheep|eaten|green|leaves|each"],
+["Is little lipstick permissible for women in Egyptian villages?","[ɪ]","Is|little|lipstick|permissible|women|Egyptian|villages"],
+["Ted meant to spend the night in a tent but Fred felt unwell.","[e]","Ted|meant|spend|tent|Fred|felt|unwell"],
+["Ten men went to mow, went to mow a meadow.<br>Ten men, nine men, eight men, seven men, six men, five men, four men, three men, two men, one man and his dog went to mow a meadow.","[e]","Ten|men|went|meadow|seven"],
+["Fat Pat had a fat cat. Fat Pat’s cat sat on Pat’s hat.","[æ]","Fat|Pat’s|Pat|had|cat|sat|hat"]];
+
+$("#s").innerHTML='<p class="legend" style="margin-top:14px">Жёлтым подсвечены слова с тренируемым звуком</p><div style="height:14px"></div>'+TW.map((t,i)=>`<div class="tw"><small>${t[1]}</small><b>${i+1}</b>${t[0].replace(new RegExp("(?<![\\w’])("+t[2]+")(?![\\w’])","g"),"<u>$1</u>")}</div>`).join("");
+
+const WD={"iː":[["Edith","/ˈiː.dɪθ/"],["evening","/ˈiːv.nɪŋ/"],["easy","/ˈiː.zi/"],["Jean","/dʒiːn/"],["cheese","/tʃiːz/"],["see","/siː/"],["tea","/tiː/"],["pea","/piː/"],["tree","/triː/"],["eating","/ˈiː.tɪŋ/"],["Peter","/ˈpiː.tər/"],["meat","/miːt/"],["please","/pliːz/"]],
+"ɪ":[["it’s","/ɪts/"],["isn’t","/ˈɪz.ənt/"],["ill","/ɪl/"],["Indian","/ˈɪn.di.ən/"],["interesting","/ˈɪn.trə.stɪŋ/"],["Tim","/tɪm/"],["film","/fɪlm/"],["minutes","/ˈmɪn.ɪts/"],["beginning","/bɪˈɡɪn.ɪŋ/"],["Mrs. Smith","/ˈmɪs.ɪz smɪθ/"]],
+"e":[["pen","/pen/"],["Ben","/ben/"],["ten","/ten/"],["set","/set/"],["bell","/bel/"],["checks","/tʃeks/"],["any","/ˈen.i/"],["everybody","/ˈev.ri.bɒd.i/"],["everything","/ˈev.ri.θɪŋ/"],["Eddie","/ˈed.i/"],["Ellen","/ˈel.ən/"],["spend","/spend/"],["friend","/frend/"],["left","/left/"],["shelf","/ʃelf/"],["ten pence","/ten pens/"],["Jenny","/ˈdʒen.i/"],["jealous","/ˈdʒel.əs/"],["America","/əˈmer.ɪ.kə/"],["expensive","/ɪkˈspen.sɪv/"],["cigarettes","/ˌsɪɡ.əˈrets/"],["help yourself","/help jɔːˈself/"]],
+"æ":[["apple","/ˈæp.əl/"],["perhaps","/pəˈhæps/"],["passenger","/ˈpæs.ɪn.dʒər/"],["hijacker","/ˈhaɪˌdʒæk.ər/"],["black","/blæk/"],["Miss Bradley","/mɪs ˈbræd.li/"],["Anne","/æn/"],["Amsterdam","/ˌæm.stəˈdæm/"],["Alice","/ˈæl.ɪs/"],["Miss Allen","/mɪs ˈæl.ən/"],["slacks","/slæks/"],["camera","/ˈkæm.rə/"],["lavatory","/ˈlæv.ə.tri/"],["travelling","/ˈtræv.əl.ɪŋ/"],["handbag","/ˈhænd.bæɡ/"],["left hand","/left hænd/"]]};
+
+const ALL=Object.entries(WD).flatMap(([k,v])=>v.map(w=>({w:w[0],i:w[1],s:k})));
+let filt="all",queue=[],hist=[],learned=0,total=0;
+let learnedWordsSet = new Set();
+
+async function syncProgressWithCloud() {
+  if (window.userData && window.userData.set) {
+    await window.userData.set('phonetics_learned_words', Array.from(learnedWordsSet));
+  }
+}
+
+async function loadProgressFromCloud() {
+  if (window.userData && window.userData.get) {
+    const saved = await window.userData.get('phonetics_learned_words');
+    if (saved && Array.isArray(saved)) {
+      learnedWordsSet = new Set(saved);
+    }
+  }
+  start();
+}
+
+function chips(){$("#chips").innerHTML=["all","iː","ɪ","e","æ"].map(k=>`<button aria-pressed="${k==filt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function start(){
+  const filtered = ALL.filter(x => filt=="all" || x.s==filt);
+  queue = shuffle(filtered.filter(x => !learnedWordsSet.has(x.w)));
+  total = filtered.length;
+  learned = total - queue.length;
+  hist = [];
+  chips();
+  render();
+}
+
+function mk(x,cls){const c=document.createElement("div");c.className="card "+cls;c.innerHTML=`<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ РАЗ</div><div class="inner"><div class="face"><span class="badge">[${x.s}]</span><div class="word">${x.w}</div><div class="hint">тап — транскрипция</div></div><div class="face back"><div class="ipa">${x.i}</div><div class="hint">${x.w}</div></div></div>`;return c}
+
+function render(){
+  const d=$("#deck");d.innerHTML="";
+  $("#prog").style.width=(total?learned/total*100:0)+"%";
+  $("#st1").textContent=`Выучено ${learned} из ${total}`;$("#st2").textContent=`Осталось ${queue.length}`;
+  if(!queue.length){
+    d.style.height="auto";
+    d.innerHTML=`<div class="done"><h3>Все слова выучены 🎉</h3><div class="hint">${total} карточек пройдено</div><button id="again">Сбросить прогресс</button></div>`;
+    $("#again").onclick = async () => {
+      learnedWordsSet.clear();
+      await syncProgressWithCloud();
+      start();
+    };
+    return;
+  }
+  d.style.height="300px";
+  [2,1,0].forEach(n=>{if(queue[n])d.appendChild(mk(queue[n],n==0?"top":n==1?"under":"under2"))});
+  bind(d.querySelector(".top"));
+}
+
+function bind(c){
+  let x0=0,dx=0,drag=false,moved=false;
+  const sR=c.querySelector(".stampR"),sL=c.querySelector(".stampL");
+  c.onpointerdown=e=>{drag=true;moved=false;x0=e.clientX;c.setPointerCapture(e.pointerId);c.style.transition="none"};
+  c.onpointermove=e=>{if(!drag)return;dx=e.clientX-x0;if(Math.abs(dx)>6)moved=true;c.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;sR.style.opacity=Math.max(0,Math.min(1,dx/90));sL.style.opacity=Math.max(0,Math.min(1,-dx/90))};
+  c.onpointerup=e=>{if(!drag)return;drag=false;
+  if(!moved){c.classList.toggle("flip");c.style.transform="";return}
+  if(Math.abs(dx)>90)go(dx>0,c);else{c.style.transition="transform .25s";c.style.transform="";sR.style.opacity=sL.style.opacity=0}dx=0};
+  c.onpointercancel=()=>{drag=false;c.style.transform=""};
+}
+
+async function go(ok,c){
+  c=c||$(".card.top");if(!c)return;
+  c.style.transition="transform .3s,opacity .3s";c.style.transform=`translateX(${ok?600:-600}px) rotate(${ok?30:-30}deg)`;c.style.opacity=0;
+  const x=queue.shift();hist.push({x,ok});
+  if(ok) {
+    learned++;
+    learnedWordsSet.add(x.w);
+    await syncProgressWithCloud();
+  } else {
+    queue.push(x);
+  }
+  setTimeout(render,260);
+}
+
+$("#bOk").onclick=()=>go(true);
+$("#bNo").onclick=()=>go(false);
+$("#bUndo").onclick=async ()=>{
+  const h=hist.pop();if(!h)return;
+  if(h.ok) {
+    learned--;
+    learnedWordsSet.delete(h.x.w);
+    await syncProgressWithCloud();
+  } else {
+    queue.pop();
+  }
+  queue.unshift(h.x);
+  render();
+};
+
+$("#chips").onclick=e=>{const k=e.target.dataset.k;if(k){filt=k;start()}};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x==b));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==b.dataset.t));
+  window.scrollTo(0,0);
+});
+
+window.onload = loadProgressFromCloud;
+</script>
+</body>
+</html>
