@@ -1,1 +1,125 @@
-
+/* Слова для устного английского (Шкода Ю.Д.) — Unit 1 Entertainment.
+   Один источник данных: его читают и words.html, и окно прогресса в app.js.
+   Формат слова: [слово, значение по-английски, перевод]. Слово = уникальный id. */
+window.EN_WORDS = [
+  { id: 'u1a', title: 'p.8–9 · Привычки (Habits)', words: [
+    ['all the time', 'very often; constantly', 'постоянно'],
+    ['now and then', 'sometimes, but not often', 'время от времени'],
+    ['every now and again', 'occasionally', 'изредка'],
+    ['rarely', 'not often', 'редко'],
+    ['hardly ever', 'almost never', 'почти никогда'],
+    ['not as a rule', 'usually not', 'как правило, нет'],
+    ['tend to', 'to usually do something', 'иметь склонность, обычно делать'],
+    ['used to', 'did regularly in the past (not now)', 'раньше (делал)'],
+    ['not as much as I’d like to', 'less often than I want', 'не так часто, как хотелось бы']
+  ]},
+  { id: 'u1a5', title: 'p.9 ex.5 · Describing films, music and books', words: [
+    ['astonishing', 'just incredible; amazing', 'поразительный'],
+    ['catchy', 'easy to remember (a tune)', 'запоминающийся, прилипчивый'],
+    ['commercial', 'typical big-budget, made to earn money', 'коммерческий'],
+    ['disturbing', 'upsetting; makes you worried', 'тревожащий, неприятный'],
+    ['dreadful', 'terrible; very bad', 'ужасный'],
+    ['gripping', 'so exciting you can’t stop reading / watching', 'захватывающий'],
+    ['hilarious', 'really, really funny', 'уморительный'],
+    ['over-the-top', 'exaggerated; too extreme', 'чрезмерный, перебор'],
+    ['uplifting', 'inspiring; makes you feel happier', 'воодушевляющий'],
+    ['weird', 'strange; hard to explain', 'странный']
+  ]},
+  { id: 'u1pol', title: 'p.9 · Disagreeing politely', words: [
+    ['to be honest, I’m not that keen on…', 'softer way to say “I don’t like…”', 'честно говоря, я не очень люблю…'],
+    ['a bit too weird for my liking', 'softened negative opinion', 'немного странновато на мой вкус'],
+    ['not really my kind of thing', 'I don’t really like this type of thing', 'не совсем в моём вкусе'],
+    ['It was OK / not bad, I suppose / I guess, but…', 'weak agreement before disagreeing', 'нормально, наверное, но…'],
+    ['As I say,…', 'repeating what you said before', 'как я уже сказал(а),…'],
+    ['a bit', 'softens a negative adjective', 'немного, слегка']
+  ]},
+  { id: 'u1b', title: 'p.10 ex.6 · Plots', words: [
+    ['tackle (an issue)', 'to deal with a problem or topic', 'затрагивать, браться за (проблему)'],
+    ['twist', 'an unexpected change in a story', 'неожиданный поворот'],
+    ['twists and turns', 'many surprising changes in a plot', 'сюжетные повороты'],
+    ['remake', 'a new version of an older film', 'ремейк'],
+    ['sequel', 'a film that continues the story of another', 'сиквел, продолжение'],
+    ['smash (hit)', 'a hugely successful film or song', 'громкий хит, успех'],
+    ['revolve around', 'to have as the main subject', 'вращаться вокруг, строиться на'],
+    ['flaw', 'a fault or weakness', 'недостаток, изъян'],
+    ['adaptation', 'a book or play made into a film / TV show', 'экранизация, адаптация'],
+    ['shot (in…)', 'filmed (in a place)', 'снят(о) (где-то)'],
+    ['cast', 'all the actors in a film or play', 'актёрский состав'],
+    ['touch on', 'to mention briefly', 'слегка касаться (темы)'],
+    ['classic / all-time classic', 'a film that is considered great for ever', 'классика'],
+    ['an amazing cast', 'a group of excellent actors', 'потрясающий актёрский состав'],
+    ['issue', 'an important topic or problem', 'проблема, вопрос']
+  ]},
+  { id: 'u1c', title: 'p.12 ex.3 · Talking about pictures', words: [
+    ['bold', 'very bright, strong and clear (colours)', 'яркий, смелый'],
+    ['subtle', 'not strong or bright; soft, delicate', 'тонкий, неброский'],
+    ['conventional', 'traditional; not new or different', 'традиционный'],
+    ['dramatic', 'containing a lot of exciting action', 'драматичный'],
+    ['atmospheric', 'creates a special mood (romance, mystery)', 'атмосферный'],
+    ['abstract', 'represents ideas or emotions, not real things', 'абстрактный'],
+    ['realistic', 'shows people / objects in a photographic way', 'реалистичный'],
+    ['ambiguous', 'meaning isn’t clear; open to interpretation', 'неоднозначный'],
+    ['domestic', 'related to home and family', 'бытовой, домашний']
+  ]},
+  { id: 'u1c4', title: 'p.12 ex.4–5 · Describing what you see', words: [
+    ['create a feeling of…', 'to make people feel something', 'создавать ощущение…'],
+    ['look as if…', 'seem like it is true', 'выглядеть так, будто…'],
+    ['obviously', 'in a way that is clear to see', 'очевидно'],
+    ['seem to', 'to give the impression of', 'казаться'],
+    ['appear to', 'to seem; to look like', 'по-видимому'],
+    ['get the impression (that)', 'to have a feeling about something', 'создаётся впечатление'],
+    ['look like', 'to be similar in appearance to', 'выглядеть как'],
+    ['must be', 'I’m almost sure it is', 'должно быть'],
+    ['could well be', 'it is quite possible', 'вполне может быть']
+  ]},
+  { id: 'm1', title: 'Moodle · A fabulous play', words: [
+    ['spine-tingling', 'very frightening or exciting in a way you enjoy', 'мурашки по коже, будоражащий'],
+    ['ghost story', 'a story about the spirit of a dead person', 'история с привидениями'],
+    ['on the edge of your seat', 'very excited and interested', 'сидеть как на иголках'],
+    ['set', 'scenery and furniture in a play or film', 'декорации'],
+    ['sound effects', 'artificial sounds in a play or film', 'звуковые эффекты'],
+    ['scare sb out of their wits', 'to frighten somebody very much', 'до смерти напугать'],
+    ['nail-biting', 'making you very excited or worried (= gripping)', 'держащий в напряжении'],
+    ['sensational', 'extremely good; wonderful', 'сенсационный, потрясающий'],
+    ['applause', 'the sound of an audience clapping', 'аплодисменты'],
+    ['applaud', 'to clap your hands to show approval', 'аплодировать'],
+    ['phenomenally', 'in a very great or impressive way', 'феноменально'],
+    ['unanimously', 'in a way that is agreed by everyone', 'единогласно'],
+    ['acclaimed', 'publicly praised in an admiring way', 'получивший признание']
+  ]},
+  { id: 'm2', title: 'Moodle · A terrible movie', words: [
+    ['atrocious', 'very bad and unpleasant (= dire)', 'отвратительный'],
+    ['dire', 'very bad; terrible', 'ужасный, никудышный'],
+    ['sentimental', 'making people feel sadness / sympathy in an obvious way', 'сентиментальный, слащавый'],
+    ['cliché', 'an idea used so often it’s no longer interesting', 'клише, штамп'],
+    ['clichéd', 'full of clichés', 'банальный, штампованный'],
+    ['shallow', 'not showing serious thought or feelings (= superficial)', 'поверхностный'],
+    ['feeble', 'very weak', 'слабый, беспомощный'],
+    ['wooden', 'not showing natural expression or emotion', 'деревянный, безэмоциональный (игра)'],
+    ['mediocre', 'of only average quality', 'посредственный'],
+    ['miscast', 'an actor not suitable for the role', 'неподходящий на роль'],
+    ['unconvincing', 'not seeming true or real', 'неубедительный'],
+    ['utter', 'complete (used to emphasize something bad)', 'полный, абсолютный'],
+    ['rubbish', 'something of very poor quality', 'ерунда, мусор'],
+    ['tedious', 'boring (a synonym for “boring”)', 'нудный, скучный'],
+    ['bored to tears / to death / stiff', 'very bored (idioms)', 'смертельно скучно']
+  ]},
+  { id: 'm3', title: 'Moodle · Crossword “Films”', words: [
+    ['soundtrack', 'sound recording on a narrow strip of a motion picture film', 'саундтрек'],
+    ['premiere', 'the first public performance of a play or movie', 'премьера'],
+    ['director', 'the person who directs the making of a film', 'режиссёр'],
+    ['producer', 'someone who finances and supervises the making of a show', 'продюсер'],
+    ['critic', 'a person engaged in the analysis and interpretation of art', 'критик'],
+    ['author', 'a person who is able to write and has written something', 'автор'],
+    ['scene', 'series of pictures constituting a unit of action in a film', 'сцена'],
+    ['actor', 'a performer in theatre, television, or film', 'актёр'],
+    ['casting', 'assigning roles (of a movie or a play) to actors', 'подбор актёров, кастинг'],
+    ['subtitles', 'translation of foreign dialogue of a movie or TV programme', 'субтитры'],
+    ['dubbing', 'a new soundtrack that is added to a film', 'дубляж'],
+    ['editor', 'the person who determines the final content of a text', 'редактор'],
+    ['extra', 'a minor actor in crowd scenes', 'статист'],
+    ['score', 'a written form of a musical composition', 'партитура, музыка к фильму'],
+    ['manuscript', 'something written by hand', 'рукопись'],
+    ['setting', 'scenery used to identify a location of a dramatic production', 'место действия, антураж']
+  ]}
+];
