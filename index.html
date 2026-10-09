@@ -1,197 +1,97 @@
 <!DOCTYPE html>
 <html lang="ru" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <script src="app.js"></script>
-<title>Главная — ФЛ1-ПОДб-11</title>
+<title>ФЛ1-ПОДб-11 — Главная</title>
 <style>
-:root{--bg:#080b14;--card:rgba(19,25,40,.78);--card-h:rgba(25,32,51,.9);--text:#f4f7ff;--text2:#aeb8cc;--muted:#78839a;--border:rgba(255,255,255,.09);--accent:#7c6cff;--shadow:0 20px 70px rgba(0,0,0,.35);--rl:20px;--rm:14px}
-[data-theme="light"]{--bg:#f3f6fb;--card:rgba(255,255,255,.84);--card-h:rgba(255,255,255,.98);--text:#172033;--text2:#5d687b;--muted:#7c8799;--border:rgba(20,30,50,.09);--accent:#6557e8;--shadow:0 20px 60px rgba(40,50,80,.12)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(124,108,255,.17),transparent 28%),radial-gradient(circle at 90% 20%,rgba(69,202,255,.12),transparent 25%),var(--bg)}
-a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}
-.container{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:30px 0 60px}
-.hero{position:relative;overflow:hidden;padding:34px;margin-bottom:22px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(124,108,255,.14),rgba(69,202,255,.05) 45%,var(--card));box-shadow:var(--shadow)}
-.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
-.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(124,108,255,.13);border:1px solid rgba(124,108,255,.24);color:#bdb6ff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
-[data-theme="light"] .badge{color:#5c50c9}
-.hero h1{margin-top:14px;font-size:clamp(26px,4vw,44px);line-height:1.1;letter-spacing:-.045em}
-.hero-subtitle{margin-top:10px;color:var(--text2);font-size:15px;line-height:1.6}
-.theme-btn{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:48px;height:48px;padding:0 15px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.05)}
-.today-hero{margin-top:24px;padding:24px;border-radius:var(--rl);background:linear-gradient(135deg,rgba(124,108,255,.2),rgba(69,202,255,.1) 50%,var(--card));border:1px solid var(--border)}
-.today-hero-header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:6px}
-.today-hero h2{font-size:20px}
-.week-badge{padding:5px 12px;border-radius:999px;background:rgba(124,108,255,.2);border:1px solid rgba(124,108,255,.35);font-size:12px;font-weight:700}
-.today-date{color:var(--text2);font-size:13px;margin-bottom:16px}
-.today-schedule{display:grid;gap:8px}
-.today-pair{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;border-radius:11px;background:rgba(255,255,255,.035);border:1px solid var(--border);font-size:13px;color:var(--text2)}
-.today-pair strong{color:var(--text)}
-.lecture-tag{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.35);color:#ff8383;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase}
-.quick-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:24px 0}
-.q-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:15px;border:1px solid var(--border);border-radius:var(--rm);background:var(--card);font-weight:700;font-size:13px}
-.q-btn:hover{background:var(--card-h);border-color:rgba(124,108,255,.4)}
-.alert{display:flex;gap:13px;align-items:flex-start;margin:20px 0;padding:17px;border-radius:var(--rl);border:1px solid rgba(255,189,89,.2);background:rgba(255,189,89,.06)}
-.alert-icon{font-size:21px}
-.alert-content{color:var(--text2);font-size:13px;line-height:1.6}
-.alert-content strong{color:var(--text)}
-.badge-code{background:rgba(124,108,255,.12);color:var(--accent);padding:2px 7px;border-radius:6px;font-family:monospace;font-weight:700;font-size:12px;border:1px solid rgba(124,108,255,.25)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
-@media(max-width:800px){.grid-2{grid-template-columns:1fr}}
-.info-card{padding:20px;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:var(--shadow)}
-.info-card h3{font-size:17px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.time-table{width:100%;border-collapse:collapse;font-size:13px}
-.time-table td{padding:8px 0;border-bottom:1px solid var(--border);color:var(--text2)}
-.time-table tr:last-child td{border-bottom:none}
-.time-table td:last-child{text-align:right;font-weight:700;color:var(--text)}
-footer{margin-top:45px;padding-top:22px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:12px;line-height:1.7}
-footer strong{color:var(--text2)}
-@media(max-width:520px){.container{width:min(100% - 20px,700px);padding-top:15px}.hero{padding:24px 20px}.theme-btn span{display:none}}
+:root{--paper:#fbf7ec;--grid:#d5e3f3;--ink:#1b1f3b;--soft:#5b6078;--card:#fff;--blue:#2563eb;--red:#ee2b45;--yel:#ffd84d;--line:#1b1f3b;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15172b;--grid:#23274a;--ink:#f1efe6;--soft:#9ca0bd;--card:#1f2340;--line:#f1efe6}}
+:root[data-theme="dark"]{--paper:#15172b;--grid:#23274a;--ink:#f1efe6;--soft:#9ca0bd;--card:#1f2340;--line:#f1efe6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;color:var(--ink);font:15px/1.45 system-ui,-apple-system,sans-serif;min-height:100vh;margin:0;padding:20px 16px}
+main{max-width:480px;margin:40px auto;background:var(--card);border:2.5px solid var(--line);border-radius:20px;padding:24px;box-shadow:4px 4px 0 var(--line)}
+h1{font:italic 800 32px Georgia,serif;margin:0 0 8px;text-align:center}
+p.sub{color:var(--soft);text-align:center;margin:0 0 20px;font-size:14px}
+.field{margin-bottom:14px}
+label{display:block;font-weight:700;margin-bottom:6px;font-size:13px}
+input, select{width:100%;padding:11px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font-weight:600;font-size:15px}
+button{width:100%;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--yel);color:#1b1f3b;font-weight:800;font-size:16px;box-shadow:3px 3px 0 var(--line);cursor:pointer;margin-top:10px}
+#user-status{display:none;text-align:center;padding:10px;background:rgba(37,99,235,0.1);border-radius:10px;margin-bottom:16px;font-weight:700}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <header class="hero">
-    <div class="hero-top">
-      <div>
-        <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
-        <h1>Портал группы</h1>
-        <p class="hero-subtitle">Факультет лингвистики и перевода | ЧелГУ</p>
-      </div>
-      <button class="theme-btn" onclick="toggleTheme()" aria-label="Переключить тему">
-        <span id="themeIcon">☀️</span><span id="themeText">Светлая</span>
-      </button>
+<main>
+  <h1>ФЛ1-ПОДб-11</h1>
+  <p class="sub">Портал учебной группы</p>
+
+  <div id="user-status"></div>
+
+  <form id="loginForm">
+    <div class="field">
+      <label for="loginInput">Логин / Выбор пользователя:</label>
+      <input type="text" id="loginInput" placeholder="Введите логин (напр. aaa112461)" required>
     </div>
-
-    <div class="today-hero">
-      <div class="today-hero-header">
-        <h2>📅 Занятия на сегодня</h2>
-        <span class="week-badge" id="currentWeekBadge">Загрузка...</span>
-      </div>
-      <div class="today-date" id="currentDateStr"></div>
-      <div class="today-schedule" id="todayPairsContainer"></div>
+    <div class="field">
+      <label for="passInput">Пароль:</label>
+      <input type="password" id="passInput" placeholder="Введите пароль" required>
     </div>
-  </header>
+    <button type="submit" id="submitBtn">Войти в аккаунт</button>
+  </form>
 
-  <div class="quick-links">
-    <a href="https://csu.noteven.dev/" target="_blank" class="q-btn">📅 Расписание Weekly</a>
-    <a href="http://map.csu.ru/" target="_blank" class="q-btn">🗺️ Карта ЧелГУ</a>
-    <a href="https://moodle.uio.csu.ru/" target="_blank" class="q-btn">🎓 Moodle ЧелГУ</a>
-    <a href="mailto:podb-11@mail.ru" class="q-btn">📧 Почта группы</a>
-  </div>
-
-  <div class="alert">
-    <div class="alert-icon">📢</div>
-    <div class="alert-content">
-      <strong>Важная информация и дедлайны</strong><br><br>
-      • <strong>Справки о болезни:</strong> сдавать старосте в ЛС (ВК/ТГ) или приносить лично.<br>
-      • <strong>СТПОИ:</strong> не забудьте выбрать тему доклада на 20 страниц к 3-й лекции!<br>
-      • <strong>Почта группы:</strong> <span class="badge-code">podb-11@mail.ru</span>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="info-card">
-      <h3>⏰ Звонки (Основные пары)</h3>
-      <table class="time-table">
-        <tr><td>1 пара</td><td>08:00 — 09:30</td></tr>
-        <tr><td>2 пара</td><td>09:40 — 11:10</td></tr>
-        <tr><td>3 пара</td><td>11:20 — 12:50</td></tr>
-        <tr><td>4 пара</td><td>13:15 — 14:45</td></tr>
-        <tr><td>5 пара</td><td>15:00 — 16:30</td></tr>
-      </table>
-    </div>
-    <div class="info-card">
-      <h3>📞 Навигация и контакты</h3>
-      <p style="font-size:13px;line-height:1.6;color:var(--text2)">
-        <strong>Дневник ДЗ:</strong> вкладка со всеми домашними заданиями по датам.<br><br>
-        <strong>Справочник:</strong> вкладка с преподавателями и ссылками на Moodle и диски.
-      </p>
-    </div>
-  </div>
-
-  <footer>
-    <strong>ФЛ1-ПОДб-11</strong><br>
-    Главная страница группы · Учебный год 2026
-  </footer>
-</div>
+  <button id="logoutBtn" style="display:none;background:var(--red);color:#fff;">Выйти из аккаунта</button>
+</main>
 
 <script>
-  const html = document.documentElement;
-  html.dataset.theme = localStorage.getItem("user-theme") || "dark";
-  updateThemeButton();
+async function checkAuth() {
+  if (!window.supabaseClient) return;
+  const { data: { user } } = await window.supabaseClient.auth.getUser();
+  const form = document.getElementById('loginForm');
+  const status = document.getElementById('user-status');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-  function toggleTheme() {
-    const next = html.dataset.theme === "dark" ? "light" : "dark";
-    html.dataset.theme = next;
-    localStorage.setItem("user-theme", next);
-    updateThemeButton();
+  if (user) {
+    form.style.display = 'none';
+    status.style.display = 'block';
+    status.textContent = `👤 Авторизован: ${user.user_metadata?.login || user.email}`;
+    logoutBtn.style.display = 'block';
+  } else {
+    form.style.display = 'block';
+    status.style.display = 'none';
+    logoutBtn.style.display = 'none';
   }
-  function updateThemeButton() {
-    const dark = html.dataset.theme === "dark";
-    document.getElementById("themeIcon").textContent = dark ? "☀️" : "🌙";
-    document.getElementById("themeText").textContent = dark ? "Светлая" : "Тёмная";
+}
+
+document.getElementById('loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const login = document.getElementById('loginInput').value.trim();
+  const password = document.getElementById('passInput').value.trim();
+  const btn = document.getElementById('submitBtn');
+
+  btn.textContent = 'Вход...';
+  btn.disabled = true;
+
+  const email = login.includes('@') ? login : `${login}@podb.ru`;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    alert('Ошибка входа: ' + error.message);
+    btn.textContent = 'Войти в аккаунт';
+    btn.disabled = false;
+  } else {
+    await checkAuth();
   }
+};
 
-  const schedule = {
-    odd: {
-      1: [[2, "Английский грамматика"], [3, "Английский говорение"], [4, "Английский говорение"]],
-      2: [[1, "История России", true], [2, "ТМК", true], [3, "СТПОИ"]],
-      3: [[2, "Физра"], [3, "ОРГ"]],
-      4: [[2, "Латынь"], [3, "Китайский Ван"], [4, "ТМК"], [5, "СТПОИ", true]],
-      5: [[1, "Китайский Циберная"], [2, "Английский грамматика"], [3, "Английский фонетика"]]
-    },
-    even: {
-      1: [[1, "История России"], [2, "Английский грамматика"], [3, "Английский говорение"], [4, "Английский говорение"]],
-      2: [[1, "ОРГ", true], [2, "ТМК", true], [3, "Технологии цифрового образования", true]],
-      3: [[2, "Физра"], [3, "ОРГ"]],
-      4: [[2, "Латынь"], [3, "Китайский Ван"], [4, "ТМК"], [5, "ОБЖ"]],
-      5: [[1, "Китайский Циберная"], [2, "Английский грамматика"], [3, "Английский фонетика"]]
-    }
-  };
+document.getElementById('logoutBtn').onclick = async () => {
+  await supabaseClient.auth.signOut();
+  location.reload();
+};
 
-  function getWeekType(d) {
-    const anchorMonday = new Date(2026, 8, 14);
-    const target = new Date(d);
-    const day = target.getDay();
-    const diffToMonday = target.getDate() - (day === 0 ? 6 : day - 1);
-    const targetMonday = new Date(target.setDate(diffToMonday));
-    const diffWeeks = Math.round((targetMonday - anchorMonday) / (1000 * 60 * 60 * 24 * 7));
-    return Math.abs(diffWeeks) % 2 === 0 ? 'odd' : 'even';
-  }
-
-  function initHomePage() {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const weekType = getWeekType(now);
-
-    const dateStr = now.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('currentDateStr').innerText = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-    document.getElementById('currentWeekBadge').innerText = weekType === 'odd' ? 'Нечётная неделя' : 'Чётная неделя';
-
-    const box = document.getElementById('todayPairsContainer');
-    box.innerHTML = '';
-
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      box.innerHTML = '<div style="text-align:center;font-style:italic;padding:10px;color:var(--muted)">Сегодня выходной! Пар нет 🎉</div>';
-      return;
-    }
-    const pairs = schedule[weekType][dayOfWeek] || [];
-    if (!pairs.length) {
-      box.innerHTML = '<div style="text-align:center;font-style:italic;padding:10px;color:var(--muted)">На сегодня пар не запланировано</div>';
-      return;
-    }
-    pairs.forEach(([num, title, isLecture]) => {
-      const row = document.createElement('div');
-      row.className = 'today-pair';
-      row.innerHTML = `<span><strong>${num}-я пара:</strong> ${title}</span>${isLecture ? '<span class="lecture-tag">Лекция</span>' : ''}`;
-      box.appendChild(row);
-    });
-  }
-
-  window.onload = initHomePage;
+document.addEventListener('DOMContentLoaded', checkAuth);
 </script>
 </body>
 </html>
