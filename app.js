@@ -5,10 +5,12 @@
   const HW_ID = 'ac41837c39a8785f2ce4';   // старый npoint ДЗ
   const NT_ID = 'b0bf097d8c176bdc856e';   // старый npoint конспектов
   const DOMAIN = '@group.local';
+  const GUEST_KEY = 'fl1_guest_mode';
 
   const sb = supabase.createClient(SB_URL, SB_KEY);
   window.sb = sb;
   window.isAdmin = false;
+  window.isGuest = false;
   window.currentUser = null;
 
   let resolveReady;
@@ -25,6 +27,13 @@
     const u = String(url);
     if (u.includes(HW_ID) || u.includes(NT_ID)) {
       await ready;
+      /* гости не пишут ДЗ и не видят/не пишут конспекты */
+      if (window.isGuest) {
+        if (u.includes(NT_ID)) return J([]);
+        if (u.includes(HW_ID) && !isGet(opts)) {
+          return new Response(JSON.stringify({ error: 'guest' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+        }
+      }
       try { return u.includes(HW_ID) ? await hw(opts) : await nt(opts); }
       catch (e) { console.error(e); return new Response('{}', { status: 500 }); }
     }
@@ -38,6 +47,9 @@
       hwCache = {}; data.forEach(r => (hwCache[r.key] = r.text));
       return J(hwCache);
     }
+    if (window.isGuest || !window.isAdmin) {
+      return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
     const nw = JSON.parse(o.body);
     const up = Object.keys(nw).filter(k => nw[k] !== hwCache[k]).map(k => ({ key: k, text: nw[k] }));
     const del = Object.keys(hwCache).filter(k => !(k in nw));
@@ -48,6 +60,7 @@
   }
 
   async function nt(o) {
+    if (window.isGuest) return J([]);
     if (isGet(o)) {
       const { data, error } = await sb.from('notes').select('*').order('id', { ascending: false });
       if (error) throw error;
@@ -57,6 +70,9 @@
         addedDate: new Date(r.added_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
       }));
       return J(ntCache);
+    }
+    if (!window.isAdmin) {
+      return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
     const nw = JSON.parse(o.body);
     const old = new Set(ntCache.map(n => n.id)), cur = new Set(nw.map(n => n.id));
@@ -71,13 +87,15 @@
     return J({});
   }
 
-  /* ---------- данные ученика (карточки и т.д.) ---------- */
+  /* ---------- данные ученика (карточки и т.д.) — гости только localStorage ---------- */
   window.userData = {
     async get(key) {
+      if (window.isGuest || !window.currentUser) return null;
       const { data } = await sb.from('user_data').select('value').eq('key', key).maybeSingle();
       return data ? data.value : null;
     },
     async set(key, value) {
+      if (window.isGuest || !window.currentUser) return;
       await sb.from('user_data').upsert({ user_id: window.currentUser.id, key, value });
     }
   };
@@ -90,11 +108,32 @@
   #authGate h2{margin:0 0 4px;font-size:22px}
   #authGate input{padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font:inherit}
   #authGate button{padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;font:inherit;cursor:pointer}
+  #authGate .guest-btn{background:transparent;border:1px solid rgba(255,255,255,.2);color:#aeb8cc;font-weight:600}
+  #authGate .guest-btn:hover{border-color:rgba(255,255,255,.4);color:#fff}
+  #authGate .divider{display:flex;align-items:center;gap:10px;color:#78839a;font-size:12px;margin:2px 0}
+  #authGate .divider::before,#authGate .divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.1)}
   #authErr{color:#ff6878;font-size:13px;min-height:16px}
   #authBar{position:fixed;top:8px;right:8px;z-index:9999;display:flex;gap:6px;align-items:center;font:12px system-ui,sans-serif}
   #authBar span{background:rgba(20,25,40,.85);color:#aeb8cc;padding:6px 10px;border-radius:99px}
-  #authBar button{background:rgba(20,25,40,.85);color:#f4f7ff;border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:6px 10px;font:inherit;cursor:pointer}`;
+  #authBar button{background:rgba(20,25,40,.85);color:#f4f7ff;border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:6px 10px;font:inherit;cursor:pointer}
+  /* скрытие для гостей */
+  html.is-guest .guest-hide,
+  html.is-guest .add-box,
+  html.is-guest .delete-btn,
+  html.is-guest .admin-box,
+  html.is-guest .admin-toggle-box,
+  html.is-guest .btn-toggle{display:none!important}
+  `;
   document.head.appendChild(css);
+
+  function setGuestMode(on) {
+    window.isGuest = !!on;
+    try {
+      if (on) sessionStorage.setItem(GUEST_KEY, '1');
+      else sessionStorage.removeItem(GUEST_KEY);
+    } catch (e) {}
+    document.documentElement.classList.toggle('is-guest', !!on);
+  }
 
   function showGate() {
     const g = document.createElement('div');
@@ -102,27 +141,72 @@
     g.innerHTML = `<form><h2>🎓 ФЛ1 • ПОДб-11</h2>
       <input id="aLogin" placeholder="Логин" autocomplete="username" autocapitalize="none" required>
       <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password" required>
-      <div id="authErr"></div><button type="submit">Войти</button></form>`;
+      <div id="authErr"></div><button type="submit">Войти</button>
+      <div class="divider">или</div>
+      <button type="button" class="guest-btn" id="aGuest">Войти как гость</button>
+      </form>`;
     document.body.appendChild(g);
     g.querySelector('form').onsubmit = async e => {
       e.preventDefault();
       const login = g.querySelector('#aLogin').value.trim().toLowerCase();
       const { error } = await sb.auth.signInWithPassword({ email: login + DOMAIN, password: g.querySelector('#aPass').value });
       if (error) { g.querySelector('#authErr').textContent = 'Неверный логин или пароль'; return; }
+      setGuestMode(false);
       g.remove();
       init();
     };
+    g.querySelector('#aGuest').onclick = () => {
+      setGuestMode(true);
+      g.remove();
+      initGuest();
+    };
+  }
+
+  function initGuest() {
+    window.currentUser = null;
+    window.isAdmin = false;
+    setGuestMode(true);
+    /* пересобрать нижнюю навигацию без Базы и Конспектов */
+    const oldNav = document.getElementById('siteNav');
+    if (oldNav) oldNav.remove();
+    buildNav();
+    const bar = document.createElement('div');
+    bar.id = 'authBar';
+    bar.innerHTML = `<span>👤 Гость</span><button id="bOut">Выйти</button>`;
+    document.body.appendChild(bar);
+    bar.querySelector('#bOut').onclick = () => {
+      setGuestMode(false);
+      location.reload();
+    };
+    /* гости не видят Базу и Конспекты — редирект если открыли напрямую */
+    const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if (page === 'base.html' || page === 'notes.html') {
+      location.replace('index.html');
+      return;
+    }
+    resolveReady();
+    document.dispatchEvent(new Event('auth-ready'));
+    document.dispatchEvent(new Event('guest-ready'));
   }
 
   async function init() {
+    /* восстановление гостевой сессии */
+    try {
+      if (sessionStorage.getItem(GUEST_KEY) === '1') {
+        initGuest();
+        return;
+      }
+    } catch (e) {}
+
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return showGate();
+    setGuestMode(false);
     window.currentUser = session.user;
     const { data: p } = await sb.from('profiles').select('login,full_name,role').eq('id', session.user.id).maybeSingle();
     window.isAdmin = !!p && p.role === 'admin';
     if (!window.isAdmin) {
       const s = document.createElement('style');
-      s.textContent = '.add-box,.delete-btn{display:none!important}';
+      s.textContent = '.add-box,.delete-btn,.admin-box,.admin-toggle-box,.btn-toggle{display:none!important}';
       document.head.appendChild(s);
     }
     const bar = document.createElement('div');
@@ -130,11 +214,14 @@
     bar.innerHTML = `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bOut">Выйти</button>`;
     bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
     document.body.appendChild(bar);
-    bar.querySelector('#bOut').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    bar.querySelector('#bOut').onclick = async () => {
+      setGuestMode(false);
+      await sb.auth.signOut();
+      location.reload();
+    };
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
   }
-
 
   /* ---------- слова для карточек (копия WD из phonetics.html — при правке менять в обоих местах) ---------- */
   const PH_WORDS = {
@@ -187,7 +274,7 @@
   document.head.appendChild(css2);
 
   /* ---------- нижняя навигация (в Shadow DOM: стили страниц на неё не влияют) ---------- */
-  const PAGES = [
+  const PAGES_ALL = [
     ['index.html', '🏠', 'Главная'],
     ['hw.html', '📚', 'ДЗ'],
     ['notes.html', '📖', 'Конспекты'],
@@ -196,6 +283,9 @@
     ['words.html', '🇬🇧', 'Слова'],
     ['china.html', '🀄', 'Китайский']
   ];
+  /* гости не видят Конспекты и Базу */
+  const PAGES_GUEST = PAGES_ALL.filter(([h]) => h !== 'notes.html' && h !== 'base.html');
+
   const NAV_CSS = `
   :host{all:initial}
   .wrap{display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
@@ -212,6 +302,7 @@
     if (document.getElementById('siteNav')) return;
     let cur = location.pathname.split('/').pop();
     if (!cur) cur = 'index.html';
+    const pages = window.isGuest ? PAGES_GUEST : PAGES_ALL;
     const host = document.createElement('div');
     host.id = 'siteNav';
     const hs = [['position', 'fixed'], ['left', '0'], ['right', '0'], ['bottom', '0'], ['top', 'auto'],
@@ -220,7 +311,7 @@
     hs.forEach(([k, v]) => host.style.setProperty(k, v, 'important'));
     const root = host.attachShadow({ mode: 'open' });
     root.innerHTML = '<style>' + NAV_CSS + '</style><div class="wrap"><div class="in">' +
-      PAGES.map(([h, i, t]) =>
+      pages.map(([h, i, t]) =>
         `<a href="${h}"${h === cur ? ' class="on" aria-current="page"' : ''}><b>${i}</b><span>${t}</span></a>`).join('') +
       '</div></div>';
     const wrap = root.querySelector('.wrap');
@@ -229,7 +320,12 @@
     new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     document.body.appendChild(host);
   }
-  if (document.body) buildNav(); else document.addEventListener('DOMContentLoaded', buildNav);
+  function ensureNav() {
+    if (document.body) buildNav(); else document.addEventListener('DOMContentLoaded', buildNav);
+  }
+  /* пересобрать навигацию после определения роли */
+  const origResolve = resolveReady;
+  /* buildNav вызывается после init/initGuest, когда isGuest уже известен */
 
   /* ---------- окно прогресса по словам ---------- */
   async function openProgress(login) {
@@ -254,6 +350,21 @@
       const saved = await window.userData.get('chinese_learned_words');
       if (Array.isArray(saved)) chLearned = new Set(saved);
     } catch (e) { console.error(e); }
+    /* если облако пустое — подтянуть localStorage (в т.ч. для гостя) */
+    try {
+      if (!learned.size) {
+        const a = JSON.parse(localStorage.getItem('phonetics_learned_words') || '[]');
+        if (Array.isArray(a)) learned = new Set(a);
+      }
+      if (!enLearned.size) {
+        const a = JSON.parse(localStorage.getItem('english_learned_words') || '[]');
+        if (Array.isArray(a)) enLearned = new Set(a);
+      }
+      if (!chLearned.size) {
+        const a = JSON.parse(localStorage.getItem('chinese_learned_words') || '[]');
+        if (Array.isArray(a)) chLearned = new Set(a);
+      }
+    } catch (e) {}
     const EN = await loadEnWords();
 
     const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -316,7 +427,7 @@
     if (!BLOCK[subj]) subj = 'all';
     const paint = () => {
       back.querySelector('#prgBox').innerHTML =
-        `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
+        `<div class="top"><h3>📊 Прогресс: ${esc(login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
         `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
         (subj === 'all' ? enHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
       back.querySelector('.x').onclick = close;
@@ -329,5 +440,17 @@
     paint();
   }
 
-  if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
+  /* init + nav после готовности */
+  async function boot() {
+    if (document.body) {
+      await init();
+      buildNav();
+    } else {
+      document.addEventListener('DOMContentLoaded', async () => {
+        await init();
+        buildNav();
+      });
+    }
+  }
+  boot();
 })();
