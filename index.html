@@ -1,4 +1,4 @@
-/* ФЛ1-ПОДб-11: вход + данные через Supabase. Подключается в <head> каждой страницы. */
+
 (function () {
   const SB_URL = 'https://kmimcxrbdpsubpquenxz.supabase.co';
   const SB_KEY = 'sb_publishable__n7rX8CQCOxBvQlA3l0BBw_AnhSor-_';
@@ -140,5 +140,3 @@
     document.dispatchEvent(new Event('auth-ready'));
   }
 
-  if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
-})();
