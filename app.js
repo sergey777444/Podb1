@@ -127,7 +127,8 @@
     }
     const bar = document.createElement('div');
     bar.id = 'authBar';
-    bar.innerHTML = `<span>${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bPw">🔑</button><button id="bOut">Выйти</button>`;
+    bar.innerHTML = `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bPw">🔑</button><button id="bOut">Выйти</button>`;
+    bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
     document.body.appendChild(bar);
     bar.querySelector('#bOut').onclick = async () => { await sb.auth.signOut(); location.reload(); };
     bar.querySelector('#bPw').onclick = async () => {
@@ -138,6 +139,103 @@
     };
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
+  }
+
+
+  /* ---------- слова для карточек (копия WD из phonetics.html — при правке менять в обоих местах) ---------- */
+  const PH_WORDS = {
+    'iː': ['Edith','evening','easy','Jean','cheese','see','tea','pea','tree','eating','Peter','meat','please'],
+    'ɪ': ['it’s','isn’t','ill','Indian','interesting','Tim','film','minutes','beginning','Mrs. Smith'],
+    'e': ['pen','Ben','ten','set','bell','checks','any','everybody','everything','Eddie','Ellen','spend','friend','left','shelf','ten pence','Jenny','jealous','America','expensive','cigarettes','help yourself'],
+    'æ': ['apple','perhaps','passenger','hijacker','black','Miss Bradley','Anne','Amsterdam','Alice','Miss Allen','slacks','camera','lavatory','travelling','handbag','left hand']
+  };
+
+  /* ---------- стили навигации и окна прогресса ---------- */
+  const css2 = document.createElement('style');
+  css2.textContent = `
+  body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+  #siteNav{position:fixed;left:0;right:0;bottom:0;z-index:9998;display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #siteNav .in{display:flex;gap:2px;width:min(640px,100%)}
+  #siteNav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:#9aa5bd;text-decoration:none;font-size:10px;font-weight:600;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent}
+  #siteNav a b{font-size:20px;line-height:1;font-weight:400}
+  #siteNav a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #siteNav a.on{color:#fff;background:rgba(124,108,255,.35)}
+  [data-theme="light"] #siteNav{background:rgba(255,255,255,.94);border-top-color:rgba(20,30,50,.12)}
+  [data-theme="light"] #siteNav a{color:#5d687b}
+  [data-theme="light"] #siteNav a.on{color:#3b2fb0;background:rgba(124,108,255,.18)}
+  #prgBack{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #prgBox{width:min(560px,100%);max-height:88vh;overflow:auto;background:#131928;color:#f4f7ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+  @media(min-width:600px){#prgBack{align-items:center}#prgBox{border-radius:22px}}
+  #prgBox h3{margin:0;font-size:20px}
+  #prgBox .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  #prgBox .x{background:rgba(255,255,255,.08);color:#fff;border:0;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer}
+  #prgBox .sub{color:#aeb8cc;font-size:13px;margin:4px 0 12px}
+  #prgBox .bar{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
+  #prgBox .bar i{display:block;height:100%;background:linear-gradient(90deg,#7c6cff,#45caff);border-radius:6px}
+  #prgBox .grp{margin-top:18px}
+  #prgBox .gh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:8px}
+  #prgBox .gh small{color:#aeb8cc;font-weight:600}
+  #prgBox .ch{display:flex;flex-wrap:wrap;gap:6px}
+  #prgBox .ch span{padding:5px 10px;border-radius:99px;font-size:13px;border:1px solid rgba(255,255,255,.12);color:#78839a}
+  #prgBox .ch span.ok{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.5);color:#86efac}
+  #prgBox .go{display:block;margin-top:20px;text-align:center;padding:13px;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;text-decoration:none}`;
+  document.head.appendChild(css2);
+
+  /* ---------- навигация между страницами ---------- */
+  const PAGES = [
+    ['index.html', '🏠', 'Главная'],
+    ['hw.html', '📚', 'ДЗ'],
+    ['notes.html', '📖', 'Конспекты'],
+    ['base.html', '🗂️', 'База'],
+    ['phonetics.html', '🔤', 'Фонетика'],
+    ['china.html', '🀄', 'Китайский']
+  ];
+  function buildNav() {
+    if (document.getElementById('siteNav')) return;
+    let cur = location.pathname.split('/').pop();
+    if (!cur) cur = 'index.html';
+    const nav = document.createElement('nav');
+    nav.id = 'siteNav';
+    nav.setAttribute('aria-label', 'Страницы сайта');
+    nav.innerHTML = '<div class="in">' + PAGES.map(([h, i, t]) =>
+      `<a href="${h}"${h === cur ? ' class="on" aria-current="page"' : ''}><b>${i}</b><span>${t}</span></a>`).join('') + '</div>';
+    document.body.appendChild(nav);
+  }
+  if (document.body) buildNav(); else document.addEventListener('DOMContentLoaded', buildNav);
+
+  /* ---------- окно прогресса по словам ---------- */
+  async function openProgress(login) {
+    if (document.getElementById('prgBack')) return;
+    const back = document.createElement('div');
+    back.id = 'prgBack';
+    back.innerHTML = '<div id="prgBox"><div class="sub">Загрузка…</div></div>';
+    document.body.appendChild(back);
+    const close = () => back.remove();
+    back.addEventListener('click', e => { if (e.target === back) close(); });
+
+    let learned = new Set();
+    try {
+      const saved = await window.userData.get('phonetics_learned_words');
+      if (Array.isArray(saved)) learned = new Set(saved);
+    } catch (e) { console.error(e); }
+
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const keys = Object.keys(PH_WORDS);
+    const total = keys.reduce((n, k) => n + PH_WORDS[k].length, 0);
+    const done = keys.reduce((n, k) => n + PH_WORDS[k].filter(w => learned.has(w)).length, 0);
+    const pct = total ? Math.round(done / total * 100) : 0;
+
+    back.querySelector('#prgBox').innerHTML =
+      `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>
+       <div class="sub">Фонетика · выучено слов: ${done} из ${total} (${pct}%)</div>
+       <div class="bar"><i style="width:${pct}%"></i></div>` +
+      keys.map(k => {
+        const list = PH_WORDS[k], n = list.filter(w => learned.has(w)).length;
+        return `<div class="grp"><div class="gh"><span>[${esc(k)}]</span><small>${n} / ${list.length}</small></div>
+          <div class="ch">${list.map(w => `<span class="${learned.has(w) ? 'ok' : ''}">${learned.has(w) ? '✓ ' : ''}${esc(w)}</span>`).join('')}</div></div>`;
+      }).join('') +
+      `<a class="go" href="phonetics.html">Открыть карточки</a>`;
+    back.querySelector('.x').onclick = close;
   }
 
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
