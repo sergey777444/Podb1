@@ -144,6 +144,9 @@
     'æ': ['apple','perhaps','passenger','hijacker','black','Miss Bradley','Anne','Amsterdam','Alice','Miss Allen','slacks','camera','lavatory','travelling','handbag','left hand']
   };
 
+  /* ---------- китайские слова для окна прогресса (копия списков из china.html — при правке менять в обоих местах; id = иероглифы) ---------- */
+  const CH_WORDS = {"Основные": ["是", "哪", "国", "人", "从", "哪儿 / 哪里", "来"], "Страны": ["俄罗斯", "中国", "白俄罗斯", "美国", "英国", "法国", "加拿大", "韩国", "日本", "新加坡", "马来西亚", "澳大利亚"], "Еда": ["包子", "饺子", "面条", "馒头", "米饭"], "Напитки и фрукты": ["水", "茶", "牛奶", "咖啡", "可乐", "果汁", "汽水", "草莓", "西瓜", "苹果", "葡萄", "橙子", "香蕉", "橘子"], "Места": ["邮局", "学校", "银行", "博物馆", "公交车站", "公园", "商店", "电影院", "图书馆", "大学", "餐厅", "饭馆", "酒店", "药店", "医院"], "Глаголы": ["去", "在"]};
+
   /* ---------- слова устного английского: список лежит в words-data.js (общий для words.html и этого окна) ---------- */
   function loadEnWords() {
     return new Promise(res => {
@@ -234,7 +237,7 @@
     const close = () => back.remove();
     back.addEventListener('click', e => { if (e.target === back) close(); });
 
-    let learned = new Set(), enLearned = new Set();
+    let learned = new Set(), enLearned = new Set(), chLearned = new Set();
     try {
       const saved = await window.userData.get('phonetics_learned_words');
       if (Array.isArray(saved)) learned = new Set(saved);
@@ -242,6 +245,10 @@
     try {
       const saved = await window.userData.get('english_learned_words');
       if (Array.isArray(saved)) enLearned = new Set(saved);
+    } catch (e) { console.error(e); }
+    try {
+      const saved = await window.userData.get('chinese_learned_words');
+      if (Array.isArray(saved)) chLearned = new Set(saved);
     } catch (e) { console.error(e); }
     const EN = await loadEnWords();
 
@@ -280,9 +287,26 @@
       }).join('') +
       `<a class="go" href="words.html">Открыть слова</a>` : '';
 
+    /* китайский */
+    const chKeys = Object.keys(CH_WORDS);
+    const chTotal = chKeys.reduce((n, k) => n + CH_WORDS[k].length, 0);
+    const chDone = chKeys.reduce((n, k) => n + CH_WORDS[k].filter(w => chLearned.has(w)).length, 0);
+    const chPct = chTotal ? Math.round(chDone / chTotal * 100) : 0;
+
+    const chHtml =
+      `<h4>🀄 Китайский</h4>
+       <div class="sub">Выучено слов: ${chDone} из ${chTotal} (${chPct}%)</div>
+       <div class="bar"><i style="width:${chPct}%"></i></div>` +
+      chKeys.map(k => {
+        const list = CH_WORDS[k], n = list.filter(w => chLearned.has(w)).length;
+        return `<div class="grp"><div class="gh"><span>${esc(k)}</span><small>${n} / ${list.length}</small></div>
+          <div class="ch">${list.map(w => `<span class="${chLearned.has(w) ? 'ok' : ''}">${chLearned.has(w) ? '✓ ' : ''}${esc(w)}</span>`).join('')}</div></div>`;
+      }).join('') +
+      `<a class="go" href="china.html">Открыть карточки</a>`;
+
     back.querySelector('#prgBox').innerHTML =
       `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
-      enHtml + phHtml;
+      enHtml + phHtml + chHtml;
     back.querySelector('.x').onclick = close;
   }
 
