@@ -8,7 +8,6 @@
 
   const sb = supabase.createClient(SB_URL, SB_KEY);
   window.sb = sb;
-  window.supabaseClient = sb; // для совместимости
   window.isAdmin = false;
   window.currentUser = null;
 
@@ -72,26 +71,14 @@
     return J({});
   }
 
-  /* ---------- данные ученика (карточки фонетики и т.д.) ---------- */
+  /* ---------- данные ученика (карточки и т.д.) ---------- */
   window.userData = {
     async get(key) {
-      await ready;
-      if (!window.currentUser) return null;
-      const { data } = await sb.from('user_data')
-        .select('value')
-        .eq('user_id', window.currentUser.id)
-        .eq('key', key)
-        .maybeSingle();
+      const { data } = await sb.from('user_data').select('value').eq('key', key).maybeSingle();
       return data ? data.value : null;
     },
     async set(key, value) {
-      await ready;
-      if (!window.currentUser) return;
-      await sb.from('user_data').upsert({
-        user_id: window.currentUser.id,
-        key: key,
-        value: value
-      }, { onConflict: 'user_id,key' });
+      await sb.from('user_data').upsert({ user_id: window.currentUser.id, key, value });
     }
   };
 
@@ -104,4 +91,54 @@
   #authGate input{padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font:inherit}
   #authGate button{padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;font:inherit;cursor:pointer}
   #authErr{color:#ff6878;font-size:13px;min-height:16px}
-  #authBar{position:fixed;top:8px;right:8px;z-index:9999;display:flex;gap:6px;align-items:center
+  #authBar{position:fixed;top:8px;right:8px;z-index:9999;display:flex;gap:6px;align-items:center;font:12px system-ui,sans-serif}
+  #authBar span{background:rgba(20,25,40,.85);color:#aeb8cc;padding:6px 10px;border-radius:99px}
+  #authBar button{background:rgba(20,25,40,.85);color:#f4f7ff;border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:6px 10px;font:inherit;cursor:pointer}`;
+  document.head.appendChild(css);
+
+  function showGate() {
+    const g = document.createElement('div');
+    g.id = 'authGate';
+    g.innerHTML = `<form><h2>🎓 ФЛ1 • ПОДб-11</h2>
+      <input id="aLogin" placeholder="Логин" autocomplete="username" autocapitalize="none" required>
+      <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password" required>
+      <div id="authErr"></div><button type="submit">Войти</button></form>`;
+    document.body.appendChild(g);
+    g.querySelector('form').onsubmit = async e => {
+      e.preventDefault();
+      const login = g.querySelector('#aLogin').value.trim().toLowerCase();
+      const { error } = await sb.auth.signInWithPassword({ email: login + DOMAIN, password: g.querySelector('#aPass').value });
+      if (error) { g.querySelector('#authErr').textContent = 'Неверный логин или пароль'; return; }
+      g.remove();
+      init();
+    };
+  }
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return showGate();
+    window.currentUser = session.user;
+    const { data: p } = await sb.from('profiles').select('login,full_name,role').eq('id', session.user.id).maybeSingle();
+    window.isAdmin = !!p && p.role === 'admin';
+    if (!window.isAdmin) {
+      const s = document.createElement('style');
+      s.textContent = '.admin-toggle-box,.admin-box,.add-box,.delete-btn{display:none!important}';
+      document.head.appendChild(s);
+    }
+    const bar = document.createElement('div');
+    bar.id = 'authBar';
+    bar.innerHTML = `<span>${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bPw">🔑</button><button id="bOut">Выйти</button>`;
+    document.body.appendChild(bar);
+    bar.querySelector('#bOut').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    bar.querySelector('#bPw').onclick = async () => {
+      const pw = prompt('Новый пароль (минимум 6 символов):');
+      if (!pw) return;
+      const { error } = await sb.auth.updateUser({ password: pw });
+      alert(error ? 'Не удалось: ' + error.message : 'Пароль изменён');
+    };
+    resolveReady();
+    document.dispatchEvent(new Event('auth-ready'));
+  }
+
+  if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
+})();
