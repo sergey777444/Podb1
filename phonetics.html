@@ -12,7 +12,7 @@
 :root[data-theme="dark"]{--paper:#15172b;--grid:#23274a;--ink:#f1efe6;--soft:#9ca0bd;--card:#1f2340;--blue-s:#27407f;--red-s:#6b2a39;--line:#f1efe6}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;border-left:2px solid var(--red);margin-left:10px}
-header{padding:16px 16px 6px;max-width:640px;margin:auto}
+header{padding:22px 16px 6px;max-width:640px;margin:auto}
 h1{font:italic 800 44px/1 Georgia,serif;margin:0}
 h1 span{background:linear-gradient(transparent 55%,var(--yel) 55%);padding:0 6px}
 .sub{color:var(--soft);font-size:13px;margin:8px 0 0}
@@ -66,7 +66,6 @@ h2 i{font:700 13px system-ui;font-style:normal;background:var(--ink);color:var(-
 </style>
 </head>
 <body>
-
 <header>
   <h1>Say it <span>right.</span></h1>
   <p class="sub">Диалоги, скороговорки и карточки со словами · звуки [iː] [ɪ] [e] [æ]</p>
@@ -219,8 +218,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
   window.scrollTo(0,0);
 });
 
-document.addEventListener('auth-ready', loadProgressFromCloud);
-if (window.currentUser) loadProgressFromCloud();
+window.onload = loadProgressFromCloud;
 </script>
 </body>
 </html>
