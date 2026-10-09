@@ -253,3 +253,10 @@
 
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
 })();
+(async()=>{
+ const get=u=>new Promise((ok,no)=>{const x=new XMLHttpRequest();x.open('GET',u);x.onload=()=>ok(JSON.parse(x.responseText));x.onerror=no;x.send()});
+ const hw=await get('https://api.npoint.io/ac41837c39a8785f2ce4');
+ console.log('ДЗ', (await sb.from('homework').upsert(Object.entries(hw).map(([key,text])=>({key,text})))).error||'ок');
+ const nt=await get('https://api.npoint.io/b0bf097d8c176bdc856e');
+ console.log('Конспекты', (await sb.from('notes').upsert(nt.map(n=>({id:n.id,subject:n.subject,title:n.title,lecture_num:n.lectureNum,lecture_date:n.lectureDate||null,content:n.content,link:n.link})))).error||'ок');
+})()
