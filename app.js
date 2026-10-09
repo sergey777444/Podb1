@@ -173,6 +173,10 @@
   #prgBox .sub{color:#aeb8cc;font-size:13px;margin:4px 0 12px}
   #prgBox .bar{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
   #prgBox .bar i{display:block;height:100%;background:linear-gradient(90deg,#7c6cff,#45caff);border-radius:6px}
+  #prgBox .sel{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+  #prgBox .sel button{padding:7px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#aeb8cc;font-size:13px;font-weight:700;cursor:pointer}
+  #prgBox .sel button.on{background:linear-gradient(135deg,#7c6cff,#8b5cf6);border-color:transparent;color:#fff}
+  #prgBox h4:first-of-type{margin-top:18px}
   #prgBox .grp{margin-top:18px}
   #prgBox .gh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:8px;gap:10px}
   #prgBox .gh small{color:#aeb8cc;font-weight:600;white-space:nowrap}
@@ -304,10 +308,25 @@
       }).join('') +
       `<a class="go" href="china.html">Открыть карточки</a>`;
 
-    back.querySelector('#prgBox').innerHTML =
-      `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
-      enHtml + phHtml + chHtml;
-    back.querySelector('.x').onclick = close;
+    /* выбор предмета: запоминаем в браузере */
+    const SUBJ = [['all', 'Все'], ['en', '🇬🇧 Английский'], ['ph', '🔤 Фонетика'], ['ch', '🀄 Китайский']];
+    const BLOCK = { en: enHtml, ph: phHtml, ch: chHtml };
+    let subj = 'all';
+    try { subj = localStorage.getItem('prg_subject') || 'all'; } catch (e) {}
+    if (!BLOCK[subj]) subj = 'all';
+    const paint = () => {
+      back.querySelector('#prgBox').innerHTML =
+        `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
+        `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
+        (subj === 'all' ? enHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
+      back.querySelector('.x').onclick = close;
+      back.querySelectorAll('.sel button').forEach(b => b.onclick = () => {
+        subj = b.dataset.k;
+        try { localStorage.setItem('prg_subject', subj); } catch (e) {}
+        paint();
+      });
+    };
+    paint();
   }
 
   if (document.body) init(); else document.addEventListener('DOMContentLoaded', init);
