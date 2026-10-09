@@ -16,9 +16,9 @@ header{padding:22px 16px 6px;max-width:640px;margin:auto}
 h1{font:italic 800 44px/1 Georgia,serif;margin:0}
 h1 span{background:linear-gradient(transparent 55%,var(--yel) 55%);padding:0 6px}
 .sub{color:var(--soft);font-size:13px;margin:8px 0 0}
-nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;max-width:640px;margin:10px auto 0;padding:8px 16px;background:var(--paper)}
-nav button{flex:1;font:700 13px system-ui;padding:10px 6px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:2px 2px 0 var(--line);cursor:pointer}
-nav button[aria-selected=true]{background:var(--yel);color:#1b1f3b}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;max-width:640px;margin:10px auto 0;padding:8px 16px;background:var(--paper)}
+nav.tabs button{flex:1;font:700 13px system-ui;padding:10px 6px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:2px 2px 0 var(--line);cursor:pointer}
+nav.tabs button[aria-selected=true]{background:var(--yel);color:#1b1f3b}
 main{max-width:640px;margin:auto;padding:8px 16px 60px}
 section{display:none}section.on{display:block}
 h2{font:italic 800 20px Georgia,serif;margin:22px 0 12px;display:flex;gap:10px;align-items:center}
@@ -70,7 +70,7 @@ h2 i{font:700 13px system-ui;font-style:normal;background:var(--ink);color:var(-
   <h1>Say it <span>right.</span></h1>
   <p class="sub">Диалоги, скороговорки и карточки со словами · звуки [iː] [ɪ] [e] [æ]</p>
 </header>
-<nav role="tablist">
+<nav class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-t="d">Диалоги</button>
   <button role="tab" aria-selected="false" data-t="s">Скороговорки</button>
   <button role="tab" aria-selected="false" data-t="c">Карточки</button>
@@ -110,4 +110,126 @@ const TW=[["These three sheep have eaten three green leaves each.","[iː]","Thes
 ["Ten men went to mow, went to mow a meadow.<br>Ten men, nine men, eight men, seven men, six men, five men, four men, three men, two men, one man and his dog went to mow a meadow.","[e]","Ten|men|went|meadow|seven"],
 ["Fat Pat had a fat cat. Fat Pat’s cat sat on Pat’s hat.","[æ]","Fat|Pat’s|Pat|had|cat|sat|hat"]];
 
-$("#s").innerHTML='<p class="legend" style="margin-top:14px">Жёлтым подсвечены слова с тренируемым звуком</p><div style="height:14px"></div>'+TW.map((t,i)=>`<div class="tw"><small>${t[1]}</small><b>${i+1}</b>${t[0].replace(new RegExp("
+/* подсветка слов без lookbehind (он не работает в старых Safari/iOS) */
+function hl(text,words){
+  const set=new Set(words.split("|"));
+  return text.replace(/[A-Za-z’]+/g,m=>set.has(m)?"<u>"+m+"</u>":m);
+}
+
+$("#s").innerHTML='<p class="legend" style="margin-top:14px">Жёлтым подсвечены слова с тренируемым звуком</p><div style="height:14px"></div>'+TW.map((t,i)=>`<div class="tw"><small>${t[1]}</small><b>${i+1}</b>${hl(t[0],t[2])}</div>`).join("");
+
+const WD={"iː":[["Edith","/ˈiː.dɪθ/"],["evening","/ˈiːv.nɪŋ/"],["easy","/ˈiː.zi/"],["Jean","/dʒiːn/"],["cheese","/tʃiːz/"],["see","/siː/"],["tea","/tiː/"],["pea","/piː/"],["tree","/triː/"],["eating","/ˈiː.tɪŋ/"],["Peter","/ˈpiː.tər/"],["meat","/miːt/"],["please","/pliːz/"]],
+"ɪ":[["it’s","/ɪts/"],["isn’t","/ˈɪz.ənt/"],["ill","/ɪl/"],["Indian","/ˈɪn.di.ən/"],["interesting","/ˈɪn.trə.stɪŋ/"],["Tim","/tɪm/"],["film","/fɪlm/"],["minutes","/ˈmɪn.ɪts/"],["beginning","/bɪˈɡɪn.ɪŋ/"],["Mrs. Smith","/ˈmɪs.ɪz smɪθ/"]],
+"e":[["pen","/pen/"],["Ben","/ben/"],["ten","/ten/"],["set","/set/"],["bell","/bel/"],["checks","/tʃeks/"],["any","/ˈen.i/"],["everybody","/ˈev.ri.bɒd.i/"],["everything","/ˈev.ri.θɪŋ/"],["Eddie","/ˈed.i/"],["Ellen","/ˈel.ən/"],["spend","/spend/"],["friend","/frend/"],["left","/left/"],["shelf","/ʃelf/"],["ten pence","/ten pens/"],["Jenny","/ˈdʒen.i/"],["jealous","/ˈdʒel.əs/"],["America","/əˈmer.ɪ.kə/"],["expensive","/ɪkˈspen.sɪv/"],["cigarettes","/ˌsɪɡ.əˈrets/"],["help yourself","/help jɔːˈself/"]],
+"æ":[["apple","/ˈæp.əl/"],["perhaps","/pəˈhæps/"],["passenger","/ˈpæs.ɪn.dʒər/"],["hijacker","/ˈhaɪˌdʒæk.ər/"],["black","/blæk/"],["Miss Bradley","/mɪs ˈbræd.li/"],["Anne","/æn/"],["Amsterdam","/ˌæm.stəˈdæm/"],["Alice","/ˈæl.ɪs/"],["Miss Allen","/mɪs ˈæl.ən/"],["slacks","/slæks/"],["camera","/ˈkæm.rə/"],["lavatory","/ˈlæv.ə.tri/"],["travelling","/ˈtræv.əl.ɪŋ/"],["handbag","/ˈhænd.bæɡ/"],["left hand","/left hænd/"]]};
+
+const ALL=Object.entries(WD).flatMap(([k,v])=>v.map(w=>({w:w[0],i:w[1],s:k})));
+let filt="all",queue=[],hist=[],learned=0,total=0;
+let learnedWordsSet=new Set();
+
+/* облако: любые ошибки сети/входа не должны ломать карточки */
+async function syncProgressWithCloud(){
+  try{
+    if(window.userData&&window.userData.set&&window.currentUser){
+      await window.userData.set('phonetics_learned_words',Array.from(learnedWordsSet));
+    }
+  }catch(e){console.error(e)}
+}
+
+async function loadProgressFromCloud(){
+  try{
+    if(window.userData&&window.userData.get){
+      const saved=await window.userData.get('phonetics_learned_words');
+      if(saved&&Array.isArray(saved))learnedWordsSet=new Set(saved);
+    }
+  }catch(e){console.error(e)}
+  start();
+}
+
+function chips(){$("#chips").innerHTML=["all","iː","ɪ","e","æ"].map(k=>`<button aria-pressed="${k==filt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function start(){
+  const filtered=ALL.filter(x=>filt=="all"||x.s==filt);
+  queue=shuffle(filtered.filter(x=>!learnedWordsSet.has(x.w)));
+  total=filtered.length;
+  learned=total-queue.length;
+  hist=[];
+  chips();
+  render();
+}
+
+function mk(x,cls){const c=document.createElement("div");c.className="card "+cls;c.innerHTML=`<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ РАЗ</div><div class="inner"><div class="face"><span class="badge">[${x.s}]</span><div class="word">${x.w}</div><div class="hint">тап — транскрипция</div></div><div class="face back"><div class="ipa">${x.i}</div><div class="hint">${x.w}</div></div></div>`;return c}
+
+function render(){
+  const d=$("#deck");d.innerHTML="";
+  $("#prog").style.width=(total?learned/total*100:0)+"%";
+  $("#st1").textContent=`Выучено ${learned} из ${total}`;$("#st2").textContent=`Осталось ${queue.length}`;
+  if(!queue.length){
+    d.style.height="auto";
+    d.innerHTML=`<div class="done"><h3>Все слова выучены 🎉</h3><div class="hint">${total} карточек пройдено</div><button id="again">Сбросить прогресс</button></div>`;
+    $("#again").onclick=async()=>{
+      learnedWordsSet.clear();
+      await syncProgressWithCloud();
+      start();
+    };
+    return;
+  }
+  d.style.height="300px";
+  [2,1,0].forEach(n=>{if(queue[n])d.appendChild(mk(queue[n],n==0?"top":n==1?"under":"under2"))});
+  bind(d.querySelector(".top"));
+}
+
+function bind(c){
+  let x0=0,dx=0,drag=false,moved=false;
+  const sR=c.querySelector(".stampR"),sL=c.querySelector(".stampL");
+  c.onpointerdown=e=>{drag=true;moved=false;x0=e.clientX;c.setPointerCapture(e.pointerId);c.style.transition="none"};
+  c.onpointermove=e=>{if(!drag)return;dx=e.clientX-x0;if(Math.abs(dx)>6)moved=true;c.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;sR.style.opacity=Math.max(0,Math.min(1,dx/90));sL.style.opacity=Math.max(0,Math.min(1,-dx/90))};
+  c.onpointerup=e=>{if(!drag)return;drag=false;
+  if(!moved){c.classList.toggle("flip");c.style.transform="";return}
+  if(Math.abs(dx)>90)go(dx>0,c);else{c.style.transition="transform .25s";c.style.transform="";sR.style.opacity=sL.style.opacity=0}dx=0};
+  c.onpointercancel=()=>{drag=false;c.style.transform=""};
+}
+
+async function go(ok,c){
+  c=c||$(".card.top");if(!c)return;
+  c.style.transition="transform .3s,opacity .3s";c.style.transform=`translateX(${ok?600:-600}px) rotate(${ok?30:-30}deg)`;c.style.opacity=0;
+  const x=queue.shift();hist.push({x,ok});
+  if(ok){
+    learned++;
+    learnedWordsSet.add(x.w);
+  }else{
+    queue.push(x);
+  }
+  setTimeout(render,260);
+  if(ok)syncProgressWithCloud();
+}
+
+$("#bOk").onclick=()=>go(true);
+$("#bNo").onclick=()=>go(false);
+$("#bUndo").onclick=()=>{
+  const h=hist.pop();if(!h)return;
+  if(h.ok){
+    learned--;
+    learnedWordsSet.delete(h.x.w);
+    syncProgressWithCloud();
+  }else{
+    queue.pop();
+  }
+  queue.unshift(h.x);
+  render();
+};
+
+$("#chips").onclick=e=>{const k=e.target.dataset.k;if(k){filt=k;start()}};
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.setAttribute("aria-selected",x==b));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==b.dataset.t));
+  window.scrollTo(0,0);
+});
+
+window.onload=loadProgressFromCloud;
+/* после входа подтягиваем сохранённый прогресс */
+document.addEventListener("auth-ready",loadProgressFromCloud);
+</script>
+</body>
+</html>
