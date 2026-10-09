@@ -144,6 +144,18 @@
     'æ': ['apple','perhaps','passenger','hijacker','black','Miss Bradley','Anne','Amsterdam','Alice','Miss Allen','slacks','camera','lavatory','travelling','handbag','left hand']
   };
 
+  /* ---------- слова устного английского: список лежит в words-data.js (общий для words.html и этого окна) ---------- */
+  function loadEnWords() {
+    return new Promise(res => {
+      if (window.EN_WORDS) return res(window.EN_WORDS);
+      const s = document.createElement('script');
+      s.src = 'words-data.js?v=1';
+      s.onload = () => res(window.EN_WORDS || []);
+      s.onerror = () => res([]);
+      document.head.appendChild(s);
+    });
+  }
+
   /* ---------- стили окна прогресса и отступ под нижнюю панель ---------- */
   const css2 = document.createElement('style');
   css2.textContent = `
@@ -152,18 +164,19 @@
   #prgBox{width:min(560px,100%);max-height:88vh;overflow:auto;background:#131928;color:#f4f7ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px))}
   @media(min-width:600px){#prgBack{align-items:center}#prgBox{border-radius:22px}}
   #prgBox h3{margin:0;font-size:20px}
+  #prgBox h4{margin:24px 0 0;font-size:16px}
   #prgBox .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
   #prgBox .x{background:rgba(255,255,255,.08);color:#fff;border:0;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer}
   #prgBox .sub{color:#aeb8cc;font-size:13px;margin:4px 0 12px}
   #prgBox .bar{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
   #prgBox .bar i{display:block;height:100%;background:linear-gradient(90deg,#7c6cff,#45caff);border-radius:6px}
   #prgBox .grp{margin-top:18px}
-  #prgBox .gh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:8px}
-  #prgBox .gh small{color:#aeb8cc;font-weight:600}
+  #prgBox .gh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:8px;gap:10px}
+  #prgBox .gh small{color:#aeb8cc;font-weight:600;white-space:nowrap}
   #prgBox .ch{display:flex;flex-wrap:wrap;gap:6px}
   #prgBox .ch span{padding:5px 10px;border-radius:99px;font-size:13px;border:1px solid rgba(255,255,255,.12);color:#78839a}
   #prgBox .ch span.ok{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.5);color:#86efac}
-  #prgBox .go{display:block;margin-top:20px;text-align:center;padding:13px;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;text-decoration:none}`;
+  #prgBox .go{display:block;margin-top:14px;text-align:center;padding:13px;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;text-decoration:none}`;
   document.head.appendChild(css2);
 
   /* ---------- нижняя навигация (в Shadow DOM: стили страниц на неё не влияют) ---------- */
@@ -173,6 +186,7 @@
     ['notes.html', '📖', 'Конспекты'],
     ['base.html', '🗂️', 'База'],
     ['phonetics.html', '🔤', 'Фонетика'],
+    ['words.html', '🇬🇧', 'Слова'],
     ['china.html', '🀄', 'Китайский']
   ];
   const NAV_CSS = `
@@ -220,21 +234,28 @@
     const close = () => back.remove();
     back.addEventListener('click', e => { if (e.target === back) close(); });
 
-    let learned = new Set();
+    let learned = new Set(), enLearned = new Set();
     try {
       const saved = await window.userData.get('phonetics_learned_words');
       if (Array.isArray(saved)) learned = new Set(saved);
     } catch (e) { console.error(e); }
+    try {
+      const saved = await window.userData.get('english_learned_words');
+      if (Array.isArray(saved)) enLearned = new Set(saved);
+    } catch (e) { console.error(e); }
+    const EN = await loadEnWords();
 
     const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    /* фонетика */
     const keys = Object.keys(PH_WORDS);
     const total = keys.reduce((n, k) => n + PH_WORDS[k].length, 0);
     const done = keys.reduce((n, k) => n + PH_WORDS[k].filter(w => learned.has(w)).length, 0);
     const pct = total ? Math.round(done / total * 100) : 0;
 
-    back.querySelector('#prgBox').innerHTML =
-      `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>
-       <div class="sub">Фонетика · выучено слов: ${done} из ${total} (${pct}%)</div>
+    const phHtml =
+      `<h4>🔤 Фонетика</h4>
+       <div class="sub">Выучено слов: ${done} из ${total} (${pct}%)</div>
        <div class="bar"><i style="width:${pct}%"></i></div>` +
       keys.map(k => {
         const list = PH_WORDS[k], n = list.filter(w => learned.has(w)).length;
@@ -242,6 +263,26 @@
           <div class="ch">${list.map(w => `<span class="${learned.has(w) ? 'ok' : ''}">${learned.has(w) ? '✓ ' : ''}${esc(w)}</span>`).join('')}</div></div>`;
       }).join('') +
       `<a class="go" href="phonetics.html">Открыть карточки</a>`;
+
+    /* устный английский */
+    const enTotal = EN.reduce((n, g) => n + g.words.length, 0);
+    const enDone = EN.reduce((n, g) => n + g.words.filter(w => enLearned.has(w[0])).length, 0);
+    const enPct = enTotal ? Math.round(enDone / enTotal * 100) : 0;
+
+    const enHtml = enTotal ?
+      `<h4>🇬🇧 Устный английский</h4>
+       <div class="sub">Выучено слов: ${enDone} из ${enTotal} (${enPct}%)</div>
+       <div class="bar"><i style="width:${enPct}%"></i></div>` +
+      EN.map(g => {
+        const n = g.words.filter(w => enLearned.has(w[0])).length;
+        return `<div class="grp"><div class="gh"><span>${esc(g.title)}</span><small>${n} / ${g.words.length}</small></div>
+          <div class="ch">${g.words.map(w => `<span class="${enLearned.has(w[0]) ? 'ok' : ''}">${enLearned.has(w[0]) ? '✓ ' : ''}${esc(w[0])}</span>`).join('')}</div></div>`;
+      }).join('') +
+      `<a class="go" href="words.html">Открыть слова</a>` : '';
+
+    back.querySelector('#prgBox').innerHTML =
+      `<div class="top"><h3>📊 Прогресс: ${esc(login)}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
+      enHtml + phHtml;
     back.querySelector('.x').onclick = close;
   }
 
