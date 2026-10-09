@@ -122,7 +122,7 @@
     window.isAdmin = !!p && p.role === 'admin';
     if (!window.isAdmin) {
       const s = document.createElement('style');
-      s.textContent = '.admin-toggle-box,.admin-box,.add-box,.delete-btn{display:none!important}';
+      s.textContent = '.add-box,.delete-btn{display:none!important}';
       document.head.appendChild(s);
     }
     const bar = document.createElement('div');
