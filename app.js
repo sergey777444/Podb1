@@ -141,7 +141,6 @@
     document.dispatchEvent(new Event('auth-ready'));
   }
 
-
   /* ---------- слова для карточек (копия WD из phonetics.html — при правке менять в обоих местах) ---------- */
   const PH_WORDS = {
     'iː': ['Edith','evening','easy','Jean','cheese','see','tea','pea','tree','eating','Peter','meat','please'],
@@ -154,7 +153,7 @@
   const css2 = document.createElement('style');
   css2.textContent = `
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
-  #siteNav{position:fixed;left:0;right:0;bottom:0;z-index:9998;display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  #siteNav{position:fixed;top:auto;left:0;right:0;bottom:0;margin:0;max-width:none;height:auto;z-index:9998;display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
   #siteNav .in{display:flex;gap:2px;width:min(640px,100%)}
   #siteNav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:#9aa5bd;text-decoration:none;font-size:10px;font-weight:600;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent}
   #siteNav a b{font-size:20px;line-height:1;font-weight:400}
@@ -194,8 +193,9 @@
     if (document.getElementById('siteNav')) return;
     let cur = location.pathname.split('/').pop();
     if (!cur) cur = 'index.html';
-    const nav = document.createElement('nav');
+    const nav = document.createElement('div');   // не <nav>: на страницах есть свои стили для тега nav
     nav.id = 'siteNav';
+    nav.setAttribute('role', 'navigation');
     nav.setAttribute('aria-label', 'Страницы сайта');
     nav.innerHTML = '<div class="in">' + PAGES.map(([h, i, t]) =>
       `<a href="${h}"${h === cur ? ' class="on" aria-current="page"' : ''}><b>${i}</b><span>${t}</span></a>`).join('') + '</div>';
