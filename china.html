@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru"><head><meta charset="utf-8">
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <script src="app.js"></script>
-<title>Китайский: конспект урока</title>
+<title>Китайский: конспект урока — ФЛ1-ПОДб-11</title>
 <style>
-:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--mute:#5d6b86;--line:#c9d4ea;--cobalt:#1f3f9e;--t1:#1d4ed8;--t2:#0f8a5f;--t3:#b7791f;--t4:#c8321e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--mute:#5d6b86;--line:#c9d4ea;--cobalt:#1f3f9e;--t1:#1d4ed8;--t2:#0f8a5f;--t3:#b7791f;--t4:#c8321e;box-sizing:border-box}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1630;--card:#142048;--ink:#e8eefc;--mute:#9fb0d6;--line:#2a3a72;--cobalt:#8fb0ff;--t1:#7aa2ff;--t2:#4fd1a0;--t3:#f0b44c;--t4:#ff7b63}}
 :root[data-theme="dark"]{--bg:#0d1630;--card:#142048;--ink:#e8eefc;--mute:#9fb0d6;--line:#2a3a72;--cobalt:#8fb0ff;--t1:#7aa2ff;--t2:#4fd1a0;--t3:#f0b44c;--t4:#ff7b63}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Serif SC","Songti SC",Georgia,serif;
 background-image:radial-gradient(circle at 100% 0,rgba(31,63,158,.12),transparent 40%),repeating-linear-gradient(45deg,transparent 0 22px,rgba(31,63,158,.04) 22px 23px)}
 main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
@@ -29,16 +31,15 @@ h2 small{font:500 14px system-ui,sans-serif;color:var(--mute)}
 .w .h{font-size:30px;line-height:1.2;color:var(--ink)}
 .w .p{font:500 15px system-ui,sans-serif}
 .w .r{font:14px system-ui,sans-serif;color:var(--mute)}
-.row{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--line)}
+.row{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline;padding:99px 0;border-bottom:1px dashed var(--line)}
 .row:last-child{border:0}
 .row .h{font-size:26px}.row .p{font:500 15px system-ui,sans-serif}.row .r{grid-column:2;font:14px system-ui,sans-serif;color:var(--mute)}
 .t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}
 .zh{color:var(--mute);font-size:14px;margin:6px 0}
-.rule{border-left:8px solid var(--t4);}
+.rule{border-left:8px solid var(--t4)}
 .rule h3{margin:0 0 8px;font-size:20px}
 .ex{display:grid;grid-template-columns:auto auto 1fr;gap:4px 12px;align-items:baseline;font-size:20px;padding:5px 0}
 .ex .p{font:500 15px system-ui,sans-serif}.ex .r{font:14px system-ui,sans-serif;color:var(--mute)}
-.arrow{color:var(--mute)}
 .note{background:rgba(200,50,30,.08);border-radius:8px;padding:10px 12px;margin:10px 0;font:15px/1.5 system-ui,sans-serif}
 .phone{font:600 22px system-ui,sans-serif;letter-spacing:.06em}
 .ml{font-size:16px;color:var(--mute);font-family:system-ui,sans-serif}
@@ -50,10 +51,16 @@ h2 small{font:500 14px system-ui,sans-serif;color:var(--mute)}
 .q .h,.a .h{font-size:22px}.q .p,.a .p{font:500 15px system-ui,sans-serif}.q .r,.a .r{font:14px system-ui,sans-serif}
 .q .r{color:var(--mute)}
 footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin-top:40px}
-</style></head><body><main>
-<header><div class="big">学中文</div><div class="seal">Китайский</div>
-<p>Страны · вопросы · изменения тонов · слова</p>
-<div class="legend"><span class="t1">1 тон ā</span><span class="t2">2 тон á</span><span class="t3">3 тон ǎ</span><span class="t4">4 тон à</span></div></header>
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="big">学中文</div>
+  <div class="seal">Китайский</div>
+  <p>Страны · вопросы · изменения тонов · слова</p>
+  <div class="legend"><span class="t1">1 тон ā</span><span class="t2">2 тон á</span><span class="t3">3 тон ǎ</span><span class="t4">4 тон à</span></div>
+</header>
 <nav><a href="#s1">Слова</a><a href="#s2">Диалог</a><a href="#s3">Страны</a><a href="#s4">Тоны</a><a href="#s5">Еда и напитки</a><a href="#s6">Места</a><a href="#s7">Глаголы</a></nav>
 
 <section id="s1"><h2>基础 <small>основные слова</small></h2><div class="grid" id="g1"></div></section>
@@ -66,49 +73,22 @@ footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin
 
 <div class="card rule"><h3>Правило № 4: изменение тона иероглифа 不 <span class="ml">(不的变调)</span></h3>
 <p>Отрицательная частица 不 произносится 4-м тоном, однако в том случае, если после этой отрицательной частицы следует слог, который также произносится 4-м тоном, тон 不 изменяется на 2-й (восходящий) тон.</p>
-<p class="zh">否定词“不”的第四声，如果不+第四声，那么不的音调应该变为第二声，即不4+4会变为不2+4</p>
 <div class="note">不 + 4-й тон → <b data-p="bú"></b> (2-й тон)</div>
-<p>Например:</p>
-<div class="ex"><span>不是</span><span class="p" data-p="[bù shì] → [bú shì]"></span><span></span></div>
-<div class="ex"><span>不要</span><span class="p" data-p="[bù yào] → [bú yào]"></span><span></span></div>
-<div class="ex"><span>不去</span><span class="p" data-p="[bù qù] → [bú qù]"></span><span></span></div>
-<p>В остальных случаях (если после 不 находится иероглиф, который произносится 1, 2 или 3 тоном) тон 不 не изменяется:</p>
-<p class="zh">如果不的后面是第一声、第二声、第三声，那么不的声调不变。即不4+1/2/3不变。</p>
-<div class="ex"><span>不想</span><span class="p" data-p="[bù xiǎng]"></span><span class="r">не хочу</span></div>
-<div class="ex"><span>不来</span><span class="p" data-p="[bù lái]"></span><span class="r">не приду</span></div></div>
+<div class="ex"><span>不是</span><span class="p" data-p="[bù shì] → [bú shì]"></span></div>
+<div class="ex"><span>不要</span><span class="p" data-p="[bù yào] → [bú yào]"></span></div>
+<div class="ex"><span>不去</span><span class="p" data-p="[bù qù] → [bú qù]"></span></div>
+</div>
 
 <div class="card rule"><h3>Правило № 5: изменение тона иероглифа 一 <span class="p" data-p="(yī)"></span> <span class="ml">(一的变调)</span></h3>
 <p>Основной тон иероглифа 一 (yī) является первым. Однако именно в первом тоне «一» произносится при изолированном произнесении в качестве порядкового числительного.</p>
-<p class="zh">汉字一的声调为第一声，当一为序数词时，发自己的原始第一声。</p>
-<p>Например:</p>
-<div class="ex"><span>第一课</span><span class="p" data-p="dì yī kè"></span><span class="r">первый урок</span></div>
-<div class="ex"><span>十一个人</span><span class="p" data-p="shí yī gè rén"></span><span class="r">одиннадцать человек</span></div>
-
-<div class="note"><b>一 + 1, 2, 3 тон → 4-й тон</b><br>Если после «一» непосредственно следует слог первого, второго или третьего тона, то «一» произносится четвертым тоном.</div>
-<p class="zh">如果一后面是+第二声，第三声，那么一应该变为第四声。</p>
+<div class="note"><b>一 + 1, 2, 3 тон → 4-й тон</b></div>
 <div class="ex"><span>一天</span><span class="p" data-p="yī tiān – yì tiān"></span><span class="r">один день</span></div>
-<div class="ex"><span>一瓶</span><span class="p" data-p="yī píng – yì píng"></span><span class="r">одна бутылка</span></div>
-<div class="ex"><span>一种</span><span class="p" data-p="yī zhǒng – yì zhǒng"></span><span class="r">один сорт/вид</span></div>
-
-<div class="note"><b>一 + 4-й тон → 2-й тон</b> (yī + 4-й тон = yí)<br>Если после «一» идет слог с четвертым тоном, то «一» произносится вторым тоном.</div>
-<p class="zh">如果一+第四声，那么一应该变为第二声。</p>
+<div class="note"><b>一 + 4-й тон → 2-й тон</b> (yī + 4-й тон = yí)</div>
 <div class="ex"><span>一个</span><span class="p" data-p="yī gè – yí gè"></span><span class="r">одна штука</span></div>
-<div class="ex"><span>一遍</span><span class="p" data-p="yī biàn – yí biàn"></span><span class="r">одни раз</span></div>
-<div class="ex"><span>一次</span><span class="p" data-p="yī cì – yí cì"></span><span class="r">один раз</span></div>
-
-<p>Однако в том случае, если мы называем числительное, тон иероглифа 一 не меняется.</p>
-<p class="zh">当时在下列情况中，一作为数字或者序数词，不用改变其声调。</p>
-<div class="ex"><span>第一课</span><span class="p" data-p="[dì yī kè]"></span><span class="r">первый урок</span></div>
-<div class="ex"><span>十一个人</span><span class="p" data-p="[shí yī gè rén]"></span><span class="r">одиннадцать человек</span></div>
-
-<div class="note"><b>Номера телефонов</b><br>Кроме того, когда 一 используется в качестве номера мобильного телефона или домашнего номера, читается не yi, а yao.</div>
-<p class="zh">除此以外，一在作为手机号或者门牌号的时候，不读一，而读 yao。</p>
-<p>Например:</p>
+<div class="note"><b>Номера телефонов</b> (читается yao)</div>
 <div class="phone">13917264636</div>
-<div class="phone">一三九一七二六四六三六</div>
 <div class="phone" data-p="yāo sān jiǔ yāo qī èr liù sì liù sān liù"></div>
-<div class="note">Обратите внимание, что в транскрипции изменения тонов не отображаются, поэтому в учебниках вы увидите исходные тоны каждого слога, и изменять их согласно правилам вам предстоит самостоятельно!</div>
-<p class="zh">需要注意：声调的变化不适用书写规则，意思…</p></div>
+</div>
 </section>
 
 <section id="s5"><h2>食物 <small>еда и напитки</small></h2><div class="card" id="food"></div><div class="grid" id="g5"></div></section>
@@ -116,6 +96,7 @@ footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin
 <section id="s7"><h2>动词 <small>глаголы и слова места</small></h2><div class="card" id="vb"></div></section>
 <footer>Цвет слога = его тон</footer>
 </main>
+
 <script>
 var T={ā:1,ē:1,ī:1,ō:1,ū:1,ǖ:1,á:2,é:2,í:2,ó:2,ú:2,ǘ:2,ǎ:3,ě:3,ǐ:3,ǒ:3,ǔ:3,ǚ:3,à:4,è:4,ì:4,ò:4,ù:4,ǜ:4};
 function col(s){return s.replace(/[^\s\[\]\(\)\/–→{},.]+/g,function(w){for(var c of w){if(T[c])return '<span class="t'+T[c]+'">'+w+'</span>'}return w})}
@@ -127,15 +108,14 @@ fill('g1',[['是','shì','связка есть; быть; являться'],['
 document.getElementById('qa').innerHTML=
 '<div class="q"><div class="h">你是哪国人?</div><div class="p">'+col('nǐ shì nǎ guó rén ?')+'</div><div class="r">Ты из какой страны?</div></div>'+
 '<div class="a"><div class="h">我是俄罗斯人。</div><div class="p">'+col('wǒ shì é luó sī rén .')+'</div><div class="r">Я из России.</div></div>'+
-'<div class="q"><div class="h">你从哪儿/里来?</div><div class="p">'+col('nǐ cóng nǎr ér / lǐ lái ?')+'</div><div class="r">От куда ты приехал?</div></div>'+
+'<div class="q"><div class="h">你从哪儿/里来?</div><div class="p">'+col('nǐ cóng nǎr ér / lǐ lái ?')+'</div><div class="r">Откуда ты приехал?</div></div>'+
 '<div class="a"><div class="h">我从米阿斯来。</div><div class="p">'+col('wǒ cóng mǐ ā sī lái .')+'</div><div class="r">Я приехал из Миасса.</div></div>'+
-'<div class="q"><div class="h">你叫什么?</div><div class="p">'+col('nǐ jiào shén me ?')+'</div><div class="r">Как тебя зовут?</div></div>'+
-'<div class="q"><div class="h">你几岁?</div><div class="p">'+col('nǐ jǐ suì ?')+'</div><div class="r">Сколько тебе лет?</div></div>'+
-'<div class="q"><div class="h">你是哪国人? / 你从哪儿/里来?</div><div class="p">'+col('nǐ shì nǎ guó rén ? / nǐ cóng nǎr ér / lǐ lái ?')+'</div><div class="r">Ты из какой страны? / От куда ты приехал?</div></div>'+
 '<div class="a"><div class="h">车里雅宾斯克</div><div class="p">'+col('chē lǐ yǎ bīn sī kè')+'</div><div class="r">Челябинск</div></div>';
 fill('g3',[['俄罗斯','é luó sī','Россия'],['中国','zhōng guó','Китай'],['白俄罗斯','bái é luó sī','Беларусь'],['美国','měi guó','США'],['英国','yīng guó','Великобритания'],['法国','fǎ guó','Франция'],['加拿大','jiā ná dà','Канада'],['韩国','hán guó','Южная Корея'],['日本','rì běn','Япония'],['新加坡','xīn jiā pō','Сингапур'],['马来西亚','mǎ lái xī yà','Малайзия'],['澳大利亚','ào dà lì yà','Австралия']],w);
-fill('food',[['包子','bāo zi','баоцзы — пища, фаршированная овощами, мясом, морепродуктами или сахаром, чаще всего из ворсистого теста для кожи, завернутая и приготовленная на пару.'],['饺子','jiǎo zi','Пельмени \\ Вареники мини'],['面条','miàn tiáo','лапша'],['馒头','mán tou','манду — пищевой продукт, приготовленный на пару из ферментированной муки, обычно круглый сверху и плоский снизу, без начинки.'],['米饭','mǐ fàn','рис']],row);
+fill('food',[['包子','bāo zi','баоцзы'],['饺子','jiǎo zi','пельмени'],['面条','miàn tiáo','лапша'],['馒头','mán tou','паровые хлебцы'],['米饭','mǐ fàn','рис']],row);
 fill('g5',[['水','shuǐ','Вода'],['茶','chá','Чай'],['牛奶','niú nǎi','Молоко'],['咖啡','kā fēi','Кофе'],['可乐','kě lè','Кока-кола'],['果汁','guǒ zhī','Сок'],['汽水','qì shuǐ','Газировка'],['草莓','cǎo méi','Клубника'],['西瓜','xī guā','Арбуз'],['苹果','píng guǒ','Яблоко'],['葡萄','pú táo','Виноград'],['橙子','chéng zi','Апельсин'],['香蕉','xiāng jiāo','Банан'],['橘子','jú zi','Мандарин']],w);
-fill('g6',[['邮局','yóu jú','почта'],['学校','xué xiào','Школы'],['银行','yín háng','Банки'],['博物馆','bó wù guǎn','Музеи'],['公交车站','gōng jiāo chē zhàn','Автобусные остановки'],['公园','gōng yuán','Парки'],['商店','shāng diàn','Магазины'],['电影院','diàn yǐng yuàn','Кинотеатр'],['图书馆','tú shū guǎn','Библиотека'],['大学','dà xué','ВУЗ'],['餐厅','cān tīng','Рестораны, столовая (в доме)'],['饭馆','fàn guǎn','кафе; столовая; ресторан'],['酒店','jiǔ diàn','Отели'],['音乐厅','yīn yuè tīng','Концертные залы'],['剧院','jù yuàn','Театр'],['药店','yào diàn','Аптека'],['购物中心','gòuwù zhōngxīn','торговый центр'],['医院','yīyuàn','больница, госпиталь, лазарет'],['市场','shìchǎng','рынок, базар'],['教堂','jiàotáng','храм; церковь; костёл; кирха; мечеть']],w);
-fill('vb',[['去','qù','идти, проходить'],['哪儿 / 哪里','nǎr / nǎlǐ','где, куда'],['在','zài','находится, в, на']],row);
-</script></body></html>
+fill('g6',[['邮局','yóu jú','почта'],['学校','xué xiào','Школы'],['银行','yín háng','Банки'],['博物馆','bó wù guǎn','Музеи'],['公交车站','gōng jiāo chē zhàn','Остановки'],['公园','gōng yuán','Парки'],['商店','shāng diàn','Магазины'],['电影院','diàn yǐng yuàn','Кинотеатр'],['图书馆','tú shū guǎn','Библиотека'],['大学','dà xué','ВУЗ'],['餐厅','cān tīng','Ресторан'],['饭馆','fàn guǎn','Кафе'],['酒店','jiǔ diàn','Отели'],['药店','yào diàn','Аптека'],['医院','yīyuàn','Больница']],w);
+fill('vb',[['去','qù','идти, проходить'],['哪儿 / 哪里','nǎr / nǎlǐ','где, куда'],['在','zài','находиться, в, на']],row);
+</script>
+</body>
+</html>
