@@ -99,7 +99,7 @@ const DL=[
 ["In a restaurant",[["PETER","What would you like to eat, Edith?",A],["EDITH","A meat sandwich.",B],["PETER","Jean, would you like a meat sandwich or a cheese sandwich?",A],["JEAN","A cheese sandwich please, Peter.",B],["WAITER","Good evening.",B],["PETER","Good evening. We'll have one meat sandwich and two cheese sandwiches.",A],["EDITH","And three teas, please.",B],["WAITER","One meat sandwich, two cheese sandwiches and three teas.",B]]],
 ["An expensive holiday",[["EDDIE","Hello Ellen. Hello Ben. Hello Jenny.",A],["BEN","Hello Eddie. Have a cigarette.",B],["EDDIE","Thanks, Ben.",A],["ELLEN","Help yourself to whisky.",B],["JENNY","It's on the shelf.",A],["BEN","How did you spend your holiday, Eddie?",B],["EDDIE","I went to America, with a friend.",A],["EVERYBODY","Well!",B],["ELLEN","We are all jealous.",A],["BEN","Was it expensive?",B],["EDDIE","Yes, very. I've spent everything.",A],["JENNY","Haven't you any money left?",B],["EDDIE","Yes, Jenny. Ten pence!",A]]],
 ["An interesting film",[["BILL","Is Tim in?",B],["LYN","Is he coming to the pictures?",A],["MRS. SMITH","Tim’s ill.",B],["BILL","Here he is! Hello, Tim.",A],["TIM","Hello, Bill.",B],["LYN","Are you ill, Tim?",A],["TIM","Is it an interesting film?",B],["LYN","It’s “Big Jim and the Indians”.",A],["BILL","And it begins in six minutes.",B],["MRS. SMITH","If you’re ill, Tim…",A],["TIM","Quick! Or we’ll miss the beginning of the film!",B]]],
-["A bad hijacker",[["HOSTESS BRADLEY","Alice! Perhaps that passenger is a hijacker!",A],["HOSTESS ALLEN","Which passenger, Anne? That sad man with the camera? He’s wearing black slacks and a jacket.",B],["HOSTESS BRADLEY","No. That fat lady with the big black handbag in her left hand.",A],["HOSTESS ALLEN","Is she standing next to the lavatory?",B],["HOSTESS BRADLEY","Yes. She’s travelling to Amsterdam.",A],["HOSTESS ALLEN","You’re mad, Anne, I don’t understand. You see, when she went into the lavatory, she didn’t have that handbag in her hand, and now she’s…",B],["FAT LADY","EVERYBODY STAND! I’m a hijacker. And in this handbag, I have a…",A],["BAG","BANG!!!",A]]]];
+["A bad hijacker",[["HOSTESS BRADLEY","Alice! Perhaps that passenger is a hijacker!",A],["HOSTESS ALLEN","Which passenger, Anne? That sad man with the camera? He’s wearing black slacks and a jacket.",B],["HOSTESS BRADLEY","No. That fat lady with the big black handbag in her left hand.",A],["HOSTESS ALLEN","Is she standing next to the lavatory?",B],["HOSTESS ALLEN","You’re mad, Anne, I don’t understand. You see, when she went into the lavatory, she didn’t have that handbag in her hand, and now she’s…",B],["FAT LADY","EVERYBODY STAND! I’m a hijacker. And in this handbag, I have a…",A],["BAG","BANG!!!",A]]]];
 
 $("#d").innerHTML='<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
 DL.map((d,i)=>`<h2><i>${i+1}</i>${d[0]}</h2>`+d[1].map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")).join("");
@@ -218,7 +218,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
   window.scrollTo(0,0);
 });
 
-window.onload = loadProgressFromCloud;
+document.addEventListener('DOMContentLoaded', loadProgressFromCloud);
 </script>
 </body>
 </html>
