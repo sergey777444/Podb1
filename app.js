@@ -77,13 +77,12 @@
     async get(key) {
       await ready;
       if (!window.currentUser) return null;
-      const { data, error } = await sb.from('user_data')
+      const { data } = await sb.from('user_data')
         .select('value')
         .eq('user_id', window.currentUser.id)
         .eq('key', key)
         .maybeSingle();
-      if (error || !data) return null;
-      return data.value;
+      return data ? data.value : null;
     },
     async set(key, value) {
       await ready;
@@ -101,9 +100,4 @@
   const css = document.createElement('style');
   css.textContent = `
   #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#080b14;color:#f4f7ff;font:15px system-ui,sans-serif;padding:16px}
-  #authGate form{width:min(360px,100%);background:#131928;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:26px;display:grid;gap:12px}
-  #authGate h2{margin:0 0 4px;font-size:22px}
-  #authGate input{padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font:inherit}
-  #authGate button{padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;font:inherit;cursor:pointer}
-  #authErr{color:#ff6878;font-size:13px;min-height:16px}
-  #authBar{position:fixed;top:8px;right:8px;z-index:9999;display:flex;gap:6px;
+  #authGate form
