@@ -127,16 +127,10 @@
     }
     const bar = document.createElement('div');
     bar.id = 'authBar';
-    bar.innerHTML = `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bPw">🔑</button><button id="bOut">Выйти</button>`;
+    bar.innerHTML = `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bOut">Выйти</button>`;
     bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
     document.body.appendChild(bar);
     bar.querySelector('#bOut').onclick = async () => { await sb.auth.signOut(); location.reload(); };
-    bar.querySelector('#bPw').onclick = async () => {
-      const pw = prompt('Новый пароль (минимум 6 символов):');
-      if (!pw) return;
-      const { error } = await sb.auth.updateUser({ password: pw });
-      alert(error ? 'Не удалось: ' + error.message : 'Пароль изменён');
-    };
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
   }
