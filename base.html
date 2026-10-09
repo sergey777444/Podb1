@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js"></script>
+<title>База знаний — ФЛ1-ПОДб-11</title>
+<style>
+:root{--bg:#080b14;--card:rgba(19,25,40,.78);--card-h:rgba(25,32,51,.9);--text:#f4f7ff;--text2:#aeb8cc;--muted:#78839a;--border:rgba(255,255,255,.09);--accent:#7c6cff;--accent3:#8b5cf6;--success:#48d597;--shadow:0 20px 70px rgba(0,0,0,.35);--rl:20px}
+[data-theme="light"]{--bg:#f3f6fb;--card:rgba(255,255,255,.84);--card-h:rgba(255,255,255,.98);--text:#172033;--text2:#5d687b;--muted:#7c8799;--border:rgba(20,30,50,.09);--accent:#6557e8;--accent3:#7848dc;--shadow:0 20px 60px rgba(40,50,80,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{min-height:100vh;font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(124,108,255,.17),transparent 28%),radial-gradient(circle at 90% 20%,rgba(69,202,255,.12),transparent 25%),var(--bg)}
+a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}
+.container{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:30px 0 60px}
+.hero{padding:34px;margin-bottom:22px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(124,108,255,.14),rgba(69,202,255,.05) 45%,var(--card));box-shadow:var(--shadow)}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(124,108,255,.13);border:1px solid rgba(124,108,255,.24);color:#bdb6ff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+[data-theme="light"] .badge{color:#5c50c9}
+.hero h1{margin-top:14px;font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.045em}
+.hero-subtitle{margin-top:12px;color:var(--text2);font-size:16px;line-height:1.6;max-width:650px}
+.theme-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 15px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.05)}
+.tools{position:sticky;top:12px;z-index:100;margin-bottom:24px;padding:14px;border:1px solid var(--border);border-radius:20px;background:rgba(10,14,25,.85);backdrop-filter:blur(22px)}
+[data-theme="light"] .tools{background:rgba(255,255,255,.88)}
+.search-row{display:flex;gap:10px}
+.search-box{position:relative;flex:1}
+.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:.7;pointer-events:none}
+#search{width:100%;height:50px;padding:0 15px 0 45px;border:1px solid var(--border);border-radius:14px;outline:none;color:var(--text);background:rgba(255,255,255,.045)}
+#search:focus{border-color:rgba(124,108,255,.65);box-shadow:0 0 0 4px rgba(124,108,255,.11)}
+.clear-btn{width:50px;height:50px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.045);font-size:20px}
+.filters{display:flex;gap:7px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filter{flex-shrink:0;padding:8px 13px;border:1px solid var(--border);border-radius:999px;color:var(--text2);background:transparent;font-size:12px;font-weight:700}
+.filter:hover,.filter.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent3));border-color:transparent}
+.results{margin-top:10px;padding-left:3px;color:var(--muted);font-size:12px}
+.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin:32px 3px 14px}
+.section-title h2{font-size:23px;letter-spacing:-.025em}
+.section-title span{color:var(--muted);font-size:12px}
+.subjects{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.subject{--c:#7c6cff;position:relative;overflow:hidden;padding:22px;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:0 12px 40px rgba(0,0,0,.12)}
+.subject::before{content:"";position:absolute;width:130px;height:130px;top:-75px;right:-55px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 30%,transparent),transparent 70%)}
+.subject:hover{background:var(--card-h);border-color:color-mix(in srgb,var(--c) 38%,transparent)}
+.subject.hidden{display:none}
+.subject-head{position:relative;display:flex;align-items:flex-start;gap:15px}
+.subject-icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:14px;background:color-mix(in srgb,var(--c) 13%,transparent);border:1px solid color-mix(in srgb,var(--c) 24%,transparent);font-size:22px}
+.subject-title h3{font-size:19px;line-height:1.2}
+.teacher{margin-top:5px;color:var(--text2);font-size:12px}
+.subject-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:17px}
+.link-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;color:var(--text2);background:rgba(255,255,255,.045);border:1px solid var(--border);font-size:11px;font-weight:700}
+.link-pill:hover{color:var(--text);background:color-mix(in srgb,var(--c) 10%,transparent)}
+.info-list{display:grid;gap:8px;margin-top:18px}
+.info-item{display:flex;gap:9px;padding:10px 11px;border-radius:11px;background:rgba(255,255,255,.025);color:var(--text2);font-size:13px;line-height:1.5}
+.info-item strong{color:var(--text)}
+.info-item::before{content:"•";flex-shrink:0;color:var(--c);font-size:17px;line-height:1}
+.alert{display:flex;gap:13px;align-items:flex-start;margin:20px 0;padding:17px;border-radius:17px;border:1px solid rgba(255,189,89,.2);background:rgba(255,189,89,.06)}
+.alert-icon{font-size:21px}
+.alert-content{color:var(--text2);font-size:13px;line-height:1.6}
+.alert-content strong{color:var(--text)}
+.table-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:var(--shadow)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th,td{padding:14px 17px;text-align:left;border-bottom:1px solid var(--border)}
+th{color:var(--muted);background:rgba(255,255,255,.025);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+td{color:var(--text2);font-size:13px}
+td:first-child{color:var(--text);font-weight:800}
+tr:last-child td{border-bottom:none}
+.break{color:var(--success);font-weight:700}
+.accordion{margin-top:18px;border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;background:var(--card)}
+.accordion-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:19px 21px;border:none;color:var(--text);background:transparent;text-align:left;font-weight:800}
+.chevron{transition:transform .25s}
+.accordion.open .chevron{transform:rotate(180deg)}
+.accordion-content{display:none;padding:0 21px 21px}
+.accordion.open .accordion-content{display:block}
+footer{margin-top:45px;padding-top:22px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:12px;line-height:1.7}
+footer strong{color:var(--text2)}
+.empty{display:none;padding:50px 20px;text-align:center;color:var(--muted)}
+.empty.show{display:block}
+@media(max-width:800px){.container{width:min(100% - 20px,700px);padding-top:15px}.hero{padding:24px 20px}.hero h1{font-size:32px}.subjects{grid-template-columns:1fr}.tools{top:7px}}
+@media(max-width:520px){.theme-btn span{display:none}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
+        <h1>База знаний</h1>
+        <p class="hero-subtitle">Учебные материалы, преподаватели, ссылки, правила и полезная информация группы.</p>
+      </div>
+      <button type="button" class="theme-btn" onclick="toggleTheme()" aria-label="Переключить тему">
+        <span id="themeIcon">☀️</span><span id="themeText">Светлая</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="tools">
+    <div class="search-row">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input id="search" type="search" placeholder="Поиск по предметам, преподавателям, правилам..." autocomplete="off" oninput="filterAll()">
+      </div>
+      <button type="button" class="clear-btn" onclick="clearSearch()" aria-label="Очистить поиск">×</button>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="results" id="results">Показаны все предметы</div>
+  </section>
+
+  <div class="section-title"><h2>📚 Предметы</h2><span>Учебная информация</span></div>
+  <main class="subjects" id="subjects"></main>
+
+  <div class="empty" id="empty"><div style="font-size:38px">🔍</div><strong>Ничего не найдено</strong><p>Попробуйте изменить запрос или выбрать другой предмет.</p></div>
+
+  <div class="section-title"><h2>📌 Общая информация</h2></div>
+  <div class="alert"><div class="alert-icon">📄</div><div class="alert-content"><strong>Справки</strong><br>Для большинства предметов: показываем справку преподавателю, затем относим её в деканат.</div></div>
+  <div class="alert"><div class="alert-icon">⚠️</div><div class="alert-content"><strong>Пропуски и опоздания</strong><br>Если пропущена пара, было опоздание или плохое самочувствие — заранее предупреждаем преподавателя или старосту.</div></div>
+  <div class="alert"><div class="alert-icon">🏃</div><div class="alert-content"><strong>Физкультура</strong><br>Справки отдавать старосте лично или отправлять фото (лучше в ВК либо в ТГ).</div></div>
+
+  <div class="section-title"><h2>🔔 Расписание звонков</h2><span>Время занятий</span></div>
+  <div class="table-card"><div class="table-wrap">
+    <table>
+      <thead><tr><th>Пара</th><th>Время</th><th>Перерыв</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>08:00 — 09:30</td><td>10 мин</td></tr>
+        <tr><td>2</td><td>09:40 — 11:10</td><td>10 мин</td></tr>
+        <tr><td>3</td><td>11:20 — 12:50</td><td class="break">25 мин · Обед</td></tr>
+        <tr><td>4</td><td>13:15 — 14:45</td><td>15 мин</td></tr>
+        <tr><td>5</td><td>15:00 — 16:30</td><td>10 мин</td></tr>
+        <tr><td>6</td><td>16:40 — 18:10</td><td>10 мин</td></tr>
+        <tr><td>7</td><td>18:20 — 19:50</td><td>5 мин</td></tr>
+        <tr><td>8</td><td>19:55 — 21:25</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div></div>
+
+  <div class="section-title"><h2>🔗 Полезные ссылки</h2></div>
+  <div class="subjects" id="usefulLinks"></div>
+
+  <div class="section-title"><h2>👥 Данные группы</h2></div>
+  <div class="table-card" style="padding:21px"><div class="info-list" style="margin-top:0">
+    <div class="info-item"><strong>Группа:</strong> ФЛ1-ПОДб-11</div>
+    <div class="info-item"><strong>Общая почта:</strong> podb-11@mail.ru</div>
+  </div></div>
+
+  <footer>
+    <strong>ФЛ1-ПОДб-11</strong><br>
+    База знаний группы · Учебный год 2026<br>
+    Сделано для удобного доступа к учебной информации.
+  </footer>
+</div>
+
+<script>
+  const html = document.documentElement;
+  html.dataset.theme = localStorage.getItem("user-theme") || "dark";
+  updateThemeButton();
+  function toggleTheme() {
+    const next = html.dataset.theme === "dark" ? "light" : "dark";
+    html.dataset.theme = next;
+    localStorage.setItem("user-theme", next);
+    updateThemeButton();
+  }
+  function updateThemeButton() {
+    const dark = html.dataset.theme === "dark";
+    document.getElementById("themeIcon").textContent = dark ? "☀️" : "🌙";
+    document.getElementById("themeText").textContent = dark ? "Светлая" : "Тёмная";
+  }
+
+  /* ---------- ДАННЫЕ ПРЕДМЕТОВ ---------- */
+  const M = "https://moodle.uio.csu.ru/course/view.php?id=";
+  const mail = a => ["✉️ Почта", "mailto:" + a];
+  const moodle = id => ["🎓 Moodle ID: " + id, M + id];
+  const SUBJECTS = [
+    { tag: "История", c: "#efb04d", icon: "🏛️", name: "История", teacher: "Хлызов Владислав Евгеньевич",
+      links: [mail("hlyzov.vlad@mail.ru"), moodle(6285), ["▶️ Видеолекции", "https://disk.yandex.ru/d/koOjAB9Dauvezw"]],
+      info: ["На занятиях необходимо вести <strong>рукописные записи</strong>.", "Конспекты лучше оформлять сразу после пары."] },
+    { tag: "Фонетика", c: "#ec6b9e", icon: "🎧", name: "Практическая фонетика", teacher: "Суслова Оксана Валентиновна",
+      links: [mail("suslovaoksana@yandex.ru"), moodle(61), ["📊 Электронный журнал", "https://disk.yandex.ru/i/MDLnf1Esxjgk2A"], ["🎧 Аудиозаписи", "https://drive.google.com/drive/folders/15X96cIIRqMda_BPmk05V0aCZZTrI_eQz?usp=sharing"]],
+      info: ["Следить за баллами и посещаемостью.", "Использовать рекомендованный учебник.", "Хранить аудиоматериалы и переводы.", "При необходимости использовать словари.", "При пропуске заранее сообщить преподавателю."] },
+    { tag: "Грамматика", c: "#59a9ff", icon: "🔤", name: "Английский — грамматика", teacher: "Финогеева Анна Александровна",
+      links: [mail("fin0geevaa@yandex.ru"), moodle(1463), ["📊 Электронный журнал", "https://disk.yandex.ru/i/KUASlO-sN3dczA"]],
+      info: ["Выполнять задания в Moodle.", "Следить за баллами.", "Не забывать про домашние задания."] },
+    { tag: "Латынь", c: "#b98cff", icon: "🏺", name: "Латынь", teacher: "Учебные материалы",
+      links: [moodle(4365), ["📖 Учебник в Telegram", "https://t.me/c/4307160323/1/965"]],
+      info: ["Использовать учебник и материалы курса.", "Повторять лексику и грамматику."] },
+    { tag: "ТМК", c: "#ff7979", icon: "🧠", name: "ТМК", teacher: "Сотникова Елизавета Сергеевна",
+      links: [moodle(1280)],
+      info: ["Следить за заданиями в Moodle.", "Сохранять материалы занятий."] },
+    { tag: "ТЦО", c: "#45d4bd", icon: "💻", name: "ТЦО", teacher: "Учебные материалы",
+      links: [moodle(7268)],
+      info: ["Все задания проверять в Moodle."] },
+    { tag: "Английский", c: "#6e9bff", icon: "🇬🇧", name: "Английский — устный", teacher: "Шкода Юлия Дмитриевна",
+      links: [mail("shkoda-julia@mail.ru"), moodle(6654), ["📘 Outcomes UI", "https://disk.yandex.ru/i/D0VgVFNFnUeD0g"], ["📙 Vocabulary Builder", "https://moodle.uio.csu.ru/mod/resource/view.php?id=225888"], ["Multitran", "https://www.multitran.com/"], ["Oxford", "https://www.oxfordlearnersdictionaries.com/"], ["Cambridge", "https://dictionary.cambridge.org/"]],
+      info: ["Следить за заданиями в Moodle.", "Смотреть фильмы и материалы, если они указаны в задании.", "Регулярно повторять лексику.", "Следить за оценками и пропусками."] },
+    { tag: "Китайский", c: "#ff6d6d", icon: "🀄", name: "Китайский язык", teacher: "Циберная Олеся Федоровна",
+      links: [mail("igoshevaolesya@gmail.com"), ["📂 Пособия", "https://disk.yandex.ru/d/AbFWRS8RDDAkFg"], ["📕 Developing Chinese", "https://psv4.userapi.com/s/v1/d/Ln2XaimRx0tzhBFSTwvjTpj8L7FjODVOz_jHN8ENn-sf_XKA72xOlCcyNIcjBTAG2RMGhfCfwWRuueOr8zK-i_L0YZcGARC8mgfp-t6ksSiaXwB8pN7Gyg/developing-chinese-elementary-comprehensive-course.pdf"], ["🔎 BKRS", "https://bkrs.info/"], ["🤖 DeepSeek", "https://chat.deepseek.com/"]],
+      info: ["Самостоятельно повторять иероглифы.", "Учить новые слова и конструкции.", "Регулярно работать с учебником.", "Использовать словари для проверки значений."] },
+    { tag: "ОБЖ", c: "#62d68c", icon: "🛡️", name: "ОБЖ", teacher: "Ahmirova Elvina",
+      links: [mail("elvina.ahmirova@mail.ru")],
+      info: ["Следить за заданиями и сроками сдачи.", "При пропусках заранее сообщать преподавателю."] },
+    { tag: "СТПОИ", c: "#d394ff", icon: "🖥️", name: "СТПОИ", teacher: "Олизько Наталья Сергеевна",
+      links: [moodle(1944)],
+      info: ["Следить за заданиями в Moodle.", "Проверять сроки сдачи работ."],
+      tips: ["Не перегружать слайды текстом.", "Использовать понятную структуру.", "Проверять орфографию.", "Перед сдачей проверить все ссылки."] }
+  ];
+
+  const USEFUL = [
+    { c: "#7c6cff", icon: "🗺️", name: "Карта ЧелГУ", teacher: "Навигация по университету", link: ["Открыть карту →", "http://map.csu.ru/"] },
+    { c: "#7c6cff", icon: "📅", name: "Расписание", teacher: "Расписание занятий", link: ["Открыть расписание →", "https://csu.noteven.dev/"] }
+  ];
+
+  function pill([label, href]) {
+    const ext = href.startsWith("mailto:") ? "" : ' target="_blank" rel="noopener"';
+    return `<a class="link-pill" href="${href}"${ext}>${label}</a>`;
+  }
+
+  function subjectCard(s) {
+    const tips = s.tips ? `
+      <div class="accordion">
+        <button type="button" class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+          <span>📋 Советы по презентации</span><span class="chevron">↓</span>
+        </button>
+        <div class="accordion-content"><div class="info-list">${s.tips.map(t => `<div class="info-item">${t}</div>`).join("")}</div></div>
+      </div>` : "";
+    return `<article class="subject" style="--c:${s.c}" data-name="${s.tag} ${s.name}">
+      <div class="subject-head">
+        <div class="subject-icon">${s.icon}</div>
+        <div class="subject-title"><h3>${s.name}</h3><div class="teacher">${s.teacher}</div></div>
+      </div>
+      <div class="subject-links">${s.links.map(pill).join("")}</div>
+      <div class="info-list">${s.info.map(t => `<div class="info-item">${t}</div>`).join("")}</div>
+      ${tips}
+    </article>`;
+  }
+
+  document.getElementById("subjects").innerHTML = SUBJECTS.map(subjectCard).join("");
+  document.getElementById("usefulLinks").innerHTML = USEFUL.map(u => `
+    <article class="subject" style="--c:${u.c}">
+      <div class="subject-head">
+        <div class="subject-icon">${u.icon}</div>
+        <div class="subject-title"><h3>${u.name}</h3><div class="teacher">${u.teacher}</div></div>
+      </div>
+      <div class="subject-links">${pill(u.link)}</div>
+    </article>`).join("");
+  document.getElementById("filters").innerHTML =
+    ['<button type="button" class="filter active" onclick="filterByTag(\'Все\', this)">Все</button>']
+      .concat(SUBJECTS.map(s => `<button type="button" class="filter" onclick="filterByTag('${s.tag}', this)">${s.tag}</button>`)).join("");
+
+  /* ---------- ПОИСК ---------- */
+  function filterAll() {
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll("#subjects .subject").forEach(card => {
+      const hit = !q || (card.dataset.name + " " + card.innerText).toLowerCase().includes(q);
+      card.classList.toggle("hidden", !hit);
+      if (hit) visible++;
+    });
+    document.getElementById("empty").classList.toggle("show", visible === 0);
+    document.getElementById("results").textContent = q ? `Найдено предметов: ${visible}` : "Показаны все предметы";
+  }
+  function clearSearch() {
+    const input = document.getElementById("search");
+    input.value = "";
+    document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
+    document.querySelector(".filter").classList.add("active");
+    filterAll();
+    input.focus();
+  }
+  function filterByTag(tag, btn) {
+    document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("search").value = tag === "Все" ? "" : tag;
+    filterAll();
+  }
+  document.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.code === "KeyK") { e.preventDefault(); document.getElementById("search").focus(); }
+    if (e.key === "Escape") clearSearch();
+  });
+</script>
+</body>
+</html>
