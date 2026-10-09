@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 <title>📚 Дневник ДЗ — ФЛ1-ПОДб-11</title>
 <script>
   if (localStorage.getItem('user-theme') === 'light') document.documentElement.removeAttribute('data-theme');
@@ -170,7 +170,7 @@ select.form-control option{background:var(--bg2);color:var(--text)}
       setTimeout(() => { status.innerText = ''; }, 2500);
     } catch (e) {
       console.error(e);
-      status.innerText = '❌ Ошибка сохранения (нужны права админа)';
+      status.innerText = '❌ Ошибка сохранения';
     }
   }
 
