@@ -141,6 +141,7 @@
     document.dispatchEvent(new Event('auth-ready'));
   }
 
+
   /* ---------- слова для карточек (копия WD из phonetics.html — при правке менять в обоих местах) ---------- */
   const PH_WORDS = {
     'iː': ['Edith','evening','easy','Jean','cheese','see','tea','pea','tree','eating','Peter','meat','please'],
@@ -149,19 +150,10 @@
     'æ': ['apple','perhaps','passenger','hijacker','black','Miss Bradley','Anne','Amsterdam','Alice','Miss Allen','slacks','camera','lavatory','travelling','handbag','left hand']
   };
 
-  /* ---------- стили навигации и окна прогресса ---------- */
+  /* ---------- стили окна прогресса и отступ под нижнюю панель ---------- */
   const css2 = document.createElement('style');
   css2.textContent = `
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
-  #siteNav{position:fixed;top:auto;left:0;right:0;bottom:0;margin:0;max-width:none;height:auto;z-index:9998;display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-  #siteNav .in{display:flex;gap:2px;width:min(640px,100%)}
-  #siteNav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:#9aa5bd;text-decoration:none;font-size:10px;font-weight:600;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent}
-  #siteNav a b{font-size:20px;line-height:1;font-weight:400}
-  #siteNav a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #siteNav a.on{color:#fff;background:rgba(124,108,255,.35)}
-  [data-theme="light"] #siteNav{background:rgba(255,255,255,.94);border-top-color:rgba(20,30,50,.12)}
-  [data-theme="light"] #siteNav a{color:#5d687b}
-  [data-theme="light"] #siteNav a.on{color:#3b2fb0;background:rgba(124,108,255,.18)}
   #prgBack{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
   #prgBox{width:min(560px,100%);max-height:88vh;overflow:auto;background:#131928;color:#f4f7ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px))}
   @media(min-width:600px){#prgBack{align-items:center}#prgBox{border-radius:22px}}
@@ -180,7 +172,7 @@
   #prgBox .go{display:block;margin-top:20px;text-align:center;padding:13px;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;text-decoration:none}`;
   document.head.appendChild(css2);
 
-  /* ---------- навигация между страницами ---------- */
+  /* ---------- нижняя навигация (в Shadow DOM: стили страниц на неё не влияют) ---------- */
   const PAGES = [
     ['index.html', '🏠', 'Главная'],
     ['hw.html', '📚', 'ДЗ'],
@@ -189,17 +181,38 @@
     ['phonetics.html', '🔤', 'Фонетика'],
     ['china.html', '🀄', 'Китайский']
   ];
+  const NAV_CSS = `
+  :host{all:initial}
+  .wrap{display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+  .in{display:flex;align-items:flex-start;gap:2px;width:min(640px,100%)}
+  a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:#9aa5bd;text-decoration:none;font-size:10px;font-weight:600;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent}
+  a b{font-size:20px;line-height:1;font-weight:400}
+  a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  a.on{color:#fff;background:rgba(124,108,255,.35)}
+  .wrap.light{background:rgba(255,255,255,.94);border-top-color:rgba(20,30,50,.12)}
+  .wrap.light a{color:#5d687b}
+  .wrap.light a.on{color:#3b2fb0;background:rgba(124,108,255,.18)}`;
+
   function buildNav() {
     if (document.getElementById('siteNav')) return;
     let cur = location.pathname.split('/').pop();
     if (!cur) cur = 'index.html';
-    const nav = document.createElement('div');   // не <nav>: на страницах есть свои стили для тега nav
-    nav.id = 'siteNav';
-    nav.setAttribute('role', 'navigation');
-    nav.setAttribute('aria-label', 'Страницы сайта');
-    nav.innerHTML = '<div class="in">' + PAGES.map(([h, i, t]) =>
-      `<a href="${h}"${h === cur ? ' class="on" aria-current="page"' : ''}><b>${i}</b><span>${t}</span></a>`).join('') + '</div>';
-    document.body.appendChild(nav);
+    const host = document.createElement('div');
+    host.id = 'siteNav';
+    const hs = [['position', 'fixed'], ['left', '0'], ['right', '0'], ['bottom', '0'], ['top', 'auto'],
+      ['height', 'auto'], ['width', 'auto'], ['margin', '0'], ['padding', '0'], ['transform', 'none'],
+      ['display', 'block'], ['z-index', '9998']];
+    hs.forEach(([k, v]) => host.style.setProperty(k, v, 'important'));
+    const root = host.attachShadow({ mode: 'open' });
+    root.innerHTML = '<style>' + NAV_CSS + '</style><div class="wrap"><div class="in">' +
+      PAGES.map(([h, i, t]) =>
+        `<a href="${h}"${h === cur ? ' class="on" aria-current="page"' : ''}><b>${i}</b><span>${t}</span></a>`).join('') +
+      '</div></div>';
+    const wrap = root.querySelector('.wrap');
+    const syncTheme = () => wrap.classList.toggle('light', document.documentElement.getAttribute('data-theme') === 'light');
+    syncTheme();
+    new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    document.body.appendChild(host);
   }
   if (document.body) buildNav(); else document.addEventListener('DOMContentLoaded', buildNav);
 
