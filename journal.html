@@ -14,7 +14,7 @@
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
 .frame .wait{position:absolute;inset:0;display:grid;place-items:center;color:var(--soft);font-style:italic}
 .alt{position:absolute;inset:0;display:none;overflow:auto;padding:14px;text-align:center;background:var(--card)}
-.alt img{max-width:100%;height:auto;border:2px solid var(--line);border-radius:12px}
+.alt img{width:100%;max-width:1800px;height:auto;border:2px solid var(--line);border-radius:12px}
 .alt .big{margin:30px 0 8px;font:italic 800 22px var(--serif)}
 .alt p{color:var(--soft);font-size:14px;margin-bottom:16px}
 .sub{margin:2px 0 10px;color:var(--soft);font-size:13px}
@@ -88,14 +88,20 @@
       try {
         const r = await fetch(`${api}?public_key=${key}&preview_size=XXXL&preview_crop=false`);
         const d = await r.json();
-        if (d.sizes) d.sizes.forEach(s => s.url && cands.push(s.url));
-        if (d.preview) cands.push(d.preview);
+        const order = ['ORIGINAL', 'XXXL', 'XXL', 'XL', 'L', 'M'];
+        if (d.sizes) order.forEach(n => { const s = d.sizes.find(x => x.name === n); if (s && s.url) cands.push(s.url); });
         if (d.file) cands.push(d.file);
       } catch (e) {}
       try {
         const r = await fetch(`${api}/download?public_key=${key}`);
         const d = await r.json();
         if (d.href) cands.push(d.href);
+      } catch (e) {}
+      /* последний шанс — то, что отдаёт сервис как превью (может быть мелким) */
+      try {
+        const r = await fetch(`${api}?public_key=${key}`);
+        const d = await r.json();
+        if (d.preview) cands.push(d.preview);
       } catch (e) {}
       let ok = null;
       for (const u of cands) { ok = await tryLoad(u); if (ok) break; }
