@@ -305,7 +305,7 @@
     });
     /* гости не видят Базу и Конспекты — редирект если открыли напрямую */
     const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    if (page === 'base.html' || page === 'notes.html') {
+    if (page === 'base.html' || page === 'notes.html' || page === 'journal.html') {
       location.replace('index.html');
       return;
     }
@@ -451,6 +451,7 @@
   const PAGES_ALL = [
     ['index.html', '🏠', 'Главная'],
     ['hw.html', '📚', 'ДЗ'],
+    ['journal.html', '📓', 'Журнал'],
     ['notes.html', '📖', 'Конспекты'],
     ['base.html', '🗂️', 'База'],
     ['phonetics.html', '🔤', 'Фонетика'],
@@ -458,7 +459,7 @@
     ['china.html', '🀄', 'Китайский']
   ];
   /* гости не видят Конспекты и Базу */
-  const PAGES_GUEST = PAGES_ALL.filter(([h]) => h !== 'notes.html' && h !== 'base.html');
+  const PAGES_GUEST = PAGES_ALL.filter(([h]) => h !== 'notes.html' && h !== 'base.html' && h !== 'journal.html');
 
   const NAV_CSS = `
   :host{all:initial}
