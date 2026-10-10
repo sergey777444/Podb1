@@ -160,6 +160,108 @@
     return bar;
   }
 
+
+  /* ---------- профиль: никнейм и аватарка (хранятся в user_data под ключом 'profile') ---------- */
+  const escH = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const AV_EMOJI = ['🦊','🐼','🐨','🦁','🐯','🐸','🐵','🦄','🐙','🦉','🐧','🐱','🐶','🐰','🦋','🐢','🌵','🍀','🌸','🍉','🚀','🎧','🎮','📚'];
+  const AV_COLORS = ['#ffd84d','#7aa2ff','#ff7b8a','#4fd1a0','#a290ff','#f0b44c','#5ad0e6','#f7a8d8'];
+
+  function avatarHtml(pr, size, letter) {
+    pr = pr || {};
+    const s = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.55)}px`;
+    if (typeof pr.photo === 'string' && pr.photo.indexOf('data:image/') === 0) {
+      return `<i class="av" style="${s};background-image:url(${pr.photo})"></i>`;
+    }
+    const col = /^#[0-9a-f]{6}$/i.test(pr.color || '') ? pr.color : AV_COLORS[0];
+    const em = AV_EMOJI.indexOf(pr.emoji) >= 0 ? pr.emoji : escH(letter || '?');
+    return `<i class="av" style="${s};background-color:${col}">${em}</i>`;
+  }
+
+  function paintBar() {
+    const el = document.getElementById('bProfile');
+    if (!el) return;
+    const pr = window.userProfile || {};
+    const name = pr.nick || window.userLogin || '';
+    el.innerHTML = avatarHtml(pr, 20, name.charAt(0).toUpperCase()) + '<b class="nm"></b>';
+    el.querySelector('.nm').textContent = name + (window.isAdmin ? ' · админ' : '');
+  }
+
+  function openProfileEditor(login, done) {
+    const cur = window.userProfile || {};
+    const st = { nick: cur.nick || '', emoji: cur.emoji || '', color: cur.color || AV_COLORS[0], photo: cur.photo || '' };
+    const back = document.createElement('div');
+    back.id = 'pfBack';
+    back.innerHTML = `<div id="pfBox">
+      <div class="top"><h3>✏️ Профиль</h3><button class="x" type="button" aria-label="Закрыть">✕</button></div>
+      <div class="pv"></div>
+      <label for="pfNick">Никнейм</label>
+      <input id="pfNick" maxlength="20" autocomplete="off" placeholder="Логин для входа: ${escH(login)}">
+      <label>Аватарка</label>
+      <div class="em">${AV_EMOJI.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')}</div>
+      <div class="cl">${AV_COLORS.map(c => `<button type="button" data-c="${c}" style="background:${c}" aria-label="Цвет"></button>`).join('')}</div>
+      <div class="ph"><button type="button" id="pfPhoto">📷 Своё фото</button><button type="button" id="pfDel">Убрать фото</button></div>
+      <input type="file" id="pfFile" accept="image/*" hidden>
+      <div id="pfErr"></div>
+      <button type="button" class="go" id="pfSave">Сохранить</button>
+      <button type="button" class="go ghost" id="pfClear">Сбросить на логин</button>
+    </div>`;
+    document.body.appendChild(back);
+    const $ = s => back.querySelector(s);
+    const close = () => back.remove();
+    back.addEventListener('click', e => { if (e.target === back) close(); });
+    $('.x').onclick = close;
+    $('#pfNick').value = st.nick;
+
+    const sync = () => {
+      $('.pv').innerHTML = avatarHtml(st, 88, (st.nick || login).charAt(0).toUpperCase());
+      back.querySelectorAll('.em button').forEach(b => b.classList.toggle('on', !st.photo && b.dataset.e === st.emoji));
+      back.querySelectorAll('.cl button').forEach(b => b.classList.toggle('on', b.dataset.c === st.color));
+      $('#pfDel').style.display = st.photo ? '' : 'none';
+    };
+    back.querySelectorAll('.em button').forEach(b => b.onclick = () => { st.emoji = b.dataset.e; st.photo = ''; sync(); });
+    back.querySelectorAll('.cl button').forEach(b => b.onclick = () => { st.color = b.dataset.c; sync(); });
+    $('#pfDel').onclick = () => { st.photo = ''; sync(); };
+    $('#pfNick').oninput = e => { st.nick = e.target.value; sync(); };
+    $('#pfPhoto').onclick = () => $('#pfFile').click();
+    $('#pfFile').onchange = e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f), img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 128;
+        const m = Math.min(img.width, img.height);
+        c.getContext('2d').drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, 128, 128);
+        st.photo = c.toDataURL('image/jpeg', 0.82);
+        URL.revokeObjectURL(url);
+        $('#pfErr').textContent = '';
+        sync();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); $('#pfErr').textContent = 'Не удалось открыть это изображение'; };
+      img.src = url;
+      e.target.value = '';
+    };
+
+    const save = async value => {
+      const btn = $('#pfSave');
+      btn.disabled = true;
+      const { error } = await sb.from('user_data').upsert({ user_id: window.currentUser.id, key: 'profile', value });
+      btn.disabled = false;
+      if (error) { console.error(error); $('#pfErr').textContent = 'Не удалось сохранить, попробуйте ещё раз'; return; }
+      window.userProfile = value;
+      paintBar();
+      close();
+      if (done) done();
+    };
+    $('#pfSave').onclick = () => save({
+      nick: st.nick.replace(/\s+/g, ' ').trim().slice(0, 20),
+      emoji: st.emoji, color: st.color, photo: st.photo
+    });
+    $('#pfClear').onclick = () => save({});
+    sync();
+    setTimeout(() => $('#pfNick').focus(), 50);
+  }
+
   function showGate() {
     const g = document.createElement('div');
     g.id = 'authGate';
@@ -230,13 +332,16 @@
       s.textContent = '.add-box,.delete-btn,.admin-box,.admin-toggle-box,.btn-toggle{display:none!important}';
       document.head.appendChild(s);
     }
+    window.userLogin = p ? p.login : '';
+    try { window.userProfile = (await window.userData.get('profile')) || {}; } catch (e) { window.userProfile = {}; }
     const bar = mountBar(
-      `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span>`,
+      `<span id="bProfile" role="button" tabindex="0" title="Мой профиль и прогресс" style="cursor:pointer"></span>`,
       async () => {
         setGuestMode(false);
         await sb.auth.signOut();
         location.reload();
       });
+    paintBar();
     bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
@@ -298,6 +403,41 @@
   #prgBox .ch span.ok{border:2px solid var(--green,#34d27b);background:var(--ok-bg,rgba(52,210,123,.14));color:var(--green,#34d27b);font-weight:700}
   #prgBox .go{display:block;margin-top:14px;padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;text-align:center;font-weight:800;text-decoration:none;box-shadow:3px 3px 0 var(--shc,#000)}`;
   document.head.appendChild(css2);
+
+  const css3 = document.createElement('style');
+  css3.textContent = `
+  .av{display:inline-grid;place-items:center;flex:none;border:2px solid var(--line,#e9e6d8);border-radius:50%;background-size:cover;background-position:center;color:#1b1f3b;font-style:normal;font-weight:800;line-height:1;vertical-align:middle;overflow:hidden}
+  #authBar{max-width:calc(100vw - 20px)}
+  #authBar .nm{display:inline-block;max-width:120px;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-weight:700}
+  #authBar #bProfile{display:inline-flex;align-items:center}
+  #prgBox .pcard{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:10px 12px;border:2px dashed var(--line,#e9e6d8);border-radius:14px;background:var(--card,#1e2240)}
+  #prgBox .pn{flex:1;min-width:0;display:flex;flex-direction:column}
+  #prgBox .pn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+  #prgBox .pn small{color:var(--soft,#9ca0bd);font-size:12px}
+  #prgBox .pedit{padding:7px 12px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--yel,#ffd84d);color:#1b1f3b;font:800 13px var(--sans,system-ui,sans-serif);box-shadow:2px 2px 0 var(--shc,#000);cursor:pointer}
+  #pfBack{position:fixed;inset:0;z-index:100001;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);font-family:var(--sans,system-ui,sans-serif)}
+  #pfBox{width:min(460px,100%);max-height:92vh;overflow:auto;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));background:var(--bg,#14162a);color:var(--ink,#f1efe6);border:2px solid var(--line,#e9e6d8);border-radius:20px 20px 0 0;box-shadow:0 -4px 0 var(--shc,#000)}
+  @media(min-width:600px){#pfBack{align-items:center}#pfBox{border-radius:20px;box-shadow:6px 6px 0 var(--shc,#000)}}
+  #pfBox .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  #pfBox h3{font:italic 800 21px var(--serif,Georgia,serif)}
+  #pfBox .x{width:34px;height:34px;border:2px solid var(--line,#e9e6d8);border-radius:50%;background:var(--card,#1e2240);color:var(--ink,#fff);font-size:15px;cursor:pointer}
+  #pfBox .pv{display:flex;justify-content:center;margin:6px 0 14px}
+  #pfBox label{display:block;margin:12px 0 6px;color:var(--soft,#9ca0bd);font:800 11px var(--sans,system-ui,sans-serif);letter-spacing:.07em;text-transform:uppercase}
+  #pfBox #pfNick{width:100%;padding:11px 13px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--card,#1e2240);color:var(--ink,#fff);font:600 16px var(--sans,system-ui,sans-serif);outline:none}
+  #pfBox #pfNick:focus{box-shadow:3px 3px 0 var(--yel,#ffd84d)}
+  #pfBox .em,#pfBox .cl,#pfBox .ph{display:flex;flex-wrap:wrap;gap:8px}
+  #pfBox .cl{margin-top:10px}#pfBox .ph{margin-top:12px}
+  #pfBox .em button{width:44px;height:44px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--card,#1e2240);font-size:22px;cursor:pointer}
+  #pfBox .cl button{width:34px;height:34px;border:2px solid var(--line,#e9e6d8);border-radius:50%;cursor:pointer}
+  #pfBox .em button.on,#pfBox .cl button.on{outline:3px solid var(--violet,#a290ff);outline-offset:2px}
+  #pfBox .ph button{padding:9px 14px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);color:var(--ink,#fff);font:700 13px var(--sans,system-ui,sans-serif);cursor:pointer}
+  #pfErr{min-height:18px;margin-top:8px;color:var(--red,#ff5a70);font-size:13px;font-weight:700}
+  #pfBox .go{display:block;width:100%;margin-top:8px;padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;text-align:center;font:800 15px var(--sans,system-ui,sans-serif);box-shadow:3px 3px 0 var(--shc,#000);cursor:pointer}
+  #pfBox .go.ghost{background:var(--card,#1e2240);color:var(--ink,#fff)}
+  #pfBox .go:disabled{opacity:.5}
+  `;
+  document.head.appendChild(css3);
+
 
   /* ---------- нижняя навигация (в Shadow DOM: стили страниц на неё не влияют) ---------- */
   const PAGES_ALL = [
@@ -446,10 +586,13 @@
     if (!BLOCK[subj]) subj = 'all';
     const paint = () => {
       back.querySelector('#prgBox').innerHTML =
-        `<div class="top"><h3>📊 Прогресс: ${esc(login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
+        `<div class="top"><h3>📊 Прогресс: ${esc((window.userProfile && window.userProfile.nick) || login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
+        ((window.currentUser && !window.isGuest) ? `<div class="pcard">${avatarHtml(window.userProfile, 46, (login || '?').charAt(0).toUpperCase())}<div class="pn"><b>${esc((window.userProfile && window.userProfile.nick) || login)}</b><small>логин: ${esc(login)}</small></div><button type="button" class="pedit">✏️ Изменить</button></div>` : '') +
         `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
         (subj === 'all' ? enHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
       back.querySelector('.x').onclick = close;
+      const pe = back.querySelector('.pedit');
+      if (pe) pe.onclick = () => openProfileEditor(login, paint);
       back.querySelectorAll('.sel button').forEach(b => b.onclick = () => {
         subj = b.dataset.k;
         try { localStorage.setItem('prg_subject', subj); } catch (e) {}
