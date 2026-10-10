@@ -63,6 +63,18 @@ h2 i{font:700 13px system-ui;font-style:normal;background:var(--ink);color:var(-
 .done{text-align:center;padding:50px 10px}
 .done h3{font:italic 800 28px Georgia;margin:0 0 8px}
 .done button{margin-top:14px;font:700 14px system-ui;padding:12px 20px;border-radius:14px;border:2px solid var(--line);background:var(--yel);color:#1b1f3b;box-shadow:3px 3px 0 var(--line);cursor:pointer}
+
+/* ---- ввод транскрипции ---- */
+.tform{display:flex;gap:8px;margin:0 4px 8px}
+.tform input{flex:1;min-width:0;padding:12px 14px;border-radius:14px;border:2.5px solid var(--line);background:var(--card);color:var(--ink);font:600 18px "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif;outline:none;box-shadow:3px 3px 0 var(--line)}
+.tform input.good{border-color:#16a34a;background:rgba(22,163,74,.14)}
+.tform input.bad{border-color:var(--red);background:rgba(238,43,69,.12);animation:shk .35s}
+.tform button{padding:0 16px;border-radius:14px;border:2.5px solid var(--line);background:var(--yel);color:#1b1f3b;font:700 14px system-ui;box-shadow:3px 3px 0 var(--line);cursor:pointer}
+.sym{display:flex;flex-wrap:wrap;gap:6px;margin:0 4px 8px}
+.sym button{min-width:36px;padding:6px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:600 16px "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif;cursor:pointer}
+.tres{text-align:center;font:600 15px "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif;min-height:22px;margin:4px 4px 10px}
+.tres.good{color:#16a34a}.tres.bad{color:var(--red)}
+@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 </style>
 </head>
 <body>
@@ -83,12 +95,18 @@ h2 i{font:700 13px system-ui;font-style:normal;background:var(--ink);color:var(-
     <div class="bar"><div id="prog"></div></div>
     <div class="stat"><span id="st1"></span><span id="st2"></span></div>
     <div class="deck" id="deck"></div>
+    <form class="tform" id="tForm" autocomplete="off">
+      <input id="tIn" type="text" placeholder="Напишите транскрипцию, напр. siː" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
+      <button type="submit">Проверить</button>
+    </form>
+    <div class="sym" id="sym"></div>
+    <div class="tres" id="tRes"></div>
     <div class="ctl">
       <button class="no" id="bNo" aria-label="Повторить">✕</button>
       <button class="sm" id="bUndo" aria-label="Вернуть">↺</button>
       <button class="ok" id="bOk" aria-label="Выучил">✓</button>
     </div>
-    <p class="hint" style="text-align:center;margin-top:14px">Тап — перевернуть · вправо — выучил · влево — повторить</p>
+    <p class="hint" style="text-align:center;margin-top:14px">Тап — перевернуть · вправо — выучил · влево — повторить · или напишите транскрипцию</p>
   </section>
 </main>
 
@@ -124,7 +142,7 @@ const WD={"iː":[["Edith","/ˈiː.dɪθ/"],["evening","/ˈiːv.nɪŋ/"],["easy",
 "æ":[["apple","/ˈæp.əl/"],["perhaps","/pəˈhæps/"],["passenger","/ˈpæs.ɪn.dʒər/"],["hijacker","/ˈhaɪˌdʒæk.ər/"],["black","/blæk/"],["Miss Bradley","/mɪs ˈbræd.li/"],["Anne","/æn/"],["Amsterdam","/ˌæm.stəˈdæm/"],["Alice","/ˈæl.ɪs/"],["Miss Allen","/mɪs ˈæl.ən/"],["slacks","/slæks/"],["camera","/ˈkæm.rə/"],["lavatory","/ˈlæv.ə.tri/"],["travelling","/ˈtræv.əl.ɪŋ/"],["handbag","/ˈhænd.bæɡ/"],["left hand","/left hænd/"]]};
 
 const ALL=Object.entries(WD).flatMap(([k,v])=>v.map(w=>({w:w[0],i:w[1],s:k})));
-let filt="all",queue=[],hist=[],learned=0,total=0;
+let filt="all",queue=[],hist=[],learned=0,total=0,busy=false;
 let learnedWordsSet=new Set();
 
 /* облако: любые ошибки сети/входа не должны ломать карточки */
@@ -146,6 +164,41 @@ async function loadProgressFromCloud(){
   start();
 }
 
+/* ---------- ввод транскрипции ---------- */
+/* убираем слэши, скобки, точки, ударения и пробелы; ":" = "ː", латинская g = ɡ */
+function normIpa(s){
+  return String(s).normalize('NFC').toLowerCase()
+    .replace(/:/g,'ː').replace(/g/g,'ɡ')
+    .replace(/[\/\[\]\.\sˈˌ'’`]/g,'');
+}
+/* кнопки со спецсимволами для телефона */
+const SYMS=["iː","ɪ","e","æ","ə","ɒ","ɔː","ɑː","ʌ","ʊ","uː","ɜː","ʃ","ʒ","θ","ð","ŋ","tʃ","dʒ","ɡ","ˈ"];
+$("#sym").innerHTML=SYMS.map(x=>`<button type="button" data-x="${x}">${x}</button>`).join("");
+$("#sym").onclick=e=>{
+  const x=e.target.dataset.x;if(!x)return;
+  const i=$("#tIn"),a=i.selectionStart==null?i.value.length:i.selectionStart,b=i.selectionEnd==null?a:i.selectionEnd;
+  i.value=i.value.slice(0,a)+x+i.value.slice(b);
+  i.focus();i.setSelectionRange(a+x.length,a+x.length);
+  i.className="";
+};
+function resetInput(){const i=$("#tIn");i.value="";i.className="";$("#tRes").textContent="";$("#tRes").className="tres";busy=false}
+$("#tForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  if(busy||!queue.length)return;
+  const inp=$("#tIn"),res=$("#tRes"),x=queue[0],top=$(".card.top");
+  if(!inp.value.trim())return;
+  if(top)top.classList.add("flip");
+  if(normIpa(inp.value)===normIpa(x.i)){
+    busy=true;inp.className="good";res.className="tres good";
+    res.textContent="✓ Верно: "+x.i;
+    setTimeout(()=>go(true),1100);
+  }else{
+    inp.className="";void inp.offsetWidth;inp.className="bad";
+    res.className="tres bad";res.textContent="Неверно. Правильно: "+x.i;
+  }
+});
+$("#tIn").addEventListener("input",function(){this.className="";if(!busy)$("#tRes").textContent=""});
+
 function chips(){$("#chips").innerHTML=["all","iː","ɪ","e","æ"].map(k=>`<button aria-pressed="${k==filt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 
@@ -159,10 +212,13 @@ function start(){
   render();
 }
 
-function mk(x,cls){const c=document.createElement("div");c.className="card "+cls;c.innerHTML=`<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ РАЗ</div><div class="inner"><div class="face"><span class="badge">[${x.s}]</span><div class="word">${x.w}</div><div class="hint">тап — транскрипция</div></div><div class="face back"><div class="ipa">${x.i}</div><div class="hint">${x.w}</div></div></div>`;return c}
+function mk(x,cls){const c=document.createElement("div");c.className="card "+cls;c.innerHTML=`<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ РАЗ</div><div class="inner"><div class="face"><span class="badge">[${x.s}]</span><div class="word">${x.w}</div><div class="hint">напишите транскрипцию или тап — подсказка</div></div><div class="face back"><div class="ipa">${x.i}</div><div class="hint">${x.w}</div></div></div>`;return c}
 
 function render(){
   const d=$("#deck");d.innerHTML="";
+  resetInput();
+  $("#tForm").style.display=queue.length?"flex":"none";
+  $("#sym").style.display=queue.length?"flex":"none";
   $("#prog").style.width=(total?learned/total*100:0)+"%";
   $("#st1").textContent=`Выучено ${learned} из ${total}`;$("#st2").textContent=`Осталось ${queue.length}`;
   if(!queue.length){
@@ -192,7 +248,7 @@ function bind(c){
 }
 
 async function go(ok,c){
-  c=c||$(".card.top");if(!c)return;
+  c=c||$(".card.top");if(!c||!queue.length)return;
   c.style.transition="transform .3s,opacity .3s";c.style.transform=`translateX(${ok?600:-600}px) rotate(${ok?30:-30}deg)`;c.style.opacity=0;
   const x=queue.shift();hist.push({x,ok});
   if(ok){
@@ -201,12 +257,13 @@ async function go(ok,c){
   }else{
     queue.push(x);
   }
+  busy=true;
   setTimeout(render,260);
   if(ok)syncProgressWithCloud();
 }
 
-$("#bOk").onclick=()=>go(true);
-$("#bNo").onclick=()=>go(false);
+$("#bOk").onclick=()=>{if(!busy)go(true)};
+$("#bNo").onclick=()=>{if(!busy)go(false)};
 $("#bUndo").onclick=()=>{
   const h=hist.pop();if(!h)return;
   if(h.ok){
