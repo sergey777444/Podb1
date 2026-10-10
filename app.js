@@ -336,8 +336,9 @@
           return err('Аккаунт создан, но вход не выполнен. Выключите «Confirm email» в Supabase.');
         }
         /* пароль для админ-панели (таблица читается только админами) */
-        const { error: pe } = await sb.from('student_passwords').upsert({ login, password: pass });
-        if (pe) console.error(pe);
+        let { error: pe } = await sb.from('student_passwords').insert({ login, password: pass });
+        if (pe) ({ error: pe } = await sb.from('student_passwords').update({ password: pass }).eq('login', login));
+        if (pe) { console.error('student_passwords:', pe); alert('Аккаунт создан, но пароль не записался в админ-список: ' + pe.message); }
         btn.disabled = false;
       }
       g.remove();
