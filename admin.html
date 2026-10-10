@@ -6,7 +6,7 @@
 <title>🛠 Админка — ФЛ1-ПОДб-11</title>
 <link rel="stylesheet" href="theme.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=17"></script>
+<script src="app.js?v=16"></script>
 <style>
 .container,.container *{min-width:0}
 .tools{position:sticky;top:calc(var(--bar-h) + 4px);z-index:50;margin-bottom:14px;padding:8px;background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
@@ -30,6 +30,8 @@
 .role{display:inline-block;margin-left:6px;padding:1px 7px;border:2px solid var(--line);border-radius:6px;background:var(--red);color:#fff;font:800 10px var(--sans);text-transform:uppercase;font-style:normal;vertical-align:middle}
 .role.w{background:var(--yel);color:#1b1f3b}
 .role.g{background:var(--green);color:#fff}
+.role.n{background:var(--soft);color:#fff}
+.acts{flex-wrap:wrap}
 .kv{display:flex;align-items:center;gap:6px;margin-top:8px;padding:5px 5px 5px 10px;border:2px solid var(--line);border-radius:12px;background:var(--bg);min-width:0}
 .kv small{flex:0 0 52px;color:var(--soft);font:800 10px var(--sans);letter-spacing:.04em;text-transform:uppercase}
 .kv code{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 15px ui-monospace,Menlo,monospace}
@@ -90,7 +92,7 @@
   if (window.isGuest || !window.isAdmin) { location.replace('index.html'); return; }
 
   const [pr, pw, ud] = await Promise.all([
-    sb.from('profiles').select('id,login,full_name,role,verified'),
+    sb.from('profiles').select('id,login,full_name,role,verified,reviewed'),
     sb.from('student_passwords').select('login,password'),
     sb.from('user_data').select('user_id,value').eq('key', 'profile')
   ]);
@@ -103,7 +105,7 @@
   const hasPass = !pw.error;
 
   let people = (pr.data || []).map(p => ({
-    id: p.id, login: p.login, name: p.full_name || '', role: p.role, verified: p.role === 'admin' || p.verified === true,
+    id: p.id, login: p.login, name: p.full_name || '', role: p.role, verified: p.role === 'admin' || p.verified === true, reviewed: p.role === 'admin' || p.verified === true || p.reviewed === true,
     pr: prof[p.id] || {}, pass: pass[p.login]
   }));
   const byName = (a, b) => (a.name || a.login).localeCompare(b.name || b.login, 'ru');
@@ -114,12 +116,13 @@
     const title = nick || p.name || p.login;
     const sub = nick ? p.name : (p.name && p.name !== title ? p.name : '');
     const adm = p.role === 'admin';
-    const cls = adm ? ' adm' : p.verified ? ' okk' : ' pend';
-    const badge = adm ? '<i class="role">админ</i>' : p.verified ? '<i class="role g">✓</i>' : '<i class="role w">ждёт</i>';
+    const guest = !adm && !p.verified && p.reviewed;
+    const cls = adm ? ' adm' : p.verified ? ' okk' : guest ? '' : ' pend';
+    const badge = adm ? '<i class="role">админ</i>' : p.verified ? '<i class="role g">✓</i>' : guest ? '<i class="role n">гость</i>' : '<i class="role w">ждёт</i>';
     const acts = adm ? '' : `<div class="acts">
       ${p.verified
-        ? '<button type="button" data-a="unv">↩ Снять подтверждение</button>'
-        : '<button type="button" class="v" data-a="ver">✅ Подтвердить</button>'}
+        ? '<button type="button" data-a="unv">↩ Сделать гостем</button>'
+        : `<button type="button" class="v" data-a="ver">✅ Подтвердить</button>${guest ? '' : '<button type="button" data-a="gst">🚫 Не верифицировать</button>'}`}
       <button type="button" class="d" data-a="del" aria-label="Удалить аккаунт">🗑</button></div>`;
     return `<article class="acc${cls}" data-l="${esc(p.login)}">
       <div class="head">${window.avatarHtml(p.pr, 48, (title || '?').charAt(0).toUpperCase())}
@@ -138,23 +141,32 @@
   function render() {
     const s = q.value.trim().toLowerCase();
     const list = people.filter(p => !s || (p.name + ' ' + (p.pr.nick || '') + ' ' + p.login).toLowerCase().includes(s));
-    const pend = list.filter(p => p.role !== 'admin' && !p.verified).sort(byName);
+    const pend = list.filter(p => p.role !== 'admin' && !p.verified && !p.reviewed).sort(byName);
+    const gst = list.filter(p => p.role !== 'admin' && !p.verified && p.reviewed).sort(byName);
     const ok = list.filter(p => p.role !== 'admin' && p.verified).sort(byName);
     const adm = list.filter(p => p.role === 'admin').sort(byName);
     out.innerHTML = list.length
-      ? section('⏳ Ожидают подтверждения', pend, true) + section('✅ Подтверждённые', ok) + section('🛠 Админы', adm)
+      ? section('⏳ Ожидают подтверждения', pend, true) + section('✅ Подтверждённые', ok) + section('👤 Гости (не верифицированы)', gst) + section('🛠 Админы', adm)
       : '<div class="empty">Никого не найдено</div>';
     const all = people.filter(p => p.role !== 'admin');
     const nicks = people.filter(p => p.pr.nick).length;
-    cnt.textContent = `Ждут: ${all.filter(p => !p.verified).length} · подтверждено: ${all.filter(p => p.verified).length} · админов: ${people.length - all.length} · с ником: ${nicks}`;
+    cnt.textContent = `Ждут: ${all.filter(p => !p.verified && !p.reviewed).length} · гостей: ${all.filter(p => !p.verified && p.reviewed).length} · подтверждено: ${all.filter(p => p.verified).length} · админов: ${people.length - all.length} · с ником: ${nicks}`;
   }
 
   async function setVerified(p, v, btn) {
     btn.disabled = true;
     const { error } = await sb.rpc('set_verified', { uid: p.id, v });
     if (error) { console.error(error); btn.disabled = false; say('Ошибка: ' + error.message); return; }
-    p.verified = v;
-    say(v ? 'Подтверждено ✅' : 'Подтверждение снято');
+    p.verified = v; p.reviewed = true;
+    say(v ? 'Подтверждено ✅' : 'Теперь гость');
+    render();
+  }
+  async function setGuest(p, btn) {
+    btn.disabled = true;
+    const { error } = await sb.rpc('set_reviewed', { uid: p.id, r: true });
+    if (error) { console.error(error); btn.disabled = false; say('Ошибка: ' + error.message); return; }
+    p.reviewed = true;
+    say('Оставлен гостем');
     render();
   }
   async function removeUser(p, btn) {
@@ -178,6 +190,7 @@
     else if (a === 'eye') { show[l] = !show[l]; render(); }
     else if (a === 'ver') setVerified(p, true, b);
     else if (a === 'unv') setVerified(p, false, b);
+    else if (a === 'gst') setGuest(p, b);
     else if (a === 'del') removeUser(p, b);
   });
   document.getElementById('copyAll').onclick = () =>
