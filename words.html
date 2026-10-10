@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="words-data.js?v=4"></script>
+<script src="words-data.js?v=5"></script>
 <script src="app.js?v=8"></script>
 <title>🇬🇧 Слова для устного английского — ФЛ1-ПОДб-11</title>
 <script>
@@ -82,7 +82,7 @@ section{display:none}section.on{display:block}
     <div>
       <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
       <h1>🇬🇧 Слова для устного английского</h1>
-      <p>Unit 1 · Entertainment · Unit 2 · Sightseeing · Шкода Ю.Д.</p>
+      <p>Unit 1 · Entertainment · Unit 2 · Sightseeing · Unit 3 · Things you need · Шкода Ю.Д.</p>
     </div>
     <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeText">Светлая</span></button>
   </header>
@@ -137,8 +137,9 @@ section{display:none}section.on{display:block}
   /* категории верхнего уровня; существующие группы слов — их подкатегории.
      Новую категорию добавлять сюда: { id, title, ids: [id групп из words-data.js] } */
   const CATS = [
-    { id: 'du1', title: '🎧 Dictation U.1', ids: GROUPS.filter(g => !g.id.startsWith('v2')).map(g => g.id) },
-    { id: 'vu2', title: '📘 Vocabulary U.2', ids: GROUPS.filter(g => g.id.startsWith('v2')).map(g => g.id) }
+    { id: 'du1', title: '🎧 Dictation U.1', ids: GROUPS.filter(g => !g.id.startsWith('v')).map(g => g.id) },
+    { id: 'vu2', title: '📘 Vocabulary U.2', ids: GROUPS.filter(g => g.id.startsWith('v2')).map(g => g.id) },
+    { id: 'vu3', title: '🧰 Vocabulary U.3', ids: GROUPS.filter(g => g.id.startsWith('v3')).map(g => g.id) }
   ];
   const catOf = gid => (CATS.find(c => c.ids.includes(gid)) || {}).id || '';
   const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, c: catOf(g.id), gt: g.title })));
