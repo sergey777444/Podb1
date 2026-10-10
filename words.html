@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="words-data.js?v=2"></script>
+<script src="words-data.js?v=3"></script>
 <script src="app.js?v=8"></script>
 <title>🇬🇧 Слова для устного английского — ФЛ1-ПОДб-11</title>
 <script>
@@ -35,6 +35,9 @@ section{display:none}section.on{display:block}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .chip{padding:8px 13px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,.045);color:var(--text2)}
 .chip.on{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent3));border-color:transparent}
+.chips.cat .chip{font-size:13px;padding:9px 15px}
+.chips.sub{padding:10px 0 0 10px;border-left:3px solid var(--accent)}
+.chips.sub .chip{font-size:11.5px;padding:6px 11px}
 .form-control{width:100%;padding:12px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--rm);background:rgba(255,255,255,.035);color:var(--text);outline:none;margin-top:14px}
 .form-control:focus{border-color:rgba(124,108,255,.65)}
 .deck{position:relative;height:340px;margin:22px 4px 18px;perspective:1000px;touch-action:pan-y}
@@ -79,7 +82,7 @@ section{display:none}section.on{display:block}
     <div>
       <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
       <h1>🇬🇧 Слова для устного английского</h1>
-      <p>Unit 1 · Entertainment · Шкода Ю.Д.</p>
+      <p>Unit 1 · Entertainment · Unit 2 · Sightseeing · Шкода Ю.Д.</p>
     </div>
     <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeText">Светлая</span></button>
   </header>
@@ -92,7 +95,8 @@ section{display:none}section.on{display:block}
   <div class="panel">
     <div class="stat"><span id="st1">Выучено 0 из 0</span><span id="st2">0%</span></div>
     <div class="bar"><i id="prog"></i></div>
-    <div class="chips" id="grChips"></div>
+    <div class="chips cat" id="catChips"></div>
+    <div class="chips sub" id="grChips"></div>
   </div>
 
   <section id="c" class="on">
@@ -130,10 +134,17 @@ section{display:none}section.on{display:block}
 
   const KEY = 'english_learned_words';       /* тот же ключ — окно прогресса в app.js продолжает работать */
   const GROUPS = window.EN_WORDS || [];
-  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, gt: g.title })));
+  /* категории верхнего уровня; существующие группы слов — их подкатегории.
+     Новую категорию добавлять сюда: { id, title, ids: [id групп из words-data.js] } */
+  const CATS = [
+    { id: 'du1', title: '🎧 Dictation U.1', ids: GROUPS.filter(g => !g.id.startsWith('v2')).map(g => g.id) },
+    { id: 'vu2', title: '📘 Vocabulary U.2', ids: GROUPS.filter(g => g.id.startsWith('v2')).map(g => g.id) }
+  ];
+  const catOf = gid => (CATS.find(c => c.ids.includes(gid)) || {}).id || '';
+  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, c: catOf(g.id), gt: g.title })));
   const $ = s => document.querySelector(s);
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  let learned = new Set(), fGroup = 'all', fStatus = 'all', fQuery = '', dir = 'en';
+  let learned = new Set(), fCat = 'all', fGroup = 'all', fStatus = 'all', fQuery = '', dir = 'en';
   let queue = [], hist = [];
 
   /* ---------- сохранение ---------- */
@@ -163,14 +174,24 @@ section{display:none}section.on{display:block}
 
   /* ---------- общие фильтры и шапка ---------- */
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
-  const inGroup = x => fGroup === 'all' || x.g === fGroup;
+  /* слово проходит фильтр: категория и (если выбрана) подкатегория */
+  const inGroup = x => (fCat === 'all' || x.c === fCat) && (fGroup === 'all' || x.g === fGroup);
+  const groupInFilter = g => (fCat === 'all' || catOf(g.id) === fCat) && (fGroup === 'all' || g.id === fGroup);
   function header() {
     const done = ALL.filter(x => learned.has(x.w)).length, pct = ALL.length ? Math.round(done / ALL.length * 100) : 0;
     $('#st1').textContent = `Выучено ${done} из ${ALL.length}`;
     $('#st2').textContent = pct + '%';
     $('#prog').style.width = pct + '%';
-    $('#grChips').innerHTML = [`<button class="chip${fGroup === 'all' ? ' on' : ''}" data-g="all">Все темы</button>`]
-      .concat(GROUPS.map(g => `<button class="chip${fGroup === g.id ? ' on' : ''}" data-g="${g.id}">${esc(g.title.split(' · ')[0])}${g.title.includes(' · ') ? ' · ' + esc(g.title.split(' · ')[1].slice(0, 22)) : ''}</button>`)).join('');
+    $('#catChips').innerHTML = [`<button class="chip${fCat === 'all' ? ' on' : ''}" data-c="all">Все</button>`]
+      .concat(CATS.map(c => `<button class="chip${fCat === c.id ? ' on' : ''}" data-c="${c.id}">${esc(c.title)}</button>`)).join('');
+    /* подкатегории показываем, когда выбрана категория */
+    const cat = CATS.find(c => c.id === fCat);
+    const sub = $('#grChips');
+    if (cat) {
+      sub.style.display = '';
+      sub.innerHTML = [`<button class="chip${fGroup === 'all' ? ' on' : ''}" data-g="all">Все подкатегории</button>`]
+        .concat(GROUPS.filter(g => cat.ids.includes(g.id)).map(g => `<button class="chip${fGroup === g.id ? ' on' : ''}" data-g="${g.id}">${esc(g.title.split(' · ')[0])}${g.title.includes(' · ') ? ' · ' + esc(g.title.split(' · ')[1].slice(0, 22)) : ''}</button>`)).join('');
+    } else { sub.style.display = 'none'; sub.innerHTML = ''; }
     $('#dirChips').innerHTML = [['en', 'EN → RU'], ['ru', 'RU → EN']].map(([k, t]) => `<button class="chip${dir === k ? ' on' : ''}" data-d="${k}">${t}</button>`).join('');
   }
 
@@ -252,7 +273,7 @@ section{display:none}section.on{display:block}
       .map(([k, t]) => `<button class="chip${fStatus === k ? ' on' : ''}" data-s="${k}">${t}</button>`).join('');
     const q = fQuery.trim().toLowerCase(); let out = '';
     GROUPS.forEach(g => {
-      if (fGroup !== 'all' && fGroup !== g.id) return;
+      if (!groupInFilter(g)) return;
       const list = ALL.filter(x => x.g === g.id).filter(x => {
         const d = learned.has(x.w);
         if (fStatus === 'new' && d) return false;
@@ -272,6 +293,7 @@ section{display:none}section.on{display:block}
   $('#list').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const w = e.target.closest('.w'); if (w) { e.preventDefault(); toggle(w.dataset.w); } });
   $('#stChips').addEventListener('click', e => { const k = e.target.dataset.s; if (k) { fStatus = k; renderList(); } });
   $('#q').addEventListener('input', e => { fQuery = e.target.value; renderList(); });
+  $('#catChips').addEventListener('click', e => { const k = e.target.dataset.c; if (k) { fCat = k; fGroup = 'all'; start(); renderList(); } });
   $('#grChips').addEventListener('click', e => { const k = e.target.dataset.g; if (k) { fGroup = k; start(); renderList(); } });
   $('#dirChips').addEventListener('click', e => { const k = e.target.dataset.d; if (k) { dir = k; start(); } });
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
