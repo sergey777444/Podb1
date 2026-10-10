@@ -6,7 +6,7 @@
 <title>🛠 Админка — ФЛ1-ПОДб-11</title>
 <link rel="stylesheet" href="theme.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=16"></script>
 <style>
 .container,.container *{min-width:0}
 .tools{position:sticky;top:calc(var(--bar-h) + 4px);z-index:50;margin-bottom:14px;padding:8px;background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
@@ -44,6 +44,14 @@
 .acts button:disabled{opacity:.5}
 .acts .v{background:var(--green);color:#fff}
 .acts .d{flex:0 0 auto;background:var(--red);color:#fff}
+.logchips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.logchips button{padding:7px 13px;border:2px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:700 13px var(--sans);box-shadow:2px 2px 0 var(--shc)}
+.logchips button.on{background:var(--yel);color:#1b1f3b}
+.le{padding:10px 12px;margin-bottom:8px;border:2px solid var(--line);border-left:8px solid var(--violet);border-radius:12px;background:var(--card);overflow-wrap:anywhere}
+.le .t{color:var(--soft);font:700 11.5px var(--sans)}
+.le .a{margin-top:2px;font:800 14px var(--sans)}
+.le .d{margin-top:3px;color:var(--soft);font-size:13px;line-height:1.45;white-space:pre-line}
+.le.hw{border-left-color:var(--blue)}.le.nt{border-left-color:var(--yel)}.le.pf{border-left-color:var(--green)}.le.ac{border-left-color:var(--red)}
 .msg{padding:14px;border:2px dashed var(--red);border-radius:var(--r);background:var(--no-bg);font-size:14px;line-height:1.6;overflow-wrap:anywhere}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 12px);transform:translateX(-50%);z-index:100002;padding:8px 16px;border:2px solid var(--line);border-radius:99px;background:var(--yel);color:#1b1f3b;font:800 13px var(--sans);box-shadow:3px 3px 0 var(--shc);opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
@@ -65,11 +73,13 @@
     <div class="row">
       <input id="q" class="form-control" type="search" placeholder="Поиск: ФИО, ник, логин" autocomplete="off">
       <button class="btn ghost" id="copyAll" type="button">📋 Всё</button>
+      <button class="btn ghost" id="toggleLog" type="button">📜 Журнал</button>
     </div>
     <div class="cnt" id="cnt"></div>
   </section>
 
   <div id="out"><div class="empty">Загрузка…</div></div>
+  <div id="logBox" hidden></div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -196,6 +206,63 @@
   document.getElementById('copyAll').onclick = () =>
     copy(people.filter(p => p.role !== 'admin' && p.verified).map(p => `${p.name}\t${p.login}\t${p.pass || ''}`).join('\n'));
   render();
+
+  /* ---------- журнал действий ---------- */
+  const logBox = document.getElementById('logBox'), toggleLog = document.getElementById('toggleLog');
+  const LBL = {
+    hw_add: ['📚 добавил(а) ДЗ', 'hw'], hw_edit: ['✏️ изменил(а) ДЗ', 'hw'], hw_delete: ['🗑 удалил(а) ДЗ', 'hw'],
+    note_add: ['📖 добавил(а) конспект', 'nt'], note_delete: ['🗑 удалил(а) конспект', 'nt'],
+    nick_change: ['🏷 сменил(а) ник', 'pf'], avatar_change: ['🖼 сменил(а) аватарку', 'pf'],
+    register: ['🆕 зарегистрировался(ась)', 'ac'], verify: ['✅ подтвердил(а)', 'ac'], unverify: ['↩ сделал(а) гостем', 'ac'],
+    guest: ['🚫 не верифицировал(а)', 'ac'], account_delete: ['🗑 удалил(а) аккаунт', 'ac']
+  };
+  const GROUPS = { all: 'Все', hw: '📚 ДЗ', nt: '📖 Конспекты', pf: '🏷 Ники и авы', ac: '👤 Аккаунты' };
+  let logView = false, logGroup = 'all', logLimit = 100, logRows = [];
+  const who = l => { const p = people.find(x => x.login === l); return p ? (p.pr.nick || p.name || p.login) + (p.pr.nick || p.name ? ' (' + p.login + ')' : '') : (l || 'система'); };
+  const hwTarget = k => { const i = String(k).indexOf('_'); return i > 0 ? k.slice(0, i) + ' · ' + k.slice(i + 1) : k; };
+  const fmtT = t => new Date(t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  function detail(r) {
+    const d = r.details || {};
+    switch (r.action) {
+      case 'hw_add': return hwTarget(r.target) + '\n«' + (d.text || '') + '»';
+      case 'hw_edit': return hwTarget(r.target) + '\nбыло: «' + (d.old || '') + '»\nстало: «' + (d.text || '') + '»';
+      case 'hw_delete': return hwTarget(r.target) + '\n«' + (d.text || '') + '»';
+      case 'note_add': case 'note_delete': return (d.subject ? d.subject + ' · ' : '') + (d.lecture ? d.lecture + ' · ' : '') + r.target;
+      case 'nick_change': return 'аккаунт ' + r.target + ': «' + (d.old || '—') + '» → «' + (d.new || '—') + '»';
+      case 'avatar_change': return 'аккаунт ' + r.target + ': ' + (d.type || '');
+      case 'register': return r.target + (d.name ? ' · ' + d.name : '');
+      case 'account_delete': return r.target + (d.name ? ' · ' + d.name : '');
+      default: return 'аккаунт ' + r.target;
+    }
+  }
+  function renderLog() {
+    const rows = logRows.filter(r => logGroup === 'all' || (LBL[r.action] || [])[1] === logGroup);
+    logBox.innerHTML = `<div class="logchips">${Object.entries(GROUPS).map(([k, t]) => `<button type="button" data-g="${k}" class="${logGroup === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
+      (rows.length ? rows.map(r => {
+        const [t, c] = LBL[r.action] || [r.action, ''];
+        const actor = r.action === 'register' ? who(r.actor_login || r.target) : who(r.actor_login);
+        return `<div class="le ${c}"><div class="t">${esc(fmtT(r.at))}</div><div class="a">${esc(actor)} ${t}</div><div class="d">${esc(detail(r))}</div></div>`;
+      }).join('') : '<div class="empty">Записей нет</div>') +
+      (logRows.length >= logLimit ? '<button class="btn ghost block" id="logMore" type="button" style="margin-top:8px">Показать ещё</button>' : '');
+  }
+  async function loadLog() {
+    logBox.innerHTML = '<div class="empty">Загрузка…</div>';
+    const { data, error } = await sb.from('activity_log').select('*').order('at', { ascending: false }).limit(logLimit);
+    if (error) { logBox.innerHTML = '<div class="msg"><b>Журнал недоступен.</b><br>Выполните <code>activity-log.sql</code> в Supabase.<br><small>' + esc(error.message) + '</small></div>'; return; }
+    logRows = data || [];
+    renderLog();
+  }
+  logBox.addEventListener('click', e => {
+    const g = e.target.closest('button[data-g]');
+    if (g) { logGroup = g.dataset.g; renderLog(); return; }
+    if (e.target.id === 'logMore') { logLimit += 100; loadLog(); }
+  });
+  toggleLog.onclick = () => {
+    logView = !logView;
+    out.hidden = logView; logBox.hidden = !logView; q.hidden = logView;
+    toggleLog.textContent = logView ? '👥 Аккаунты' : '📜 Журнал';
+    if (logView) loadLog();
+  };
 })();
 </script>
 </body>
