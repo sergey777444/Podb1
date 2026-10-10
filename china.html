@@ -3,111 +3,77 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?=v10"></script>
 <title>Китайский: конспект урока — ФЛ1-ПОДб-11</title>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js?v=12"></script>
 <style>
-:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--mute:#5d6b86;--line:#c9d4ea;--cobalt:#1f3f9e;--t1:#1d4ed8;--t2:#0f8a5f;--t3:#b7791f;--t4:#c8321e;box-sizing:border-box}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1630;--card:#142048;--ink:#e8eefc;--mute:#9fb0d6;--line:#2a3a72;--cobalt:#8fb0ff;--t1:#7aa2ff;--t2:#4fd1a0;--t3:#f0b44c;--t4:#ff7b63}}
-:root[data-theme="dark"]{--bg:#0d1630;--card:#142048;--ink:#e8eefc;--mute:#9fb0d6;--line:#2a3a72;--cobalt:#8fb0ff;--t1:#7aa2ff;--t2:#4fd1a0;--t3:#f0b44c;--t4:#ff7b63}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Serif SC","Songti SC",Georgia,serif;
-background-image:radial-gradient(circle at 100% 0,rgba(31,63,158,.12),transparent 40%),repeating-linear-gradient(45deg,transparent 0 22px,rgba(31,63,158,.04) 22px 23px)}
-main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
-header{text-align:center;padding:36px 0 18px;position:relative}
-header .big{font-size:clamp(76px,22vw,140px);line-height:1;color:var(--cobalt);font-weight:900;letter-spacing:.08em;margin-right:-.08em}
-header .seal{display:inline-block;margin-top:10px;background:var(--t4);color:#fff;padding:4px 12px;border-radius:3px;font-size:15px;transform:rotate(-2deg)}
-header p{color:var(--mute);margin:12px 0 0;font-family:system-ui,sans-serif;font-size:14px}
-.legend{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0 0;font:600 13px system-ui,sans-serif}
-.legend span{padding:3px 10px;border:1.5px solid currentColor;border-radius:99px}
-nav{display:flex;gap:6px;overflow-x:auto;padding:10px 0;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;font:600 14px system-ui,sans-serif}
-nav a{white-space:nowrap;color:var(--cobalt);text-decoration:none;border:1.5px solid var(--line);padding:5px 12px;border-radius:99px;background:var(--card)}
-section{margin:30px 0}
-h2{font-size:26px;margin:0 0 14px;color:var(--cobalt);display:flex;align-items:baseline;gap:10px;border-bottom:3px double var(--line);padding-bottom:6px}
-h2 small{font:500 14px system-ui,sans-serif;color:var(--mute)}
-.card{background:var(--card);border:1.5px solid var(--line);border-radius:4px 18px 4px 18px;padding:14px 16px;margin:12px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-.w{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column}
-.w .h{font-size:30px;line-height:1.2;color:var(--ink)}
-.w .p{font:500 15px system-ui,sans-serif}
-.w .r{font:14px system-ui,sans-serif;color:var(--mute)}
-.row{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline;padding:99px 0;border-bottom:1px dashed var(--line)}
+:root,[data-theme="light"]{--t1:#1d4ed8;--t2:#0f8a5f;--t3:#b7791f;--t4:#c8321e}
+[data-theme="dark"]{--t1:#7aa2ff;--t2:#4fd1a0;--t3:#f0b44c;--t4:#ff7b63}
+.zh{font-family:"Noto Serif SC","Songti SC",Georgia,serif}
+.hero.cn{text-align:center}
+.cn .big-zh{font:900 clamp(64px,20vw,120px)/1 "Noto Serif SC","Songti SC",Georgia,serif;letter-spacing:.08em;margin-right:-.08em;color:var(--blue)}
+.seal{display:inline-block;margin-top:10px;padding:4px 12px;border:2px solid var(--line);border-radius:4px;background:var(--red);color:#fff;font:800 15px var(--sans);transform:rotate(-2deg)}
+.legend{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px;font:700 13px var(--sans)}
+.legend span{padding:3px 10px;border:2px solid currentColor;border-radius:99px;background:var(--card)}
+nav.jump{position:sticky;top:var(--bar-h);z-index:5;display:flex;gap:6px;overflow-x:auto;padding:8px 4px;background:var(--bg);font:700 14px var(--sans);scrollbar-width:none}
+nav.jump::-webkit-scrollbar{display:none}
+nav.jump a{flex-shrink:0;padding:5px 12px;border:2px solid var(--line);border-radius:99px;background:var(--card);box-shadow:2px 2px 0 var(--shc);white-space:nowrap}
+nav.jump a:active{transform:translate(2px,2px);box-shadow:none}
+section.blk{margin:6px 0 0;scroll-margin-top:calc(var(--bar-h) + 56px)}
+section.blk>h2{display:flex;align-items:baseline;gap:10px;margin:28px 0 14px;padding-bottom:6px;border-bottom:3px double var(--line);font:800 26px "Noto Serif SC","Songti SC",Georgia,serif}
+section.blk>h2 small{font:600 14px var(--sans);color:var(--soft)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.w{display:flex;flex-direction:column;padding:10px 12px;background:var(--card);border:2px solid var(--line);border-radius:12px;box-shadow:3px 3px 0 var(--shc)}
+.w .h{font:30px/1.2 "Noto Serif SC","Songti SC",Georgia,serif}
+.w .p{font:600 15px var(--sans)}
+.w .r{font:14px var(--sans);color:var(--soft)}
+.row{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline;padding:10px 0;border-bottom:2px dashed var(--grid)}
 .row:last-child{border:0}
-.row .h{font-size:26px}.row .p{font:500 15px system-ui,sans-serif}.row .r{grid-column:2;font:14px system-ui,sans-serif;color:var(--mute)}
+.row .h{font:26px "Noto Serif SC","Songti SC",Georgia,serif}.row .p{font:600 15px var(--sans)}.row .r{grid-column:2;font:14px var(--sans);color:var(--soft)}
 .t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}
-.zh{color:var(--mute);font-size:14px;margin:6px 0}
-.rule{border-left:8px solid var(--t4)}
-.rule h3{margin:0 0 8px;font-size:20px}
-.ex{display:grid;grid-template-columns:auto auto 1fr;gap:4px 12px;align-items:baseline;font-size:20px;padding:5px 0}
-.ex .p{font:500 15px system-ui,sans-serif}.ex .r{font:14px system-ui,sans-serif;color:var(--mute)}
-.note{background:rgba(200,50,30,.08);border-radius:8px;padding:10px 12px;margin:10px 0;font:15px/1.5 system-ui,sans-serif}
-.phone{font:600 22px system-ui,sans-serif;letter-spacing:.06em}
-.ml{font-size:16px;color:var(--mute);font-family:system-ui,sans-serif}
-.qa{display:grid;gap:10px}
-.q,.a{padding:10px 14px;border-radius:14px;max-width:92%}
-.q{background:var(--card);border:1.5px solid var(--line);border-bottom-left-radius:2px}
-.a{background:var(--cobalt);color:var(--bg);margin-left:auto;border-bottom-right-radius:2px}
-.a .r{color:inherit;opacity:.85}.a span[class^=t]{filter:brightness(1.5) saturate(.6)}
-.q .h,.a .h{font-size:22px}.q .p,.a .p{font:500 15px system-ui,sans-serif}.q .r,.a .r{font:14px system-ui,sans-serif}
-.q .r{color:var(--mute)}
-footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin-top:40px}
+.rule{margin:14px 0;border-left:12px solid var(--red)}
+.rule h3{margin-bottom:8px;font:italic 800 20px var(--serif)}
+.ex{display:grid;grid-template-columns:auto auto 1fr;gap:4px 12px;align-items:baseline;padding:5px 0;font-size:20px}
+.ex .p{font:600 15px var(--sans)}.ex .r{font:14px var(--sans);color:var(--soft)}
+.callout{margin:10px 0;padding:10px 12px;border:2px dashed var(--red);border-radius:10px;background:var(--no-bg);font:15px/1.5 var(--sans)}
+.phone{font:700 22px var(--sans);letter-spacing:.06em}
+.ml{font:16px var(--sans);color:var(--soft)}
+.qa{display:grid;gap:12px}
+.q,.a{max-width:92%;padding:10px 14px;background:var(--card);border:2px solid var(--line);border-radius:14px}
+.q{border-bottom-left-radius:2px;box-shadow:3px 3px 0 var(--shc)}
+.a{margin-left:auto;border-color:var(--blue);border-bottom-right-radius:2px;box-shadow:3px 3px 0 var(--blue-s)}
+.q .h,.a .h{font:22px "Noto Serif SC","Songti SC",Georgia,serif}.q .p,.a .p{font:600 15px var(--sans)}.q .r,.a .r{font:14px var(--sans);color:var(--soft)}
 
 /* ---- карточки ---- */
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px;font:700 13px system-ui,sans-serif}
-.chips button{padding:7px 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:inherit}
-.chips button[aria-pressed=true]{background:var(--cobalt);color:var(--bg);border-color:var(--cobalt)}
-.pbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:10px 0 4px}
-.pbar div{height:100%;width:0;background:var(--cobalt);transition:width .3s}
-.pstat{display:flex;justify-content:space-between;font:13px system-ui,sans-serif;color:var(--mute)}
-.deck{position:relative;height:320px;margin:20px 4px 16px;perspective:1000px}
-.fc{position:absolute;inset:0;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
-.fc.under{transform:scale(.95) translateY(14px);opacity:.7;pointer-events:none}
-.fc.under2{transform:scale(.9) translateY(28px);opacity:.4;pointer-events:none}
-.fc .inner{position:absolute;inset:0;transition:transform .45s;transform-style:preserve-3d}
-.fc.flip .inner{transform:rotateY(180deg)}
-.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:1.5px solid var(--line);border-radius:4px 28px 4px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center;box-shadow:0 10px 30px rgba(20,33,61,.12);overflow:auto}
-.face.back{transform:rotateY(180deg);border-color:var(--cobalt)}
-.face .tag{position:absolute;top:12px;left:16px;font:700 12px system-ui,sans-serif;color:var(--mute)}
-.face .hz{font-size:clamp(44px,15vw,80px);line-height:1.1;color:var(--cobalt);word-break:break-word}
-.face .py{font:600 clamp(22px,6.5vw,30px) system-ui,sans-serif}
-.face .tr{font:700 clamp(22px,6.5vw,30px) system-ui,sans-serif}
-.face .tip{font:12px system-ui,sans-serif;color:var(--mute)}
-.stR,.stL{position:absolute;top:34px;font:800 15px system-ui,sans-serif;letter-spacing:.06em;padding:4px 10px;border:3px solid;border-radius:8px;opacity:0;z-index:2}
-.stR{left:16px;color:var(--t2);border-color:var(--t2);transform:rotate(-12deg)}
-.stL{right:16px;color:var(--t4);border-color:var(--t4);transform:rotate(12deg)}
-.ctl{display:flex;justify-content:center;gap:16px;align-items:center}
-.ctl button{width:62px;height:62px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:24px;cursor:pointer}
-.ctl .no{color:var(--t4)}.ctl .ok{color:var(--t2)}.ctl .sm{width:44px;height:44px;font-size:18px}
-.dhint{text-align:center;font:12px system-ui,sans-serif;color:var(--mute);margin-top:12px}
-.dnote{text-align:center;font:12px system-ui,sans-serif;color:var(--mute);min-height:16px}
-.done{text-align:center;padding:40px 10px;font-family:system-ui,sans-serif}
-.done h3{font-size:22px;margin:0 0 8px}
-.done button{margin-top:14px;padding:11px 20px;border-radius:12px;border:0;background:var(--cobalt);color:var(--bg);font:700 14px system-ui,sans-serif;cursor:pointer}
+.deck .face .hz{font:700 clamp(44px,15vw,80px)/1.1 "Noto Serif SC","Songti SC",Georgia,serif;color:var(--blue);word-break:break-word}
+.deck .face .py{font:600 clamp(22px,6.5vw,30px) var(--sans)}
+.deck .face .tr{font:700 clamp(22px,6.5vw,30px) var(--sans)}
+.dhint,.dnote{text-align:center;font:12px var(--sans);color:var(--soft)}
+.dhint{margin-top:12px}.dnote{min-height:16px}
 
 /* ---- ввод пиньиня ---- */
 .pyform{display:flex;gap:8px;margin:0 4px 16px}
-.pyform input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:600 16px system-ui,sans-serif;outline:none}
-.pyform input:focus{border-color:var(--cobalt)}
-.pyform input.good{border-color:var(--t2);background:rgba(15,138,95,.12)}
-.pyform input.bad{border-color:var(--t4);background:rgba(200,50,30,.1);animation:shk .35s}
-.pyform button{padding:0 16px;border-radius:12px;border:0;background:var(--cobalt);color:var(--bg);font:700 14px system-ui,sans-serif;cursor:pointer}
-.pyres{text-align:center;font:600 14px system-ui,sans-serif;min-height:20px;margin:-6px 4px 10px}
-.pyres.good{color:var(--t2)}.pyres.bad{color:var(--t4)}
-@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-@media (prefers-reduced-motion:reduce){.fc .inner{transition:none}.pyform input.bad{animation:none}}
+.pyform input{flex:1;min-width:0;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:3px 3px 0 var(--shc);outline:none;font:600 16px var(--sans)}
+.pyform input.good{border-color:var(--green);background:var(--ok-bg)}
+.pyform input.bad{border-color:var(--red);background:var(--no-bg);animation:shk .35s}
+.pyform button{padding:0 16px;border:2px solid var(--line);border-radius:12px;background:var(--yel);color:#1b1f3b;box-shadow:3px 3px 0 var(--shc);font:800 14px var(--sans)}
+.pyres{min-height:20px;margin:-6px 4px 10px;text-align:center;font:600 14px var(--sans)}
+.pyres.good{color:var(--green)}.pyres.bad{color:var(--red)}
+@media (prefers-reduced-motion:reduce){.pyform input.bad{animation:none}}
 </style>
 </head>
 <body>
-<main>
-<header>
-  <div class="big">学中文</div>
+<div class="container narrow">
+<header class="hero cn">
+  <div class="big-zh">学中文</div>
   <div class="seal">Китайский</div>
   <p>Страны · вопросы · изменения тонов · слова</p>
   <div class="legend"><span class="t1">1 тон ā</span><span class="t2">2 тон á</span><span class="t3">3 тон ǎ</span><span class="t4">4 тон à</span></div>
 </header>
-<nav><a href="#s0">Карточки</a><a href="#s1">Слова</a><a href="#s2">Диалог</a><a href="#s3">Страны</a><a href="#s4">Тоны</a><a href="#s5">Еда и напитки</a><a href="#s6">Места</a><a href="#s7">Глаголы</a></nav>
+<nav class="jump"><a href="#s0">Карточки</a><a href="#s1">Слова</a><a href="#s2">Диалог</a><a href="#s3">Страны</a><a href="#s4">Тоны</a><a href="#s5">Еда и напитки</a><a href="#s6">Места</a><a href="#s7">Глаголы</a></nav>
 
-<section id="s0"><h2>卡片 <small>карточки со словами</small></h2>
+<section class="blk" id="s0"><h2>卡片 <small>карточки со словами</small></h2>
   <div class="chips" id="cGr"></div>
   <div class="chips" id="cDir"></div>
   <div class="pbar"><div id="cProg"></div></div>
@@ -127,39 +93,39 @@ footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin
   <p class="dnote" id="cNote"></p>
 </section>
 
-<section id="s1"><h2>基础 <small>основные слова</small></h2><div class="grid" id="g1"></div></section>
-<section id="s2"><h2>对话 <small>диалог</small></h2><div class="qa" id="qa"></div></section>
-<section id="s3"><h2>国家 <small>страны</small></h2><div class="grid" id="g3"></div></section>
+<section class="blk" id="s1"><h2>基础 <small>основные слова</small></h2><div class="grid" id="g1"></div></section>
+<section class="blk" id="s2"><h2>对话 <small>диалог</small></h2><div class="qa" id="qa"></div></section>
+<section class="blk" id="s3"><h2>国家 <small>страны</small></h2><div class="grid" id="g3"></div></section>
 
-<section id="s4"><h2>声调 <small>изменение тонов</small></h2>
-<div class="card rule"><h3>Правило № 1: изменение (модуляция) 3-го тона {в сочетаниях 2 слогов}</h3>
+<section class="blk" id="s4"><h2>声调 <small>изменение тонов</small></h2>
+<div class="box rule"><h3>Правило № 1: изменение (модуляция) 3-го тона {в сочетаниях 2 слогов}</h3>
 <p>Когда рядом находятся два слога, которые произносятся 3-м тоном, то первый из них мы будем менять на 2-й тон. Всем известный пример – <b class="h" data-p="你好 [nǐ hǎo]"></b>. Однако фактически мы всегда произносим <b data-p="[ní hǎo]"></b>, т.е. меняем тон первого слова – <b data-p="[nǐ]"></b> – со 3-го на 2-й тон.</p></div>
 
-<div class="card rule"><h3>Правило № 4: изменение тона иероглифа 不 <span class="ml">(不的变调)</span></h3>
+<div class="box rule"><h3>Правило № 4: изменение тона иероглифа 不 <span class="ml">(不的变调)</span></h3>
 <p>Отрицательная частица 不 произносится 4-м тоном, однако в том случае, если после этой отрицательной частицы следует слог, который также произносится 4-м тоном, тон 不 изменяется на 2-й (восходящий) тон.</p>
-<div class="note">不 + 4-й тон → <b data-p="bú"></b> (2-й тон)</div>
+<div class="callout">不 + 4-й тон → <b data-p="bú"></b> (2-й тон)</div>
 <div class="ex"><span>不是</span><span class="p" data-p="[bù shì] → [bú shì]"></span></div>
 <div class="ex"><span>不要</span><span class="p" data-p="[bù yào] → [bú yào]"></span></div>
 <div class="ex"><span>不去</span><span class="p" data-p="[bù qù] → [bú qù]"></span></div>
 </div>
 
-<div class="card rule"><h3>Правило № 5: изменение тона иероглифа 一 <span class="p" data-p="(yī)"></span> <span class="ml">(一的变调)</span></h3>
+<div class="box rule"><h3>Правило № 5: изменение тона иероглифа 一 <span class="p" data-p="(yī)"></span> <span class="ml">(一的变调)</span></h3>
 <p>Основной тон иероглифа 一 (yī) является первым. Однако именно в первом тоне «一» произносится при изолированном произнесении в качестве порядкового числительного.</p>
-<div class="note"><b>一 + 1, 2, 3 тон → 4-й тон</b></div>
+<div class="callout"><b>一 + 1, 2, 3 тон → 4-й тон</b></div>
 <div class="ex"><span>一天</span><span class="p" data-p="yī tiān – yì tiān"></span><span class="r">один день</span></div>
-<div class="note"><b>一 + 4-й тон → 2-й тон</b> (yī + 4-й тон = yí)</div>
+<div class="callout"><b>一 + 4-й тон → 2-й тон</b> (yī + 4-й тон = yí)</div>
 <div class="ex"><span>一个</span><span class="p" data-p="yī gè – yí gè"></span><span class="r">одна штука</span></div>
-<div class="note"><b>Номера телефонов</b> (читается yao)</div>
+<div class="callout"><b>Номера телефонов</b> (читается yao)</div>
 <div class="phone">13917264636</div>
 <div class="phone" data-p="yāo sān jiǔ yāo qī èr liù sì liù sān liù"></div>
 </div>
 </section>
 
-<section id="s5"><h2>食物 <small>еда и напитки</small></h2><div class="card" id="food"></div><div class="grid" id="g5"></div></section>
-<section id="s6"><h2>地方 <small>места</small></h2><div class="grid" id="g6"></div></section>
-<section id="s7"><h2>动词 <small>глаголы и слова места</small></h2><div class="card" id="vb"></div></section>
+<section class="blk" id="s5"><h2>食物 <small>еда и напитки</small></h2><div class="box" id="food"></div><div class="grid" id="g5" style="margin-top:14px"></div></section>
+<section class="blk" id="s6"><h2>地方 <small>места</small></h2><div class="grid" id="g6"></div></section>
+<section class="blk" id="s7"><h2>动词 <small>глаголы и слова места</small></h2><div class="box" id="vb"></div></section>
 <footer>Цвет слога = его тон</footer>
-</main>
+</div>
 
 <script>
 var T={ā:1,ē:1,ī:1,ō:1,ū:1,ǖ:1,á:2,é:2,í:2,ó:2,ú:2,ǘ:2,ǎ:3,ě:3,ǐ:3,ǒ:3,ǔ:3,ǚ:3,à:4,è:4,ì:4,ò:4,ù:4,ǜ:4};
