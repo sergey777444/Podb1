@@ -1,11 +1,14 @@
-/* ФЛ1-ПОДб-11: вход + данные через Supabase + тема + нижняя навигация. Подключается в <head> каждой страницы. */
+/* ФЛ1-ПОДб-11: вход/регистрация + данные через Supabase + тема + нижняя навигация. Подключается в <head> каждой страницы.
+   Режимы:
+   - админ                    → всё
+   - подтверждённый ученик    → всё, кроме правки ДЗ/конспектов
+   - неподтверждённый (гость) → урезанный сайт, прогресс только в браузере, профиль (ник/аватар) сохраняется */
 (function () {
   const SB_URL = 'https://kmimcxrbdpsubpquenxz.supabase.co';
   const SB_KEY = 'sb_publishable__n7rX8CQCOxBvQlA3l0BBw_AnhSor-_';
   const HW_ID = 'ac41837c39a8785f2ce4';   // старый npoint ДЗ
   const NT_ID = 'b0bf097d8c176bdc856e';   // старый npoint конспектов
   const DOMAIN = '@group.local';
-  const GUEST_KEY = 'fl1_guest_mode';
 
   /* ---------- тема: одна на все страницы ---------- */
   function applyTheme(t) {
@@ -22,8 +25,10 @@
   const sb = supabase.createClient(SB_URL, SB_KEY);
   window.sb = sb;
   window.isAdmin = false;
-  window.isGuest = false;
-  window.currentUser = null;
+  window.isVerified = false;
+  window.isGuest = true;        /* true, пока не вошёл или не подтверждён */
+  window.authUser = null;       /* любой вошедший (даже неподтверждённый) */
+  window.currentUser = null;    /* только подтверждённый/админ — по нему страницы решают, сохранять ли в облако */
 
   let resolveReady;
   const ready = new Promise(r => (resolveReady = r));
@@ -39,7 +44,7 @@
     const u = String(url);
     if (u.includes(HW_ID) || u.includes(NT_ID)) {
       await ready;
-      /* гости не пишут ДЗ и не видят/не пишут конспекты */
+      /* неподтверждённые не пишут ДЗ и не видят/не пишут конспекты */
       if (window.isGuest) {
         if (u.includes(NT_ID)) return J([]);
         if (u.includes(HW_ID) && !isGet(opts)) {
@@ -99,23 +104,26 @@
     return J({});
   }
 
-  /* ---------- данные ученика (карточки и т.д.) — гости только localStorage ---------- */
+  /* ---------- данные ученика (прогресс карточек и т.д.) ----------
+     'profile' (ник/аватар) доступен любому вошедшему, остальное — только подтверждённым. */
   window.userData = {
     async get(key) {
-      if (window.isGuest || !window.currentUser) return null;
-      const { data } = await sb.from('user_data').select('value').eq('key', key).maybeSingle();
+      if (!window.authUser) return null;
+      if (key !== 'profile' && !window.isVerified) return null;
+      const { data } = await sb.from('user_data').select('value').eq('key', key).eq('user_id', window.authUser.id).maybeSingle();
       return data ? data.value : null;
     },
     async set(key, value) {
-      if (window.isGuest || !window.currentUser) return;
-      await sb.from('user_data').upsert({ user_id: window.currentUser.id, key, value });
+      if (!window.authUser) return;
+      if (key !== 'profile' && !window.isVerified) return;
+      await sb.from('user_data').upsert({ user_id: window.authUser.id, key, value });
     }
   };
 
   /* ---------- интерфейс входа и верхняя панель (используют переменные из theme.css) ---------- */
   const css = document.createElement('style');
   css.textContent = `
-  #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;color:var(--ink,#1b1f3b);font:15px var(--sans,system-ui,sans-serif);
+  #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;color:var(--ink,#1b1f3b);font:15px var(--sans,system-ui,sans-serif);
     background-color:var(--bg,#14162a);background-image:linear-gradient(var(--grid,#1f2345) 1px,transparent 1px),linear-gradient(90deg,var(--grid,#1f2345) 1px,transparent 1px);background-size:24px 24px}
   #authGate form{position:relative;width:min(360px,100%);display:grid;gap:12px;padding:26px 22px;background:var(--card,#1e2240);border:2px solid var(--line,#e9e6d8);border-radius:16px;box-shadow:5px 5px 0 var(--shc,#000)}
   #authGate h2{margin:0 0 4px;font:italic 800 26px var(--serif,Georgia,serif)}
@@ -123,15 +131,18 @@
   #authGate input:focus{box-shadow:3px 3px 0 var(--yel,#ffd84d)}
   #authGate button{padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;font:800 15px var(--sans,system-ui,sans-serif);box-shadow:3px 3px 0 var(--shc,#000);cursor:pointer}
   #authGate button:active{transform:translate(3px,3px);box-shadow:none}
-  #authGate .guest-btn{background:var(--card,#1e2240);color:var(--ink,#fff)}
-  #authGate .divider{display:flex;align-items:center;gap:10px;margin:2px 0;color:var(--soft,#9ca0bd);font-size:12px}
-  #authGate .divider::before,#authGate .divider::after{content:"";flex:1;height:0;border-top:2px dashed var(--soft,#9ca0bd);opacity:.5}
+  #authGate button:disabled{opacity:.6}
+  #authGate .atabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #authGate .atabs button{padding:9px;background:var(--card,#1e2240);color:var(--ink,#fff);box-shadow:2px 2px 0 var(--shc,#000);font-size:14px}
+  #authGate .atabs button.on{background:var(--yel,#ffd84d);color:#1b1f3b}
+  #authGate .ahint{margin:0;color:var(--soft,#9ca0bd);font-size:12.5px;line-height:1.45}
   #authErr{min-height:16px;color:var(--red,#ff5a70);font-size:13px;font-weight:700}
+  #authErr.ok{color:var(--green,#34d27b)}
   #authBar{position:fixed;top:8px;right:10px;z-index:9999;display:flex;gap:6px;align-items:center;font:700 12px var(--sans,system-ui,sans-serif)}
   #authBar span,#authBar button{padding:5px 10px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);color:var(--ink,#fff);font:inherit;box-shadow:2px 2px 0 var(--shc,#000)}
   #authBar button{cursor:pointer}
   #authBar button:active{transform:translate(2px,2px);box-shadow:none}
-  /* скрытие для гостей */
+  /* скрытие для неподтверждённых */
   html.is-guest .guest-hide,
   html.is-guest .add-box,
   html.is-guest .delete-btn,
@@ -143,14 +154,12 @@
 
   function setGuestMode(on) {
     window.isGuest = !!on;
-    try {
-      if (on) sessionStorage.setItem(GUEST_KEY, '1');
-      else sessionStorage.removeItem(GUEST_KEY);
-    } catch (e) {}
     document.documentElement.classList.toggle('is-guest', !!on);
   }
 
   function mountBar(inner, onOut) {
+    const old = document.getElementById('authBar');
+    if (old) old.remove();
     const bar = document.createElement('div');
     bar.id = 'authBar';
     bar.innerHTML = inner + '<button id="bTheme" type="button" aria-label="Сменить тему" title="Тема">🌓</button><button id="bOut" type="button">Выйти</button>';
@@ -179,13 +188,19 @@
 
   window.avatarHtml = avatarHtml;
 
+  function statusSuffix() {
+    if (window.isAdmin) return ' · админ';
+    if (!window.isVerified) return ' · ждёт подтверждения';
+    return '';
+  }
+
   function paintBar() {
     const el = document.getElementById('bProfile');
     if (!el) return;
     const pr = window.userProfile || {};
     const name = pr.nick || window.userLogin || '';
     el.innerHTML = avatarHtml(pr, 20, name.charAt(0).toUpperCase()) + '<b class="nm"></b>';
-    el.querySelector('.nm').textContent = name + (window.isAdmin ? ' · админ' : '');
+    el.querySelector('.nm').textContent = name + statusSuffix();
   }
 
   function openProfileEditor(login, done) {
@@ -247,7 +262,7 @@
     const save = async value => {
       const btn = $('#pfSave');
       btn.disabled = true;
-      const { error } = await sb.from('user_data').upsert({ user_id: window.currentUser.id, key: 'profile', value });
+      const { error } = await sb.from('user_data').upsert({ user_id: window.authUser.id, key: 'profile', value });
       btn.disabled = false;
       if (error) { console.error(error); $('#pfErr').textContent = 'Не удалось сохранить, попробуйте ещё раз'; return; }
       window.userProfile = value;
@@ -264,82 +279,113 @@
     setTimeout(() => $('#pfNick').focus(), 50);
   }
 
+  /* ---------- вход / регистрация ---------- */
   function showGate() {
+    if (document.getElementById('authGate')) return;
     const g = document.createElement('div');
     g.id = 'authGate';
-    g.innerHTML = `<form><h2>🎓 ФЛ1 • ПОДб-11</h2>
-      <input id="aLogin" placeholder="Логин" autocomplete="username" autocapitalize="none" required>
-      <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password" required>
-      <div id="authErr"></div><button type="submit">Войти</button>
-      <div class="divider">или</div>
-      <button type="button" class="guest-btn" id="aGuest">Войти как гость</button>
+    g.innerHTML = `<form novalidate><h2>🎓 ФЛ1 • ПОДб-11</h2>
+      <div class="atabs"><button type="button" data-m="in" class="on">Вход</button><button type="button" data-m="up">Регистрация</button></div>
+      <input id="aName" class="up" placeholder="Фамилия и имя" autocomplete="name" hidden>
+      <input id="aLogin" placeholder="Логин" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password">
+      <input id="aPass2" class="up" type="password" placeholder="Повторите пароль" autocomplete="new-password" hidden>
+      <p class="ahint up" hidden>Логин: 3–20 символов, латиница, цифры, . _ -<br>После регистрации админ должен подтвердить аккаунт — до этого сайт работает в ограниченном режиме.</p>
+      <div id="authErr"></div><button type="submit" id="aSubmit">Войти</button>
       </form>`;
     document.body.appendChild(g);
+    const $ = s => g.querySelector(s);
+    let mode = 'in';
+    const err = (t, ok) => { const e = $('#authErr'); e.textContent = t || ''; e.className = ok ? 'ok' : ''; };
+    g.querySelectorAll('.atabs button').forEach(b => b.onclick = () => {
+      mode = b.dataset.m;
+      g.querySelectorAll('.atabs button').forEach(x => x.classList.toggle('on', x === b));
+      g.querySelectorAll('.up').forEach(el => (el.hidden = mode !== 'up'));
+      $('#aPass').autocomplete = mode === 'up' ? 'new-password' : 'current-password';
+      $('#aSubmit').textContent = mode === 'up' ? 'Зарегистрироваться' : 'Войти';
+      err('');
+    });
     g.querySelector('form').onsubmit = async e => {
       e.preventDefault();
-      const login = g.querySelector('#aLogin').value.trim().toLowerCase();
-      const { error } = await sb.auth.signInWithPassword({ email: login + DOMAIN, password: g.querySelector('#aPass').value });
-      if (error) { g.querySelector('#authErr').textContent = 'Неверный логин или пароль'; return; }
-      setGuestMode(false);
+      err('');
+      const login = $('#aLogin').value.trim().toLowerCase();
+      const pass = $('#aPass').value;
+      const btn = $('#aSubmit');
+      if (mode === 'in') {
+        if (!login || !pass) return err('Введите логин и пароль');
+        btn.disabled = true;
+        const { error } = await sb.auth.signInWithPassword({ email: login + DOMAIN, password: pass });
+        btn.disabled = false;
+        if (error) return err('Неверный логин или пароль');
+      } else {
+        const name = $('#aName').value.replace(/\s+/g, ' ').trim();
+        if (name.length < 3) return err('Введите фамилию и имя');
+        if (!/^[a-z0-9._-]{3,20}$/.test(login)) return err('Логин: 3–20 символов, латиница, цифры, . _ -');
+        if (pass.length < 6) return err('Пароль — минимум 6 символов');
+        if (pass !== $('#aPass2').value) return err('Пароли не совпадают');
+        btn.disabled = true;
+        const { data, error } = await sb.auth.signUp({
+          email: login + DOMAIN, password: pass, options: { data: { full_name: name } }
+        });
+        if (error) {
+          btn.disabled = false;
+          return err(/already|registered|exists/i.test(error.message) ? 'Этот логин уже занят' : 'Не удалось зарегистрироваться: ' + error.message);
+        }
+        if (!data.session) {
+          btn.disabled = false;
+          return err('Аккаунт создан, но вход не выполнен. Выключите «Confirm email» в Supabase.');
+        }
+        /* пароль для админ-панели (таблица читается только админами) */
+        const { error: pe } = await sb.from('student_passwords').upsert({ login, password: pass });
+        if (pe) console.error(pe);
+        btn.disabled = false;
+      }
       g.remove();
       init();
     };
-    g.querySelector('#aGuest').onclick = () => {
-      setGuestMode(true);
-      g.remove();
-      initGuest();
-    };
-  }
-
-  function initGuest() {
-    window.currentUser = null;
-    window.isAdmin = false;
-    setGuestMode(true);
-    /* пересобрать нижнюю навигацию без Базы и Конспектов */
-    const oldNav = document.getElementById('siteNav');
-    if (oldNav) oldNav.remove();
-    buildNav();
-    mountBar('<span>👤 Гость</span>', () => {
-      setGuestMode(false);
-      location.reload();
-    });
-    /* гости не видят Базу и Конспекты — редирект если открыли напрямую */
-    const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    if (page === 'base.html' || page === 'notes.html' || page === 'journal.html') {
-      location.replace('index.html');
-      return;
-    }
-    resolveReady();
-    document.dispatchEvent(new Event('auth-ready'));
-    document.dispatchEvent(new Event('guest-ready'));
   }
 
   async function init() {
-    /* восстановление гостевой сессии */
-    try {
-      if (sessionStorage.getItem(GUEST_KEY) === '1') {
-        initGuest();
-        return;
-      }
-    } catch (e) {}
-
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return showGate();
-    setGuestMode(false);
-    window.currentUser = session.user;
-    const { data: p } = await sb.from('profiles').select('login,full_name,role').eq('id', session.user.id).maybeSingle();
+    window.authUser = session.user;
+
+    let { data: p } = await sb.from('profiles').select('login,full_name,role,verified').eq('id', session.user.id).maybeSingle();
+    if (!p) { /* профиль создаётся триггером — на всякий случай одна повторная попытка */
+      await new Promise(r => setTimeout(r, 700));
+      ({ data: p } = await sb.from('profiles').select('login,full_name,role,verified').eq('id', session.user.id).maybeSingle());
+    }
     window.isAdmin = !!p && p.role === 'admin';
+    window.isVerified = window.isAdmin || (!!p && p.verified === true);
+    window.currentUser = window.isVerified ? session.user : null;
+    setGuestMode(!window.isVerified);
+    window.userLogin = p ? p.login : (session.user.email || '').split('@')[0];
+
     if (!window.isAdmin) {
       const s = document.createElement('style');
       s.textContent = '.add-box,.delete-btn,.admin-box,.admin-toggle-box,.btn-toggle{display:none!important}';
       document.head.appendChild(s);
     }
-    window.userLogin = p ? p.login : '';
+
+    /* неподтверждённые не видят Базу, Конспекты и Журнал */
+    if (window.isGuest) {
+      const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      if (page === 'base.html' || page === 'notes.html' || page === 'journal.html' || page === 'admin.html') {
+        location.replace('index.html');
+        return;
+      }
+    }
+
     try { window.userProfile = (await window.userData.get('profile')) || {}; } catch (e) { window.userProfile = {}; }
+
+    /* пересобрать нижнюю навигацию под текущий статус */
+    const oldNav = document.getElementById('siteNav');
+    if (oldNav) oldNav.remove();
+    buildNav();
+
     const bar = mountBar(
       `<span id="bProfile" role="button" tabindex="0" title="Мой профиль и прогресс" style="cursor:pointer"></span>`,
       async () => {
-        setGuestMode(false);
         await sb.auth.signOut();
         location.reload();
       });
@@ -350,9 +396,10 @@
       ab.onclick = () => { location.href = 'admin.html'; };
       bar.insertBefore(ab, bar.querySelector('#bTheme'));
     }
-    bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
+    bar.querySelector('#bProfile').onclick = () => openProgress(window.userLogin);
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
+    if (window.isGuest) document.dispatchEvent(new Event('guest-ready'));
   }
 
   /* ---------- слова для карточек (копия WD из phonetics.html — при правке менять в обоих местах) ---------- */
@@ -409,14 +456,15 @@
   #prgBox .ch{display:flex;flex-wrap:wrap;gap:6px}
   #prgBox .ch span{padding:4px 10px;border:2px dashed var(--soft,#9ca0bd);border-radius:99px;color:var(--soft,#9ca0bd);font-size:13px}
   #prgBox .ch span.ok{border:2px solid var(--green,#34d27b);background:var(--ok-bg,rgba(52,210,123,.14));color:var(--green,#34d27b);font-weight:700}
-  #prgBox .go{display:block;margin-top:14px;padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;text-align:center;font-weight:800;text-decoration:none;box-shadow:3px 3px 0 var(--shc,#000)}`;
+  #prgBox .go{display:block;margin-top:14px;padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;text-align:center;font-weight:800;text-decoration:none;box-shadow:3px 3px 0 var(--shc,#000)}
+  #prgBox .pend{margin:12px 0 0;padding:10px 12px;border:2px dashed var(--red,#ff5a70);border-radius:12px;background:var(--no-bg,rgba(255,90,112,.14));font-size:13px;line-height:1.5}`;
   document.head.appendChild(css2);
 
   const css3 = document.createElement('style');
   css3.textContent = `
   .av{display:inline-grid;place-items:center;flex:none;border:2px solid var(--line,#e9e6d8);border-radius:50%;background-size:cover;background-position:center;color:#1b1f3b;font-style:normal;font-weight:800;line-height:1;vertical-align:middle;overflow:hidden}
   #authBar{max-width:calc(100vw - 20px)}
-  #authBar .nm{display:inline-block;max-width:120px;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-weight:700}
+  #authBar .nm{display:inline-block;max-width:150px;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-weight:700}
   #authBar #bProfile{display:inline-flex;align-items:center}
   #prgBox .pcard{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:10px 12px;border:2px dashed var(--line,#e9e6d8);border-radius:14px;background:var(--card,#1e2240)}
   #prgBox .pn{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -458,7 +506,7 @@
     ['words.html', '🇬🇧', 'Слова'],
     ['china.html', '🀄', 'Китайский']
   ];
-  /* гости не видят Конспекты и Базу */
+  /* неподтверждённые не видят Конспекты, Базу и Журнал */
   const PAGES_GUEST = PAGES_ALL.filter(([h]) => h !== 'notes.html' && h !== 'base.html' && h !== 'journal.html');
 
   const NAV_CSS = `
@@ -518,7 +566,7 @@
       const saved = await window.userData.get('chinese_learned_words');
       if (Array.isArray(saved)) chLearned = new Set(saved);
     } catch (e) { console.error(e); }
-    /* если облако пустое — подтянуть localStorage (в т.ч. для гостя) */
+    /* если облако пустое — подтянуть localStorage (в т.ч. для неподтверждённых) */
     try {
       if (!learned.size) {
         const a = JSON.parse(localStorage.getItem('phonetics_learned_words') || '[]');
@@ -596,7 +644,8 @@
     const paint = () => {
       back.querySelector('#prgBox').innerHTML =
         `<div class="top"><h3>📊 Прогресс: ${esc((window.userProfile && window.userProfile.nick) || login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
-        ((window.currentUser && !window.isGuest) ? `<div class="pcard">${avatarHtml(window.userProfile, 46, (login || '?').charAt(0).toUpperCase())}<div class="pn"><b>${esc((window.userProfile && window.userProfile.nick) || login)}</b><small>логин: ${esc(login)}</small></div><button type="button" class="pedit">✏️ Изменить</button></div>` : '') +
+        (window.authUser ? `<div class="pcard">${avatarHtml(window.userProfile, 46, (login || '?').charAt(0).toUpperCase())}<div class="pn"><b>${esc((window.userProfile && window.userProfile.nick) || login)}</b><small>логин: ${esc(login)}</small></div><button type="button" class="pedit">✏️ Изменить</button></div>` : '') +
+        (window.authUser && !window.isVerified ? `<div class="pend">⏳ Аккаунт ждёт подтверждения админом. Пока он не подтверждён, прогресс хранится только в этом браузере, а Конспекты, База и Журнал скрыты. Профиль (ник и аватарка) сохраняется.</div>` : '') +
         `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
         (subj === 'all' ? enHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
       back.querySelector('.x').onclick = close;
