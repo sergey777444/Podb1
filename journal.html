@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📓 Журнал — ФЛ1-ПОДб-11</title>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="journals.js?v=1"></script>
+<script src="app.js?v=15"></script>
+<style>
+.wide{width:min(1200px,calc(100% - 36px))}
+.frame{position:relative;padding:0;overflow:hidden;height:calc(100dvh - var(--bar-h) - var(--nav-h) - 250px);min-height:420px}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.frame .wait{position:absolute;inset:0;display:grid;place-items:center;color:var(--soft);font-style:italic}
+.sub{margin:2px 0 10px;color:var(--soft);font-size:13px}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.acts .btn{text-decoration:none;display:inline-flex;align-items:center}
+.hint{margin-top:10px;color:var(--soft);font-size:12.5px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="container wide">
+  <header class="hero">
+    <span class="badge">📓 Успеваемость</span>
+    <h1>Жур<span class="hl">нал</span></h1>
+    <p>Выберите предмет — таблица откроется прямо здесь</p>
+  </header>
+
+  <div class="chips scroll" id="subj" role="tablist"></div>
+  <div class="sub" id="full"></div>
+  <div class="box frame"><div class="wait" id="wait">Загрузка таблицы…</div><iframe id="fr" title="Журнал" loading="lazy"></iframe></div>
+  <div class="acts">
+    <a class="btn ghost" id="open" target="_blank" rel="noopener">Открыть в Google Таблицах ↗</a>
+  </div>
+  <p class="hint" id="hint"></p>
+</div>
+
+<script>
+(async function () {
+  await window.authReady;
+  if (window.isGuest) { location.replace('index.html'); return; }
+  const all = (window.JOURNALS || []).filter(j => !j.adminOnly || window.isAdmin);
+  const subj = document.getElementById('subj'), fr = document.getElementById('fr'), wait = document.getElementById('wait'),
+        full = document.getElementById('full'), open = document.getElementById('open'), hint = document.getElementById('hint');
+  if (!all.length) { document.querySelector('.frame').innerHTML = '<div class="wait">Журналов пока нет</div>'; return; }
+
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function embedUrl(j) {
+    if (j.embed) return j.embed;
+    const m = /\/d\/([\w-]+)/.exec(j.url), g = /[?#&]gid=(\d+)/.exec(j.url);
+    return `https://docs.google.com/spreadsheets/d/${m ? m[1] : ''}/edit?${g ? 'gid=' + g[1] + '&' : ''}rm=minimal`;
+  }
+  let timer;
+  function pick(id) {
+    const j = all.find(x => x.id === id) || all[0];
+    try { localStorage.setItem('journal_subject', j.id); } catch (e) {}
+    subj.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === j.id));
+    full.textContent = j.full || j.title;
+    open.href = j.url;
+    hint.textContent = '';
+    wait.style.display = 'grid'; wait.textContent = 'Загрузка таблицы…';
+    clearTimeout(timer);
+    fr.onload = () => { wait.style.display = 'none'; clearTimeout(timer); };
+    fr.src = embedUrl(j);
+    timer = setTimeout(() => {
+      hint.textContent = 'Если таблица не появилась — откройте её кнопкой выше. Для встроенного вида таблица должна быть открыта «всем, у кого есть ссылка».';
+    }, 8000);
+  }
+  subj.innerHTML = all.map(j => `<button type="button" role="tab" data-id="${esc(j.id)}">${esc(j.icon || '📓')} ${esc(j.title)}</button>`).join('');
+  subj.onclick = e => { const b = e.target.closest('button'); if (b) { history.replaceState(null, '', '#' + b.dataset.id); pick(b.dataset.id); } };
+  let start = location.hash.slice(1);
+  try { start = start || localStorage.getItem('journal_subject') || ''; } catch (e) {}
+  pick(start);
+})();
+</script>
+</body>
+</html>
