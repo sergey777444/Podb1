@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <script src="words-data.js?v=6"></script>
-<script src="words-vb.js?v=1"></script>
-<script src="app.js?v=9"></script>
+<script src="words-vb.js?v=2"></script>
+<script src="app.js?v=10"></script>
 <title>🇬🇧 Слова для устного английского — ФЛ1-ПОДб-11</title>
 <script>
   if (localStorage.getItem('user-theme') === 'light') document.documentElement.removeAttribute('data-theme');
@@ -134,7 +134,7 @@ section{display:none}section.on{display:block}
   applyTheme(localStorage.getItem('user-theme') || 'dark');
 
   const KEY = 'english_learned_words';       /* тот же ключ — окно прогресса в app.js продолжает работать */
-  const GROUPS = (window.EN_WORDS || []).concat(window.EN_VB || []);   /* EN_VB — Vocabulary Builder, прогресс независимый */
+  const GROUPS = (window.EN_WORDS || []).concat(window.EN_VB || []);   /* EN_VB — Vocabulary Builder, прогресс общий со всеми категориями */
   /* категории верхнего уровня; существующие группы слов — их подкатегории.
      Новую категорию добавлять сюда: { id, title, ids: [id групп из words-data.js] } */
   const CATS = [
@@ -145,7 +145,7 @@ section{display:none}section.on{display:block}
     { id: 'vbd', title: '📖 Vocabulary Builder', ids: GROUPS.filter(g => g.id.startsWith('vb')).map(g => g.id) }
   ];
   const catOf = gid => (CATS.find(c => c.ids.includes(gid)) || {}).id || '';
-  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, c: catOf(g.id), gt: g.title, k: g.scoped ? g.id + ':' + w[0] : w[0] })));
+  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, c: catOf(g.id), gt: g.title, k: w[0] })));
   const $ = s => document.querySelector(s);
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   let learned = new Set(), fCat = 'all', fGroup = 'all', fStatus = 'all', fQuery = '', dir = 'en';
@@ -288,7 +288,7 @@ section{display:none}section.on{display:block}
         return !q || (x.w + ' ' + x.d + ' ' + x.r).toLowerCase().includes(q);
       });
       if (!list.length) return;
-      const n = g.words.filter(w => learned.has(g.scoped ? g.id + ':' + w[0] : w[0])).length;
+      const n = g.words.filter(w => learned.has(w[0])).length;
       out += `<div class="group"><div class="gh"><h2>${esc(g.title)}</h2><small>${n} / ${g.words.length}</small></div>` +
         list.map(x => `<div class="w${learned.has(x.k) ? ' ok' : ''}" data-w="${esc(x.k)}" role="button" tabindex="0">
           <div class="chk">✓</div><div><div class="en">${esc(x.w)}</div><div class="ru2">${esc(x.r)}</div><div class="d2">${esc(x.d)}</div></div></div>`).join('') + '</div>';
