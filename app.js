@@ -234,17 +234,24 @@
   /* ---------- китайские слова для окна прогресса (копия списков из china.html — при правке менять в обоих местах; id = иероглифы) ---------- */
   const CH_WORDS = {"Основные": ["是", "哪", "国", "人", "从", "哪儿 / 哪里", "来"], "Страны": ["俄罗斯", "中国", "白俄罗斯", "美国", "英国", "法国", "加拿大", "韩国", "日本", "新加坡", "马来西亚", "澳大利亚"], "Еда": ["包子", "饺子", "面条", "馒头", "米饭"], "Напитки и фрукты": ["水", "茶", "牛奶", "咖啡", "可乐", "果汁", "汽水", "草莓", "西瓜", "苹果", "葡萄", "橙子", "香蕉", "橘子"], "Места": ["邮局", "学校", "银行", "博物馆", "公交车站", "公园", "商店", "电影院", "图书馆", "大学", "餐厅", "饭馆", "酒店", "药店", "医院"], "Глаголы": ["去", "在"]};
 
-  /* ---------- слова устного английского: список лежит в words-data.js (общий для words.html и этого окна) ---------- */
-  function loadEnWords() {
+  /* ---------- слова устного английского: списки лежат в words-data.js (EN_WORDS) и words-vb.js (EN_VB, Vocabulary Builder) ---------- */
+  function loadScriptOnce(src, prop) {
     return new Promise(res => {
-      if (window.EN_WORDS) return res(window.EN_WORDS);
+      if (window[prop]) return res(window[prop]);
       const s = document.createElement('script');
-      s.src = 'words-data.js?v=1';
-      s.onload = () => res(window.EN_WORDS || []);
+      s.src = src;
+      s.onload = () => res(window[prop] || []);
       s.onerror = () => res([]);
       document.head.appendChild(s);
     });
   }
+  async function loadEnWords() {
+    const a = await loadScriptOnce('words-data.js?v=6', 'EN_WORDS');
+    const b = await loadScriptOnce('words-vb.js?v=1', 'EN_VB');
+    return a.concat(b);
+  }
+  /* ключ слова в сохранении: у групп Vocabulary Builder (scoped) — свой, независимый от остальных категорий */
+  const enKey = (g, w) => g.scoped ? g.id + ':' + w[0] : w[0];
 
   /* ---------- стили окна прогресса и отступ под нижнюю панель ---------- */
   const css2 = document.createElement('style');
@@ -386,9 +393,9 @@
       }).join('') +
       `<a class="go" href="phonetics.html">Открыть карточки</a>`;
 
-    /* устный английский */
+    /* устный английский (включая Vocabulary Builder — у него свои независимые ключи) */
     const enTotal = EN.reduce((n, g) => n + g.words.length, 0);
-    const enDone = EN.reduce((n, g) => n + g.words.filter(w => enLearned.has(w[0])).length, 0);
+    const enDone = EN.reduce((n, g) => n + g.words.filter(w => enLearned.has(enKey(g, w))).length, 0);
     const enPct = enTotal ? Math.round(enDone / enTotal * 100) : 0;
 
     const enHtml = enTotal ?
@@ -396,9 +403,9 @@
        <div class="sub">Выучено слов: ${enDone} из ${enTotal} (${enPct}%)</div>
        <div class="bar"><i style="width:${enPct}%"></i></div>` +
       EN.map(g => {
-        const n = g.words.filter(w => enLearned.has(w[0])).length;
+        const n = g.words.filter(w => enLearned.has(enKey(g, w))).length;
         return `<div class="grp"><div class="gh"><span>${esc(g.title)}</span><small>${n} / ${g.words.length}</small></div>
-          <div class="ch">${g.words.map(w => `<span class="${enLearned.has(w[0]) ? 'ok' : ''}">${enLearned.has(w[0]) ? '✓ ' : ''}${esc(w[0])}</span>`).join('')}</div></div>`;
+          <div class="ch">${g.words.map(w => { const ok = enLearned.has(enKey(g, w)); return `<span class="${ok ? 'ok' : ''}">${ok ? '✓ ' : ''}${esc(w[0])}</span>`; }).join('')}</div></div>`;
       }).join('') +
       `<a class="go" href="words.html">Открыть слова</a>` : '';
 
