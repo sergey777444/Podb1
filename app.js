@@ -177,6 +177,8 @@
     return `<i class="av" style="${s};background-color:${col}">${em}</i>`;
   }
 
+  window.avatarHtml = avatarHtml;
+
   function paintBar() {
     const el = document.getElementById('bProfile');
     if (!el) return;
@@ -342,6 +344,12 @@
         location.reload();
       });
     paintBar();
+    if (window.isAdmin) {
+      const ab = document.createElement('button');
+      ab.type = 'button'; ab.textContent = '🛠'; ab.title = 'Админка: аккаунты учеников'; ab.setAttribute('aria-label', 'Админка');
+      ab.onclick = () => { location.href = 'admin.html'; };
+      bar.insertBefore(ab, bar.querySelector('#bTheme'));
+    }
     bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
