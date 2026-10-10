@@ -6,6 +6,7 @@
 <title>Китайский: конспект урока — ФЛ1-ПОДб-11</title>
 <link rel="stylesheet" href="theme.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
 <script src="app.js?v=14"></script>
 <style>
 :root,[data-theme="light"]{--t1:#1d4ed8;--t2:#0f8a5f;--t3:#b7791f;--t4:#c8321e}
@@ -52,6 +53,18 @@ section.blk>h2 small{font:600 14px var(--sans);color:var(--soft)}
 .dhint,.dnote{text-align:center;font:12px var(--sans);color:var(--soft)}
 .dhint{margin-top:12px}.dnote{min-height:16px}
 
+/* ---- порядок черт ---- */
+.stroke{display:none;margin:0 4px 14px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--card);text-align:center}
+.stroke .st{margin-bottom:8px;color:var(--soft);font:700 12px var(--sans)}
+.sgrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.sg{width:96px;height:96px;display:grid;place-items:center;border:2px solid var(--line);border-radius:10px;cursor:pointer;
+  background:
+    linear-gradient(var(--grid),var(--grid)) center/1px 100% no-repeat,
+    linear-gradient(var(--grid),var(--grid)) center/100% 1px no-repeat,
+    var(--bg)}
+.sg svg{display:block}
+.sgerr{padding:8px;color:var(--soft);font:13px var(--sans)}
+
 /* ---- ввод пиньиня ---- */
 .pyform{display:flex;gap:8px;margin:0 4px 16px}
 .pyform input{flex:1;min-width:0;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:3px 3px 0 var(--shc);outline:none;font:600 16px var(--sans)}
@@ -76,9 +89,11 @@ section.blk>h2 small{font:600 14px var(--sans);color:var(--soft)}
 <section class="blk" id="s0"><h2>卡片 <small>карточки со словами</small></h2>
   <div class="chips" id="cGr"></div>
   <div class="chips" id="cDir"></div>
+  <div class="chips" id="cOpt"></div>
   <div class="pbar"><div id="cProg"></div></div>
   <div class="pstat"><span id="cS1"></span><span id="cS2"></span></div>
   <div class="deck" id="deck"></div>
+  <div class="stroke" id="stroke"></div>
   <form class="pyform" id="pyForm" autocomplete="off">
     <input id="pyIn" type="text" placeholder="Введите пиньинь (ni hao, nǐ hǎo или ni3 hao3)" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
     <button type="submit" id="pyBtn">Проверить</button>
@@ -153,6 +168,8 @@ fill('vb',[['去','qù','идти, проходить'],['哪儿 / 哪里','nǎr
 (function(){
 var $=function(s){return document.querySelector(s)};
 var KEY='chinese_learned_words',learned=new Set(),fg='all',dir='zh',queue=[],hist=[],busy=false;
+var SKEY='zh_stroke_order',strokeOn=false,sKey='';
+try{strokeOn=localStorage.getItem(SKEY)==='1'}catch(e){}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(Array.from(learned)))}catch(e){}}
 var st;function saveCloud(){clearTimeout(st);st=setTimeout(async function(){
@@ -165,6 +182,38 @@ function loadLocal(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');if(Ar
 async function loadCloud(){try{if(window.userData&&window.currentUser){var s=await window.userData.get(KEY);if(Array.isArray(s))learned=new Set(s)}}catch(e){console.error(e)}start()}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0;var x=a[i];a[i]=a[j];a[j]=x}return a}
 var inG=function(c){return fg==='all'||c.g===fg};
+
+/* ---------- порядок написания (Hanzi Writer) ---------- */
+function strokes(){
+  var box=$('#stroke');
+  function hide(){box.style.display='none';box.innerHTML=''}
+  if(!strokeOn||!queue.length){sKey='';hide();return}
+  var top=$('.fc.top'),card=queue[0];
+  var vis=dir==='zh'||(top&&top.classList.contains('flip'));
+  var key=card.h+'|'+dir+'|'+vis;
+  if(key===sKey)return;
+  sKey=key;
+  if(!vis){hide();return}
+  var chars=[];
+  Array.from(card.h).forEach(function(c){if(/[\u4e00-\u9fff]/.test(c)&&chars.indexOf(c)<0)chars.push(c)});
+  if(!chars.length){hide();return}
+  box.style.display='block';
+  if(!window.HanziWriter){box.innerHTML='<div class="sgerr">Не удалось загрузить библиотеку порядка черт (нужен интернет)</div>';return}
+  box.innerHTML='<div class="st">✍️ Порядок написания · тап — повторить</div><div class="sgrid"></div>';
+  var grid=box.querySelector('.sgrid');
+  var cs=getComputedStyle(document.documentElement);
+  var ink=cs.getPropertyValue('--ink').trim()||'#fff',soft=cs.getPropertyValue('--soft').trim()||'#999',blue=cs.getPropertyValue('--blue').trim()||'#7aa2ff';
+  chars.forEach(function(ch){
+    var el=document.createElement('div');el.className='sg';grid.appendChild(el);
+    try{
+      var wr=HanziWriter.create(el,ch,{width:88,height:88,padding:5,strokeColor:ink,outlineColor:soft,radicalColor:blue,strokeAnimationSpeed:1,delayBetweenStrokes:250,showCharacter:false,showOutline:true,
+        onLoadCharDataSuccess:function(){wr.animateCharacter()},
+        onLoadCharDataError:function(){el.innerHTML='<div class="sgerr">'+esc(ch)+'<br>нет данных</div>'}});
+      el.onclick=function(){wr.animateCharacter()};
+    }catch(e){console.error(e);el.innerHTML='<div class="sgerr">'+esc(ch)+'</div>'}
+  });
+}
+new MutationObserver(strokes).observe($('#deck'),{attributes:true,attributeFilter:['class'],subtree:true});
 
 /* ---------- проверка пиньиня ---------- */
 /* без тонов: убираем диакритику, цифры, пробелы; ü = v = u */
@@ -217,6 +266,7 @@ function chips(){
   var gs=['all'].concat(Object.keys(CAT).map(function(k){return CAT[k]}));
   $('#cGr').innerHTML=gs.map(function(g){return '<button aria-pressed="'+(fg===g)+'" data-g="'+esc(g)+'">'+(g==='all'?'Все':esc(g))+'</button>'}).join('');
   $('#cDir').innerHTML=[['zh','汉字 → перевод'],['ru','перевод → 汉字']].map(function(d){return '<button aria-pressed="'+(dir===d[0])+'" data-d="'+d[0]+'">'+d[1]+'</button>'}).join('');
+  $('#cOpt').innerHTML='<button aria-pressed="'+strokeOn+'" data-o="stroke">✍️ Порядок черт</button>';
 }
 function start(){queue=shuffle(CARDS.filter(function(c){return inG(c)&&!learned.has(c.h)}));hist=[];draw()}
 function mk(c,cls){
@@ -226,18 +276,19 @@ function mk(c,cls){
   el.innerHTML='<div class="stR">ЗНАЮ</div><div class="stL">ЕЩЁ РАЗ</div><div class="inner"><div class="face"><span class="tag">'+esc(c.g)+'</span>'+front+'</div><div class="face back"><span class="tag">'+esc(c.g)+'</span>'+back+'</div></div>';
   return el}
 function draw(){
-  chips();resetInput();
+  chips();resetInput();sKey='';
   var total=CARDS.filter(inG).length,done=total-CARDS.filter(function(c){return inG(c)&&!learned.has(c.h)}).length;
   $('#cProg').style.width=(total?done/total*100:0)+'%';
   $('#cS1').textContent='Выучено '+done+' из '+total;$('#cS2').textContent='Осталось '+(total-done);
   var d=$('#deck');d.innerHTML='';
   $('#pyForm').style.display=queue.length?'flex':'none';
-  if(!queue.length){d.style.height='auto';
+  if(!queue.length){d.style.height='auto';strokes();
     d.innerHTML='<div class="done"><h3>'+(total?'Все слова выучены 🎉':'Здесь пока нет слов')+'</h3>'+(total?'<button id="again">Начать заново</button>':'')+'</div>';
     var b=$('#again');if(b)b.onclick=function(){CARDS.filter(inG).forEach(function(c){learned.delete(c.h)});persist();start()};return}
   d.style.height='320px';
   [2,1,0].forEach(function(n){if(queue[n])d.appendChild(mk(queue[n],n===0?'top':n===1?'under':'under2'))});
-  bind(d.querySelector('.top'))}
+  bind(d.querySelector('.top'));
+  strokes()}
 function bind(c){
   var x0=0,dx=0,drag=false,moved=false,sR=c.querySelector('.stR'),sL=c.querySelector('.stL');
   c.onpointerdown=function(e){drag=true;moved=false;dx=0;x0=e.clientX;c.setPointerCapture(e.pointerId);c.style.transition='none'};
@@ -263,6 +314,7 @@ $('#bUndo').onclick=function(){var h=hist.pop();if(!h)return;
   queue.unshift(h.x);draw()};
 $('#cGr').onclick=function(e){var g=e.target.dataset.g;if(g){fg=g;start()}};
 $('#cDir').onclick=function(e){var d=e.target.dataset.d;if(d){dir=d;start()}};
+$('#cOpt').onclick=function(e){if(e.target.dataset.o==='stroke'){strokeOn=!strokeOn;try{localStorage.setItem(SKEY,strokeOn?'1':'0')}catch(x){}sKey='';chips();strokes()}};
 loadLocal();start();
 document.addEventListener('auth-ready',loadCloud);
 if(window.currentUser)loadCloud();
