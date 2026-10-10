@@ -1,4 +1,4 @@
-/* ФЛ1-ПОДб-11: вход + данные через Supabase. Подключается в <head> каждой страницы. */
+/* ФЛ1-ПОДб-11: вход + данные через Supabase + тема + нижняя навигация. Подключается в <head> каждой страницы. */
 (function () {
   const SB_URL = 'https://kmimcxrbdpsubpquenxz.supabase.co';
   const SB_KEY = 'sb_publishable__n7rX8CQCOxBvQlA3l0BBw_AnhSor-_';
@@ -6,6 +6,18 @@
   const NT_ID = 'b0bf097d8c176bdc856e';   // старый npoint конспектов
   const DOMAIN = '@group.local';
   const GUEST_KEY = 'fl1_guest_mode';
+
+  /* ---------- тема: одна на все страницы ---------- */
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('user-theme', t); } catch (e) {}
+  }
+  let savedTheme = 'dark';
+  try { savedTheme = localStorage.getItem('user-theme') === 'light' ? 'light' : 'dark'; } catch (e) {}
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  window.toggleTheme = function () {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  };
 
   const sb = supabase.createClient(SB_URL, SB_KEY);
   window.sb = sb;
@@ -100,22 +112,25 @@
     }
   };
 
-  /* ---------- интерфейс входа ---------- */
+  /* ---------- интерфейс входа и верхняя панель (используют переменные из theme.css) ---------- */
   const css = document.createElement('style');
   css.textContent = `
-  #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#080b14;color:#f4f7ff;font:15px system-ui,sans-serif;padding:16px}
-  #authGate form{width:min(360px,100%);background:#131928;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:26px;display:grid;gap:12px}
-  #authGate h2{margin:0 0 4px;font-size:22px}
-  #authGate input{padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font:inherit}
-  #authGate button{padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;font:inherit;cursor:pointer}
-  #authGate .guest-btn{background:transparent;border:1px solid rgba(255,255,255,.2);color:#aeb8cc;font-weight:600}
-  #authGate .guest-btn:hover{border-color:rgba(255,255,255,.4);color:#fff}
-  #authGate .divider{display:flex;align-items:center;gap:10px;color:#78839a;font-size:12px;margin:2px 0}
-  #authGate .divider::before,#authGate .divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.1)}
-  #authErr{color:#ff6878;font-size:13px;min-height:16px}
-  #authBar{position:fixed;top:8px;right:8px;z-index:9999;display:flex;gap:6px;align-items:center;font:12px system-ui,sans-serif}
-  #authBar span{background:rgba(20,25,40,.85);color:#aeb8cc;padding:6px 10px;border-radius:99px}
-  #authBar button{background:rgba(20,25,40,.85);color:#f4f7ff;border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:6px 10px;font:inherit;cursor:pointer}
+  #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;color:var(--ink,#1b1f3b);font:15px var(--sans,system-ui,sans-serif);
+    background-color:var(--bg,#14162a);background-image:linear-gradient(var(--grid,#1f2345) 1px,transparent 1px),linear-gradient(90deg,var(--grid,#1f2345) 1px,transparent 1px);background-size:24px 24px}
+  #authGate form{position:relative;width:min(360px,100%);display:grid;gap:12px;padding:26px 22px;background:var(--card,#1e2240);border:2px solid var(--line,#e9e6d8);border-radius:16px;box-shadow:5px 5px 0 var(--shc,#000)}
+  #authGate h2{margin:0 0 4px;font:italic 800 26px var(--serif,Georgia,serif)}
+  #authGate input{padding:12px 14px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--bg,#14162a);color:var(--ink,#fff);font:600 15px var(--sans,system-ui,sans-serif);outline:none}
+  #authGate input:focus{box-shadow:3px 3px 0 var(--yel,#ffd84d)}
+  #authGate button{padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;font:800 15px var(--sans,system-ui,sans-serif);box-shadow:3px 3px 0 var(--shc,#000);cursor:pointer}
+  #authGate button:active{transform:translate(3px,3px);box-shadow:none}
+  #authGate .guest-btn{background:var(--card,#1e2240);color:var(--ink,#fff)}
+  #authGate .divider{display:flex;align-items:center;gap:10px;margin:2px 0;color:var(--soft,#9ca0bd);font-size:12px}
+  #authGate .divider::before,#authGate .divider::after{content:"";flex:1;height:0;border-top:2px dashed var(--soft,#9ca0bd);opacity:.5}
+  #authErr{min-height:16px;color:var(--red,#ff5a70);font-size:13px;font-weight:700}
+  #authBar{position:fixed;top:8px;right:10px;z-index:9999;display:flex;gap:6px;align-items:center;font:700 12px var(--sans,system-ui,sans-serif)}
+  #authBar span,#authBar button{padding:5px 10px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);color:var(--ink,#fff);font:inherit;box-shadow:2px 2px 0 var(--shc,#000)}
+  #authBar button{cursor:pointer}
+  #authBar button:active{transform:translate(2px,2px);box-shadow:none}
   /* скрытие для гостей */
   html.is-guest .guest-hide,
   html.is-guest .add-box,
@@ -133,6 +148,16 @@
       else sessionStorage.removeItem(GUEST_KEY);
     } catch (e) {}
     document.documentElement.classList.toggle('is-guest', !!on);
+  }
+
+  function mountBar(inner, onOut) {
+    const bar = document.createElement('div');
+    bar.id = 'authBar';
+    bar.innerHTML = inner + '<button id="bTheme" type="button" aria-label="Сменить тему" title="Тема">🌓</button><button id="bOut" type="button">Выйти</button>';
+    document.body.appendChild(bar);
+    bar.querySelector('#bTheme').onclick = window.toggleTheme;
+    bar.querySelector('#bOut').onclick = onOut;
+    return bar;
   }
 
   function showGate() {
@@ -170,14 +195,10 @@
     const oldNav = document.getElementById('siteNav');
     if (oldNav) oldNav.remove();
     buildNav();
-    const bar = document.createElement('div');
-    bar.id = 'authBar';
-    bar.innerHTML = `<span>👤 Гость</span><button id="bOut">Выйти</button>`;
-    document.body.appendChild(bar);
-    bar.querySelector('#bOut').onclick = () => {
+    mountBar('<span>👤 Гость</span>', () => {
       setGuestMode(false);
       location.reload();
-    };
+    });
     /* гости не видят Базу и Конспекты — редирект если открыли напрямую */
     const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
     if (page === 'base.html' || page === 'notes.html') {
@@ -209,16 +230,14 @@
       s.textContent = '.add-box,.delete-btn,.admin-box,.admin-toggle-box,.btn-toggle{display:none!important}';
       document.head.appendChild(s);
     }
-    const bar = document.createElement('div');
-    bar.id = 'authBar';
-    bar.innerHTML = `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span><button id="bOut">Выйти</button>`;
+    const bar = mountBar(
+      `<span id="bProfile" role="button" tabindex="0" title="Мой прогресс" style="cursor:pointer">📊 ${p ? p.login : ''}${window.isAdmin ? ' · админ' : ''}</span>`,
+      async () => {
+        setGuestMode(false);
+        await sb.auth.signOut();
+        location.reload();
+      });
     bar.querySelector('#bProfile').onclick = () => openProgress(p ? p.login : '');
-    document.body.appendChild(bar);
-    bar.querySelector('#bOut').onclick = async () => {
-      setGuestMode(false);
-      await sb.auth.signOut();
-      location.reload();
-    };
     resolveReady();
     document.dispatchEvent(new Event('auth-ready'));
   }
@@ -257,27 +276,27 @@
   const css2 = document.createElement('style');
   css2.textContent = `
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
-  #prgBack{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-  #prgBox{width:min(560px,100%);max-height:88vh;overflow:auto;background:#131928;color:#f4f7ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px))}
-  @media(min-width:600px){#prgBack{align-items:center}#prgBox{border-radius:22px}}
-  #prgBox h3{margin:0;font-size:20px}
-  #prgBox h4{margin:24px 0 0;font-size:16px}
+  #prgBack{position:fixed;inset:0;z-index:100000;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);font-family:var(--sans,system-ui,sans-serif)}
+  #prgBox{width:min(560px,100%);max-height:88vh;overflow:auto;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));background:var(--bg,#14162a);color:var(--ink,#f1efe6);border:2px solid var(--line,#e9e6d8);border-radius:20px 20px 0 0;box-shadow:0 -5px 0 var(--yel,#ffd84d)}
+  @media(min-width:600px){#prgBack{align-items:center}#prgBox{border-radius:20px;box-shadow:6px 6px 0 var(--shc,#000)}}
+  #prgBox h3{margin:0;font:italic 800 22px var(--serif,Georgia,serif)}
+  #prgBox h4{margin:24px 0 0;font:italic 800 18px var(--serif,Georgia,serif)}
   #prgBox .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-  #prgBox .x{background:rgba(255,255,255,.08);color:#fff;border:0;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer}
-  #prgBox .sub{color:#aeb8cc;font-size:13px;margin:4px 0 12px}
-  #prgBox .bar{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
-  #prgBox .bar i{display:block;height:100%;background:linear-gradient(90deg,#7c6cff,#45caff);border-radius:6px}
+  #prgBox .x{width:34px;height:34px;border:2px solid var(--line,#e9e6d8);border-radius:50%;background:var(--card,#1e2240);color:var(--ink,#fff);font-size:15px;cursor:pointer}
+  #prgBox .sub{margin:4px 0 12px;color:var(--soft,#9ca0bd);font-size:13px;font-weight:600}
+  #prgBox .bar{height:14px;margin:0;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);overflow:hidden}
+  #prgBox .bar i{display:block;height:100%;background:repeating-linear-gradient(45deg,var(--blue,#7aa2ff) 0 8px,var(--violet,#a290ff) 8px 16px)}
   #prgBox .sel{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
-  #prgBox .sel button{padding:7px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#aeb8cc;font-size:13px;font-weight:700;cursor:pointer}
-  #prgBox .sel button.on{background:linear-gradient(135deg,#7c6cff,#8b5cf6);border-color:transparent;color:#fff}
+  #prgBox .sel button{padding:7px 12px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);color:var(--ink,#fff);font:700 13px var(--sans,system-ui,sans-serif);box-shadow:2px 2px 0 var(--shc,#000);cursor:pointer}
+  #prgBox .sel button.on{background:var(--yel,#ffd84d);color:#1b1f3b}
   #prgBox h4:first-of-type{margin-top:18px}
   #prgBox .grp{margin-top:18px}
-  #prgBox .gh{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:8px;gap:10px}
-  #prgBox .gh small{color:#aeb8cc;font-weight:600;white-space:nowrap}
+  #prgBox .gh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-weight:800;font-size:14px}
+  #prgBox .gh small{color:var(--soft,#9ca0bd);font-weight:700;white-space:nowrap}
   #prgBox .ch{display:flex;flex-wrap:wrap;gap:6px}
-  #prgBox .ch span{padding:5px 10px;border-radius:99px;font-size:13px;border:1px solid rgba(255,255,255,.12);color:#78839a}
-  #prgBox .ch span.ok{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.5);color:#86efac}
-  #prgBox .go{display:block;margin-top:14px;text-align:center;padding:13px;border-radius:12px;background:linear-gradient(135deg,#7c6cff,#8b5cf6);color:#fff;font-weight:700;text-decoration:none}`;
+  #prgBox .ch span{padding:4px 10px;border:2px dashed var(--soft,#9ca0bd);border-radius:99px;color:var(--soft,#9ca0bd);font-size:13px}
+  #prgBox .ch span.ok{border:2px solid var(--green,#34d27b);background:var(--ok-bg,rgba(52,210,123,.14));color:var(--green,#34d27b);font-weight:700}
+  #prgBox .go{display:block;margin-top:14px;padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;text-align:center;font-weight:800;text-decoration:none;box-shadow:3px 3px 0 var(--shc,#000)}`;
   document.head.appendChild(css2);
 
   /* ---------- нижняя навигация (в Shadow DOM: стили страниц на неё не влияют) ---------- */
@@ -295,15 +314,14 @@
 
   const NAV_CSS = `
   :host{all:initial}
-  .wrap{display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(12,16,28,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.1);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
-  .in{display:flex;align-items:flex-start;gap:2px;width:min(640px,100%)}
-  a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:#9aa5bd;text-decoration:none;font-size:10px;font-weight:600;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent}
+  .wrap{display:flex;justify-content:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg,#14162a);border-top:2px solid var(--line,#e9e6d8);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+  .in{display:flex;align-items:flex-start;gap:4px;width:min(720px,100%)}
+  a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border:2px solid transparent;border-radius:12px;color:var(--soft,#9ca0bd);text-decoration:none;font-size:10px;font-weight:700;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent;transition:transform .15s}
   a b{font-size:20px;line-height:1;font-weight:400}
   a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  a.on{color:#fff;background:rgba(124,108,255,.35)}
-  .wrap.light{background:rgba(255,255,255,.94);border-top-color:rgba(20,30,50,.12)}
-  .wrap.light a{color:#5d687b}
-  .wrap.light a.on{color:#3b2fb0;background:rgba(124,108,255,.18)}`;
+  a.on{background:var(--yel,#ffd84d);color:#1b1f3b;border-color:var(--line,#e9e6d8);box-shadow:2px 2px 0 var(--shc,#000);transform:translateY(-3px)}
+  a:focus-visible{outline:3px solid var(--violet,#a290ff);outline-offset:1px}
+  @media (prefers-reduced-motion:reduce){a{transition:none}}`;
 
   function buildNav() {
     if (document.getElementById('siteNav')) return;
@@ -327,12 +345,6 @@
     new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     document.body.appendChild(host);
   }
-  function ensureNav() {
-    if (document.body) buildNav(); else document.addEventListener('DOMContentLoaded', buildNav);
-  }
-  /* пересобрать навигацию после определения роли */
-  const origResolve = resolveReady;
-  /* buildNav вызывается после init/initGuest, когда isGuest уже известен */
 
   /* ---------- окно прогресса по словам ---------- */
   async function openProgress(login) {
