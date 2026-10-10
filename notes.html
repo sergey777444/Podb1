@@ -3,68 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=10"></script>
 <title>📖 Лекционные конспекты — ФЛ1-ПОДб-11</title>
-<script>
-  if (localStorage.getItem('user-theme') === 'light') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', 'dark');
-</script>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js?v=12"></script>
 <style>
-:root{--bg:#080b14;--bg2:#0e1320;--card:rgba(19,25,40,.78);--card-h:rgba(25,32,51,.9);--text:#f4f7ff;--text2:#aeb8cc;--muted:#78839a;--border:rgba(255,255,255,.09);--accent:#7c6cff;--accent3:#8b5cf6;--danger:#ff6878;--shadow:0 20px 70px rgba(0,0,0,.35);--rl:20px;--rm:14px}
-[data-theme="light"]{--bg:#f3f6fb;--bg2:#fff;--card:rgba(255,255,255,.84);--card-h:rgba(255,255,255,.98);--text:#172033;--text2:#5d687b;--muted:#7c8799;--border:rgba(20,30,50,.09);--accent:#6557e8;--accent3:#7848dc;--shadow:0 20px 60px rgba(40,50,80,.12)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(124,108,255,.17),transparent 28%),radial-gradient(circle at 90% 20%,rgba(69,202,255,.12),transparent 25%),var(--bg);padding:20px 10px 60px}
-a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button{cursor:pointer}
-.container{width:min(1180px,calc(100% - 32px));margin:0 auto}
-.hero{padding:34px;margin-bottom:24px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(124,108,255,.14),rgba(69,202,255,.05) 45%,var(--card));box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(124,108,255,.13);border:1px solid rgba(124,108,255,.24);color:#bdb6ff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
-[data-theme="light"] .badge{color:#5c50c9}
-.hero h1{font-size:clamp(24px,4vw,36px);letter-spacing:-.03em}
-.theme-btn{height:48px;padding:0 16px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.05);font-weight:700;display:inline-flex;align-items:center;gap:8px}
-.add-box{border:1px solid var(--border);border-radius:var(--rl);padding:24px;margin-bottom:28px;background:var(--card);box-shadow:var(--shadow)}
-.add-box h3{margin-bottom:16px;font-size:18px}
+.add-box{margin-bottom:26px}
+.add-box h3{margin-bottom:16px;font:italic 800 19px var(--serif)}
 .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-grid-custom{display:grid;grid-template-columns:2fr 1fr;gap:12px}
 @media(max-width:700px){.form-grid-2,.form-grid-custom{grid-template-columns:1fr}}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
-.form-control{width:100%;padding:12px 14px;font-size:13px;border:1px solid var(--border);border-radius:var(--rm);background:rgba(255,255,255,.035);color:var(--text);outline:none}
-.form-control:focus{border-color:rgba(124,108,255,.65);box-shadow:0 0 0 4px rgba(124,108,255,.11)}
-select.form-control option{background:var(--bg2);color:var(--text)}
-.btn-submit{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;padding:13px 20px;border-radius:var(--rm);font-weight:700;font-size:14px;width:100%;margin-top:6px;box-shadow:0 8px 25px rgba(124,108,255,.3)}
-.btn-submit:disabled{opacity:.5;cursor:not-allowed}
-.tools-section{margin-bottom:24px}
-.filter-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.tag{background:rgba(255,255,255,.045);color:var(--text2);padding:8px 14px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--border)}
-.tag:hover,.tag.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent3));border-color:transparent}
-.status-bar{font-size:12px;color:var(--muted);margin-bottom:20px;padding-left:3px}
 .notes-grid{display:grid;gap:16px}
-.note-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.12)}
-.note-header{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);padding-right:35px}
-.note-subject{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--accent);background:rgba(124,108,255,.12);padding:4px 10px;border-radius:8px;border:1px solid rgba(124,108,255,.25);letter-spacing:.05em}
-.note-title{font-size:18px;font-weight:800;margin:8px 0 4px;letter-spacing:-.02em}
-.note-meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
-.note-content{font-size:13px;line-height:1.6;margin:12px 0;color:var(--text2);white-space:pre-wrap;word-break:break-word}
-.btn-link{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(124,108,255,.15);border:1px solid rgba(124,108,255,.3);color:var(--text);padding:12px 16px;border-radius:12px;font-size:13px;font-weight:700;margin-top:14px}
-.btn-link:hover{background:rgba(124,108,255,.25)}
-.delete-btn{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.delete-btn:hover{background:rgba(255,104,120,.15);color:var(--danger);border-color:rgba(255,104,120,.35)}
-@media(max-width:600px){.hero{padding:22px}.add-box{padding:18px}}
+.note-card{position:relative;padding:18px 18px 18px 20px;background:var(--card);border:2px solid var(--line);border-left:10px solid var(--violet);border-radius:var(--r);box-shadow:var(--sh)}
+.note-header{margin-bottom:12px;padding:0 40px 12px 0;border-bottom:2px dashed var(--line)}
+.note-subject{display:inline-block;padding:2px 9px;border:2px solid var(--line);border-radius:8px;background:var(--yel);color:#1b1f3b;font:800 11px var(--sans);letter-spacing:.05em;text-transform:uppercase}
+.note-title{margin:8px 0 4px;font:italic 800 20px/1.2 var(--serif)}
+.note-meta{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;color:var(--soft);font-size:12px}
+.note-content{margin:12px 0;color:var(--soft);font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.btn-link{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;padding:12px 16px;border:2px solid var(--line);border-radius:12px;background:var(--yel);color:#1b1f3b;font-weight:800;font-size:14px;box-shadow:3px 3px 0 var(--shc)}
+.btn-link:active{transform:translate(3px,3px);box-shadow:none}
+.delete-btn{position:absolute;top:14px;right:14px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:10px;background:var(--card);font-size:14px}
+.delete-btn:hover{background:var(--red)}
+.search-row{margin-bottom:4px}
 </style>
 </head>
 <body>
 <div class="container">
 
   <header class="hero">
-    <div>
-      <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
-      <h1>📖 Лекционные конспекты</h1>
-    </div>
-    <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeText">Светлая</span></button>
+    <span class="badge">🎓 ФЛ1 • ПОДб-11</span>
+    <h1>Лекционные <span class="hl">конспекты</span></h1>
+    <p>Ссылки на конспекты по дисциплинам</p>
   </header>
 
-  <div class="add-box">
+  <div class="box add-box">
     <h3>🔗 Добавить ссылку на конспект (Google Диск, Яндекс и др.)</h3>
     <form id="noteForm" onsubmit="saveNote(event)">
       <div class="form-grid-2">
@@ -101,23 +73,23 @@ select.form-control option{background:var(--bg2);color:var(--text)}
         <label>Краткое описание / Тезисы (необязательно)</label>
         <textarea id="contentText" class="form-control" rows="2" placeholder="Краткая аннотация или важные даты..."></textarea>
       </div>
-      <button type="submit" id="submitBtn" class="btn-submit">Опубликовать конспект</button>
+      <button type="submit" id="submitBtn" class="btn block">Опубликовать конспект</button>
     </form>
   </div>
 
-  <div class="tools-section">
+  <div class="search-row">
     <input type="text" id="searchInput" class="form-control" placeholder="🔍 Поиск лекций по теме, номеру, тексту..." oninput="renderNotes()">
-    <div class="filter-tags">
-      <button class="tag active" onclick="filterByTag('all', this)">Все лекции</button>
-      <button class="tag" onclick="filterByTag('История России', this)">История России</button>
-      <button class="tag" onclick="filterByTag('ТМК', this)">ТМК</button>
-      <button class="tag" onclick="filterByTag('СТПОИ', this)">СТПОИ</button>
-      <button class="tag" onclick="filterByTag('ОРГ', this)">ОРГ</button>
-      <button class="tag" onclick="filterByTag('ТЦО', this)">ТЦО</button>
+    <div class="chips filter-tags">
+      <button class="chip on" onclick="filterByTag('all', this)">Все лекции</button>
+      <button class="chip" onclick="filterByTag('История России', this)">История России</button>
+      <button class="chip" onclick="filterByTag('ТМК', this)">ТМК</button>
+      <button class="chip" onclick="filterByTag('СТПОИ', this)">СТПОИ</button>
+      <button class="chip" onclick="filterByTag('ОРГ', this)">ОРГ</button>
+      <button class="chip" onclick="filterByTag('ТЦО', this)">ТЦО</button>
     </div>
   </div>
 
-  <div class="status-bar" id="statusBar">Загрузка лекционных конспектов...</div>
+  <div class="status" id="statusBar">Загрузка лекционных конспектов...</div>
   <div class="notes-grid" id="notesContainer"></div>
 </div>
 
@@ -127,18 +99,6 @@ select.form-control option{background:var(--bg2);color:var(--text)}
 
   let allNotes = [];
   let activeTag = 'all';
-  const html = document.documentElement;
-
-  function applyTheme(theme) {
-    const icon = document.getElementById("themeIcon"), text = document.getElementById("themeText");
-    if (theme === 'light') { html.removeAttribute('data-theme'); icon.textContent = "🌙"; text.textContent = "Тёмная"; }
-    else { html.setAttribute('data-theme', 'dark'); icon.textContent = "☀️"; text.textContent = "Светлая"; }
-  }
-  function toggleTheme() {
-    const t = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('user-theme', t); applyTheme(t);
-  }
-  applyTheme(localStorage.getItem('user-theme') || 'dark');
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -233,7 +193,7 @@ select.form-control option{background:var(--bg2);color:var(--text)}
       return tag && hit;
     });
     if (!list.length) {
-      box.innerHTML = '<p style="text-align:center;color:var(--muted);margin-top:20px">Конспекты не найдены.</p>';
+      box.innerHTML = '<p class="empty">Конспекты не найдены.</p>';
       return;
     }
     box.innerHTML = list.map(n => `
@@ -253,8 +213,8 @@ select.form-control option{background:var(--bg2);color:var(--text)}
   }
 
   function filterByTag(tag, btn) {
-    document.querySelectorAll('.filter-tags .tag').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
+    document.querySelectorAll('.filter-tags .chip').forEach(t => t.classList.remove('on'));
+    btn.classList.add('on');
     activeTag = tag;
     renderNotes();
   }
