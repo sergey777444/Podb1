@@ -3,124 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=10"></script>
 <title>База знаний — ФЛ1-ПОДб-11</title>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js?v=12"></script>
 <style>
-:root{--bg:#080b14;--card:rgba(19,25,40,.78);--card-h:rgba(25,32,51,.9);--text:#f4f7ff;--text2:#aeb8cc;--muted:#78839a;--border:rgba(255,255,255,.09);--accent:#7c6cff;--accent3:#8b5cf6;--success:#48d597;--shadow:0 20px 70px rgba(0,0,0,.35);--rl:20px}
-[data-theme="light"]{--bg:#f3f6fb;--card:rgba(255,255,255,.84);--card-h:rgba(255,255,255,.98);--text:#172033;--text2:#5d687b;--muted:#7c8799;--border:rgba(20,30,50,.09);--accent:#6557e8;--accent3:#7848dc;--shadow:0 20px 60px rgba(40,50,80,.12)}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{min-height:100vh;font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(124,108,255,.17),transparent 28%),radial-gradient(circle at 90% 20%,rgba(69,202,255,.12),transparent 25%),var(--bg)}
-a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}
-.container{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:30px 0 60px}
-.hero{padding:34px;margin-bottom:22px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(124,108,255,.14),rgba(69,202,255,.05) 45%,var(--card));box-shadow:var(--shadow)}
-.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
-.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(124,108,255,.13);border:1px solid rgba(124,108,255,.24);color:#bdb6ff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
-[data-theme="light"] .badge{color:#5c50c9}
-.hero h1{margin-top:14px;font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.045em}
-.hero-subtitle{margin-top:12px;color:var(--text2);font-size:16px;line-height:1.6;max-width:650px}
-.theme-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 15px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.05)}
-.tools{position:sticky;top:12px;z-index:100;margin-bottom:24px;padding:14px;border:1px solid var(--border);border-radius:20px;background:rgba(10,14,25,.85);backdrop-filter:blur(22px)}
-[data-theme="light"] .tools{background:rgba(255,255,255,.88)}
+.tools{position:sticky;top:var(--bar-h);z-index:100;margin-bottom:8px;padding:12px;background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
 .search-row{display:flex;gap:10px}
-.search-box{position:relative;flex:1}
-.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:.7;pointer-events:none}
-#search{width:100%;height:50px;padding:0 15px 0 45px;border:1px solid var(--border);border-radius:14px;outline:none;color:var(--text);background:rgba(255,255,255,.045)}
-#search:focus{border-color:rgba(124,108,255,.65);box-shadow:0 0 0 4px rgba(124,108,255,.11)}
-.clear-btn{width:50px;height:50px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.045);font-size:20px}
-.filters{display:flex;gap:7px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
-.filters::-webkit-scrollbar{display:none}
-.filter{flex-shrink:0;padding:8px 13px;border:1px solid var(--border);border-radius:999px;color:var(--text2);background:transparent;font-size:12px;font-weight:700}
-.filter:hover,.filter.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent3));border-color:transparent}
-.results{margin-top:10px;padding-left:3px;color:var(--muted);font-size:12px}
-.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin:32px 3px 14px}
-.section-title h2{font-size:23px;letter-spacing:-.025em}
-.section-title span{color:var(--muted);font-size:12px}
-.subjects{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.subject{--c:#7c6cff;position:relative;overflow:hidden;padding:22px;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:0 12px 40px rgba(0,0,0,.12)}
-.subject::before{content:"";position:absolute;width:130px;height:130px;top:-75px;right:-55px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 30%,transparent),transparent 70%)}
-.subject:hover{background:var(--card-h);border-color:color-mix(in srgb,var(--c) 38%,transparent)}
+#search{flex:1;min-width:0}
+.clear-btn{width:46px;border:2px solid var(--line);border-radius:12px;background:var(--bg);font-size:20px;font-weight:800}
+.tools .chips{margin:10px 0 0}
+.results{margin-top:8px;color:var(--soft);font-size:12px}
+.subjects{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:760px){.subjects{grid-template-columns:1fr}}
+.subject{--c:#7c6cff;padding:18px;background:var(--card);border:2px solid var(--line);border-top:10px solid var(--c);border-radius:var(--r);box-shadow:var(--sh)}
 .subject.hidden{display:none}
-.subject-head{position:relative;display:flex;align-items:flex-start;gap:15px}
-.subject-icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:14px;background:color-mix(in srgb,var(--c) 13%,transparent);border:1px solid color-mix(in srgb,var(--c) 24%,transparent);font-size:22px}
-.subject-title h3{font-size:19px;line-height:1.2}
-.teacher{margin-top:5px;color:var(--text2);font-size:12px}
-.subject-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:17px}
-.link-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;color:var(--text2);background:rgba(255,255,255,.045);border:1px solid var(--border);font-size:11px;font-weight:700}
-.link-pill:hover{color:var(--text);background:color-mix(in srgb,var(--c) 10%,transparent)}
-.info-list{display:grid;gap:8px;margin-top:18px}
-.info-item{display:flex;gap:9px;padding:10px 11px;border-radius:11px;background:rgba(255,255,255,.025);color:var(--text2);font-size:13px;line-height:1.5}
-.info-item strong{color:var(--text)}
-.info-item::before{content:"•";flex-shrink:0;color:var(--c);font-size:17px;line-height:1}
-.alert{display:flex;gap:13px;align-items:flex-start;margin:20px 0;padding:17px;border-radius:17px;border:1px solid rgba(255,189,89,.2);background:rgba(255,189,89,.06)}
-.alert-icon{font-size:21px}
-.alert-content{color:var(--text2);font-size:13px;line-height:1.6}
-.alert-content strong{color:var(--text)}
-.table-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:var(--shadow)}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:500px}
-th,td{padding:14px 17px;text-align:left;border-bottom:1px solid var(--border)}
-th{color:var(--muted);background:rgba(255,255,255,.025);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
-td{color:var(--text2);font-size:13px}
-td:first-child{color:var(--text);font-weight:800}
-tr:last-child td{border-bottom:none}
-.break{color:var(--success);font-weight:700}
-.accordion{margin-top:18px;border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;background:var(--card)}
-.accordion-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:19px 21px;border:none;color:var(--text);background:transparent;text-align:left;font-weight:800}
+.subject-head{display:flex;align-items:flex-start;gap:14px}
+.subject-icon{width:48px;height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:12px;background:var(--c);font-size:22px;transform:rotate(-4deg)}
+.subject-title h3{font:italic 800 19px/1.2 var(--serif)}
+.teacher{margin-top:4px;color:var(--soft);font-size:12px}
+.subject-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
+.link-pill{padding:5px 11px;border:2px solid var(--line);border-radius:999px;background:var(--bg);font:700 12px var(--sans);box-shadow:2px 2px 0 var(--shc)}
+.link-pill:active{transform:translate(2px,2px);box-shadow:none}
+.info-list{display:grid;gap:6px;margin-top:16px}
+.info-item{display:flex;gap:9px;color:var(--soft);font-size:13px;line-height:1.5}
+.info-item strong{color:var(--ink)}
+.info-item::before{content:"✎";flex-shrink:0;color:var(--c);font-weight:800}
+.accordion{margin-top:14px;border:2px dashed var(--line);border-radius:12px;overflow:hidden}
+.accordion-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:none;background:transparent;text-align:left;font-weight:800}
 .chevron{transition:transform .25s}
 .accordion.open .chevron{transform:rotate(180deg)}
-.accordion-content{display:none;padding:0 21px 21px}
+.accordion-content{display:none;padding:0 14px 14px}
 .accordion.open .accordion-content{display:block}
-footer{margin-top:45px;padding-top:22px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:12px;line-height:1.7}
-footer strong{color:var(--text2)}
-.empty{display:none;padding:50px 20px;text-align:center;color:var(--muted)}
+.empty{display:none;padding:40px 20px}
 .empty.show{display:block}
-@media(max-width:800px){.container{width:min(100% - 20px,700px);padding-top:15px}.hero{padding:24px 20px}.hero h1{font-size:32px}.subjects{grid-template-columns:1fr}.tools{top:7px}}
-@media(max-width:520px){.theme-btn span{display:none}}
+.break{color:var(--green);font-weight:800}
+.useful{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:760px){.useful{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="container">
 
   <header class="hero">
-    <div class="hero-top">
-      <div>
-        <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
-        <h1>База знаний</h1>
-        <p class="hero-subtitle">Учебные материалы, преподаватели, ссылки, правила и полезная информация группы.</p>
-      </div>
-      <button type="button" class="theme-btn" onclick="toggleTheme()" aria-label="Переключить тему">
-        <span id="themeIcon">☀️</span><span id="themeText">Светлая</span>
-      </button>
-    </div>
+    <span class="badge">🎓 ФЛ1 • ПОДб-11</span>
+    <h1>База <span class="hl">знаний</span></h1>
+    <p>Учебные материалы, преподаватели, ссылки, правила и полезная информация группы.</p>
   </header>
 
   <section class="tools">
     <div class="search-row">
-      <div class="search-box">
-        <span class="search-icon">⌕</span>
-        <input id="search" type="search" placeholder="Поиск по предметам, преподавателям, правилам..." autocomplete="off" oninput="filterAll()">
-      </div>
+      <input id="search" class="form-control" type="search" placeholder="Поиск по предметам, преподавателям, правилам..." autocomplete="off" oninput="filterAll()">
       <button type="button" class="clear-btn" onclick="clearSearch()" aria-label="Очистить поиск">×</button>
     </div>
-    <div class="filters" id="filters"></div>
+    <div class="chips scroll" id="filters"></div>
     <div class="results" id="results">Показаны все предметы</div>
   </section>
 
-  <div class="section-title"><h2>📚 Предметы</h2><span>Учебная информация</span></div>
+  <h2 class="sec">📚 Предметы <small>Учебная информация</small></h2>
   <main class="subjects" id="subjects"></main>
 
   <div class="empty" id="empty"><div style="font-size:38px">🔍</div><strong>Ничего не найдено</strong><p>Попробуйте изменить запрос или выбрать другой предмет.</p></div>
 
-  <div class="section-title"><h2>📌 Общая информация</h2></div>
-  <div class="alert"><div class="alert-icon">📄</div><div class="alert-content"><strong>Справки</strong><br>Для большинства предметов: показываем справку преподавателю, затем относим её в деканат.</div></div>
-  <div class="alert"><div class="alert-icon">⚠️</div><div class="alert-content"><strong>Пропуски и опоздания</strong><br>Если пропущена пара, было опоздание или плохое самочувствие — заранее предупреждаем преподавателя или старосту.</div></div>
-  <div class="alert"><div class="alert-icon">🏃</div><div class="alert-content"><strong>Физкультура</strong><br>Справки отдавать старосте лично или отправлять фото (лучше в ВК либо в ТГ).</div></div>
+  <h2 class="sec">📌 Общая информация</h2>
+  <div class="alert"><div class="alert-icon">📄</div><div><strong>Справки</strong><br>Для большинства предметов: показываем справку преподавателю, затем относим её в деканат.</div></div>
+  <div class="alert"><div class="alert-icon">⚠️</div><div><strong>Пропуски и опоздания</strong><br>Если пропущена пара, было опоздание или плохое самочувствие — заранее предупреждаем преподавателя или старосту.</div></div>
+  <div class="alert"><div class="alert-icon">🏃</div><div><strong>Физкультура</strong><br>Справки отдавать старосте лично или отправлять фото (лучше в ВК либо в ТГ).</div></div>
 
-  <div class="section-title"><h2>🔔 Расписание звонков</h2><span>Время занятий</span></div>
-  <div class="table-card"><div class="table-wrap">
-    <table>
+  <h2 class="sec">🔔 Расписание звонков <small>Время занятий</small></h2>
+  <div class="box" style="padding:0"><div class="table-wrap">
+    <table style="min-width:420px">
       <thead><tr><th>Пара</th><th>Время</th><th>Перерыв</th></tr></thead>
       <tbody>
         <tr><td>1</td><td>08:00 — 09:30</td><td>10 мин</td></tr>
@@ -135,13 +87,13 @@ footer strong{color:var(--text2)}
     </table>
   </div></div>
 
-  <div class="section-title"><h2>🔗 Полезные ссылки</h2></div>
-  <div class="subjects" id="usefulLinks"></div>
+  <h2 class="sec">🔗 Полезные ссылки</h2>
+  <div class="useful" id="usefulLinks"></div>
 
-  <div class="section-title"><h2>👥 Данные группы</h2></div>
-  <div class="table-card" style="padding:21px"><div class="info-list" style="margin-top:0">
-    <div class="info-item"><strong>Группа:</strong> ФЛ1-ПОДб-11</div>
-    <div class="info-item guest-hide"><strong>Общая почта:</strong> podb-11@mail.ru</div>
+  <h2 class="sec">👥 Данные группы</h2>
+  <div class="box"><div class="info-list" style="margin-top:0">
+    <div class="info-item" style="--c:var(--red)"><strong>Группа:</strong> ФЛ1-ПОДб-11</div>
+    <div class="info-item guest-hide" style="--c:var(--red)"><strong>Общая почта:</strong> podb-11@mail.ru</div>
   </div></div>
 
   <footer>
@@ -152,21 +104,6 @@ footer strong{color:var(--text2)}
 </div>
 
 <script>
-  const html = document.documentElement;
-  html.dataset.theme = localStorage.getItem("user-theme") || "dark";
-  updateThemeButton();
-  function toggleTheme() {
-    const next = html.dataset.theme === "dark" ? "light" : "dark";
-    html.dataset.theme = next;
-    localStorage.setItem("user-theme", next);
-    updateThemeButton();
-  }
-  function updateThemeButton() {
-    const dark = html.dataset.theme === "dark";
-    document.getElementById("themeIcon").textContent = dark ? "☀️" : "🌙";
-    document.getElementById("themeText").textContent = dark ? "Светлая" : "Тёмная";
-  }
-
   /* ---------- ДАННЫЕ ПРЕДМЕТОВ ---------- */
   const M = "https://moodle.uio.csu.ru/course/view.php?id=";
   const mail = a => ["✉️ Почта", "mailto:" + a];
@@ -246,8 +183,8 @@ footer strong{color:var(--text2)}
       <div class="subject-links">${pill(u.link)}</div>
     </article>`).join("");
   document.getElementById("filters").innerHTML =
-    ['<button type="button" class="filter active" onclick="filterByTag(\'Все\', this)">Все</button>']
-      .concat(SUBJECTS.map(s => `<button type="button" class="filter" onclick="filterByTag('${s.tag}', this)">${s.tag}</button>`)).join("");
+    ['<button type="button" class="chip on" onclick="filterByTag(\'Все\', this)">Все</button>']
+      .concat(SUBJECTS.map(s => `<button type="button" class="chip" onclick="filterByTag('${s.tag}', this)">${s.tag}</button>`)).join("");
 
   /* ---------- ПОИСК ---------- */
   function filterAll() {
@@ -264,14 +201,14 @@ footer strong{color:var(--text2)}
   function clearSearch() {
     const input = document.getElementById("search");
     input.value = "";
-    document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
-    document.querySelector(".filter").classList.add("active");
+    document.querySelectorAll("#filters .chip").forEach(b => b.classList.remove("on"));
+    document.querySelector("#filters .chip").classList.add("on");
     filterAll();
     input.focus();
   }
   function filterByTag(tag, btn) {
-    document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+    document.querySelectorAll("#filters .chip").forEach(b => b.classList.remove("on"));
+    btn.classList.add("on");
     document.getElementById("search").value = tag === "Все" ? "" : tag;
     filterAll();
   }
