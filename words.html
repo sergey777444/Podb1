@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="words-data.js?v=3"></script>
+<script src="words-data.js?v=4"></script>
 <script src="app.js?v=8"></script>
 <title>🇬🇧 Слова для устного английского — ФЛ1-ПОДб-11</title>
 <script>
@@ -178,8 +178,11 @@ section{display:none}section.on{display:block}
   const inGroup = x => (fCat === 'all' || x.c === fCat) && (fGroup === 'all' || x.g === fGroup);
   const groupInFilter = g => (fCat === 'all' || catOf(g.id) === fCat) && (fGroup === 'all' || g.id === fGroup);
   function header() {
-    const done = ALL.filter(x => learned.has(x.w)).length, pct = ALL.length ? Math.round(done / ALL.length * 100) : 0;
-    $('#st1').textContent = `Выучено ${done} из ${ALL.length}`;
+    /* прогресс считаем только по выбранной категории / подкатегории */
+    const scope = ALL.filter(inGroup);
+    const done = scope.filter(x => learned.has(x.w)).length, total = scope.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    $('#st1').textContent = `Выучено ${done} из ${total}`;
     $('#st2').textContent = pct + '%';
     $('#prog').style.width = pct + '%';
     $('#catChips').innerHTML = [`<button class="chip${fCat === 'all' ? ' on' : ''}" data-c="all">Все</button>`]
