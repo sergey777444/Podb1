@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <script src="words-data.js?v=6"></script>
+<script src="words-vb.js?v=1"></script>
 <script src="app.js?v=8"></script>
 <title>🇬🇧 Слова для устного английского — ФЛ1-ПОДб-11</title>
 <script>
@@ -82,7 +83,7 @@ section{display:none}section.on{display:block}
     <div>
       <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
       <h1>🇬🇧 Слова для устного английского</h1>
-      <p>Unit 1 · Entertainment · Unit 2 · Sightseeing · Unit 3 · Things you need · Unit 4 · Society · Шкода Ю.Д.</p>
+      <p>Unit 1 · Entertainment · Unit 2 · Sightseeing · Unit 3 · Things you need · Unit 4 · Society · Vocabulary Builder · Шкода Ю.Д.</p>
     </div>
     <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeText">Светлая</span></button>
   </header>
@@ -133,17 +134,18 @@ section{display:none}section.on{display:block}
   applyTheme(localStorage.getItem('user-theme') || 'dark');
 
   const KEY = 'english_learned_words';       /* тот же ключ — окно прогресса в app.js продолжает работать */
-  const GROUPS = window.EN_WORDS || [];
+  const GROUPS = (window.EN_WORDS || []).concat(window.EN_VB || []);   /* EN_VB — Vocabulary Builder, прогресс независимый */
   /* категории верхнего уровня; существующие группы слов — их подкатегории.
      Новую категорию добавлять сюда: { id, title, ids: [id групп из words-data.js] } */
   const CATS = [
     { id: 'du1', title: '🎧 Dictation U.1', ids: GROUPS.filter(g => !g.id.startsWith('v')).map(g => g.id) },
     { id: 'vu2', title: '📘 Vocabulary U.2', ids: GROUPS.filter(g => g.id.startsWith('v2')).map(g => g.id) },
     { id: 'vu3', title: '🧰 Vocabulary U.3', ids: GROUPS.filter(g => g.id.startsWith('v3')).map(g => g.id) },
-    { id: 'vu4', title: '🏛️ Vocabulary U.4', ids: GROUPS.filter(g => g.id.startsWith('v4')).map(g => g.id) }
+    { id: 'vu4', title: '🏛️ Vocabulary U.4', ids: GROUPS.filter(g => g.id.startsWith('v4')).map(g => g.id) },
+    { id: 'vbd', title: '📖 Vocabulary Builder', ids: GROUPS.filter(g => g.id.startsWith('vb')).map(g => g.id) }
   ];
   const catOf = gid => (CATS.find(c => c.ids.includes(gid)) || {}).id || '';
-  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, c: catOf(g.id), gt: g.title })));
+  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, c: catOf(g.id), gt: g.title, k: g.scoped ? g.id + ':' + w[0] : w[0] })));
   const $ = s => document.querySelector(s);
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   let learned = new Set(), fCat = 'all', fGroup = 'all', fStatus = 'all', fQuery = '', dir = 'en';
@@ -182,7 +184,7 @@ section{display:none}section.on{display:block}
   function header() {
     /* прогресс считаем только по выбранной категории / подкатегории */
     const scope = ALL.filter(inGroup);
-    const done = scope.filter(x => learned.has(x.w)).length, total = scope.length;
+    const done = scope.filter(x => learned.has(x.k)).length, total = scope.length;
     const pct = total ? Math.round(done / total * 100) : 0;
     $('#st1').textContent = `Выучено ${done} из ${total}`;
     $('#st2').textContent = pct + '%';
@@ -202,7 +204,7 @@ section{display:none}section.on{display:block}
 
   /* ---------- карточки ---------- */
   function start() {
-    queue = shuffle(ALL.filter(x => inGroup(x) && !learned.has(x.w)));
+    queue = shuffle(ALL.filter(x => inGroup(x) && !learned.has(x.k)));
     hist = [];
     renderDeck();
   }
@@ -227,7 +229,7 @@ section{display:none}section.on{display:block}
       d.style.height = 'auto';
       d.innerHTML = `<div class="done"><h3>${total ? 'Все слова выучены 🎉' : 'Здесь пока нет слов'}</h3><div class="tip">${total ? total + ' карточек пройдено' : ''}</div>${total ? '<button id="again">Начать заново</button>' : ''}</div>`;
       const b = $('#again');
-      if (b) b.onclick = () => { ALL.filter(inGroup).forEach(x => learned.delete(x.w)); persist(); start(); renderList(); };
+      if (b) b.onclick = () => { ALL.filter(inGroup).forEach(x => learned.delete(x.k)); persist(); start(); renderList(); };
       return;
     }
     d.style.height = '340px';
@@ -253,14 +255,14 @@ section{display:none}section.on{display:block}
     c.style.transition = 'transform .3s,opacity .3s';
     c.style.transform = `translateX(${ok ? 600 : -600}px) rotate(${ok ? 30 : -30}deg)`; c.style.opacity = 0;
     const x = queue.shift(); hist.push({ x, ok });
-    if (ok) { learned.add(x.w); persist(); } else queue.push(x);
+    if (ok) { learned.add(x.k); persist(); } else queue.push(x);
     setTimeout(() => { renderDeck(); renderList(); }, 260);
   }
   $('#bOk').onclick = () => go(true);
   $('#bNo').onclick = () => go(false);
   $('#bUndo').onclick = () => {
     const h = hist.pop(); if (!h) return;
-    if (h.ok) { learned.delete(h.x.w); persist(); } else { const i = queue.lastIndexOf(h.x); if (i > -1) queue.splice(i, 1); }
+    if (h.ok) { learned.delete(h.x.k); persist(); } else { const i = queue.lastIndexOf(h.x); if (i > -1) queue.splice(i, 1); }
     queue.unshift(h.x); renderDeck(); renderList();
   };
   document.addEventListener('keydown', e => {
@@ -280,15 +282,15 @@ section{display:none}section.on{display:block}
     GROUPS.forEach(g => {
       if (!groupInFilter(g)) return;
       const list = ALL.filter(x => x.g === g.id).filter(x => {
-        const d = learned.has(x.w);
+        const d = learned.has(x.k);
         if (fStatus === 'new' && d) return false;
         if (fStatus === 'done' && !d) return false;
         return !q || (x.w + ' ' + x.d + ' ' + x.r).toLowerCase().includes(q);
       });
       if (!list.length) return;
-      const n = g.words.filter(w => learned.has(w[0])).length;
+      const n = g.words.filter(w => learned.has(g.scoped ? g.id + ':' + w[0] : w[0])).length;
       out += `<div class="group"><div class="gh"><h2>${esc(g.title)}</h2><small>${n} / ${g.words.length}</small></div>` +
-        list.map(x => `<div class="w${learned.has(x.w) ? ' ok' : ''}" data-w="${esc(x.w)}" role="button" tabindex="0">
+        list.map(x => `<div class="w${learned.has(x.k) ? ' ok' : ''}" data-w="${esc(x.k)}" role="button" tabindex="0">
           <div class="chk">✓</div><div><div class="en">${esc(x.w)}</div><div class="ru2">${esc(x.r)}</div><div class="d2">${esc(x.d)}</div></div></div>`).join('') + '</div>';
     });
     $('#list').innerHTML = out || '<div class="empty">Ничего не найдено</div>';
