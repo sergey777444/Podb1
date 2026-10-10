@@ -1,6 +1,7 @@
-/* Слова для устного английского (Шкода Ю.Д.) — Unit 1 Entertainment.
+/* Слова для устного английского (Шкода Ю.Д.) — Unit 1 Entertainment, Unit 2 Sightseeing.
    Один источник данных: его читают и words.html, и окно прогресса в app.js.
-   Формат слова: [слово, значение по-английски, перевод]. Слово = уникальный id. */
+   Формат слова: [слово, значение по-английски, перевод]. Слово = уникальный id (не повторять между группами).
+   Группы Unit 2 имеют id с префиксом v2 — по нему words.html относит их к категории «Vocabulary U.2». */
 window.EN_WORDS = [
   { id: 'u1a', title: 'p.8–9 · Привычки (Habits)', words: [
     ['all the time', 'very often; constantly', 'постоянно'],
@@ -121,5 +122,118 @@ window.EN_WORDS = [
     ['score', 'a written form of a musical composition', 'партитура, музыка к фильму'],
     ['manuscript', 'something written by hand', 'рукопись'],
     ['setting', 'scenery used to identify a location of a dramatic production', 'место действия, антураж']
+  ]},
+
+  /* ---------------- Unit 2 · Sightseeing ---------------- */
+  { id: 'v2_14', title: 'p.14 ex.1 · Sightseeing activities', words: [
+    ['go up a tower / ferris wheel for the view', 'to climb or ride up high to see the city', 'подняться на башню / колесо обозрения ради вида'],
+    ['go on a bike / Segway / bus tour', 'to see a place on an organised ride', 'отправиться на велотур / сегвей-тур / автобусную экскурсию'],
+    ['visit an unusual museum / monument', 'to see a different, interesting attraction', 'посетить необычный музей / памятник'],
+    ['visit a temple / mosque / cathedral', 'to see a place of worship as a sight', 'посетить храм / мечеть / собор'],
+    ['go to a theme park', 'to spend a day at an amusement park', 'сходить в тематический парк'],
+    ['watch wildlife', 'to observe wild animals in nature', 'наблюдать за дикой природой']
+  ]},
+  { id: 'v2_15a', title: 'p.15 ex.1 · Buildings and areas', words: [
+    ['residential', 'with mostly homes, not shops or offices', 'жилой (район)'],
+    ['hideous', 'extremely ugly', 'отвратительный, безобразный'],
+    ['monument', 'a building or statue that honours a person or event', 'памятник'],
+    ['high-rise', 'a very tall building with many floors', 'высотка, многоэтажное здание'],
+    ['wealthy', 'rich; having a lot of money', 'богатый, состоятельный'],
+    ['historic', 'important in history', 'исторический, имеющий историческое значение'],
+    ['rough', 'unpleasant or dangerous (an area)', 'неблагополучный, опасный (район)'],
+    ['stunning', 'extremely attractive or impressive (syn. beautiful)', 'потрясающий, ошеломляющий'],
+    ['trendy', 'fashionable at the moment', 'модный']
+  ]},
+  { id: 'v2_15b', title: 'p.15 ex.3 · Verbs about buildings', words: [
+    ['base', 'to have your main office or home in a place', 'базироваться, иметь штаб-квартиру'],
+    ['date back', 'to have existed since a time in the past', 'восходить к, насчитывать (какой-то) возраст'],
+    ['do up', 'to repair and improve (a building)', 'отремонтировать, привести в порядок'],
+    ['keep an eye on', 'to watch carefully', 'присматривать за'],
+    ['knock down', 'to demolish a building', 'снести (здание)'],
+    ['open up', 'to start business; to appear (shops, cafés)', 'открываться, появляться']
+  ]},
+  { id: 'v2_18a', title: 'p.18 ex.2 · Festivals and carnivals', words: [
+    ['bonfire', 'a large fire built outdoors', 'костёр'],
+    ['celebrations', 'events held for a special occasion', 'празднования'],
+    ['costume', 'clothes worn for a party or a role', 'костюм'],
+    ['fireworks', 'explosives that make coloured lights in the sky', 'фейерверк'],
+    ['float', 'a decorated vehicle in a parade', 'карнавальная платформа, колесница'],
+    ['mask', 'something that covers your face', 'маска'],
+    ['parade', 'people moving through the streets in a procession', 'парад, шествие'],
+    ['sound system', 'loudspeakers and equipment for playing music', 'звуковая аппаратура']
+  ]},
+  { id: 'v2_18b', title: 'p.18 ex.3 · Festival collocations', words: [
+    ['wear a mask / hide behind a mask', 'to cover your face', 'надеть маску / прятаться за маской'],
+    ['take part in a parade / a parade through town', 'to join a procession', 'участвовать в параде / парад по городу'],
+    ['ride on a float / decorate a float', 'to use a parade vehicle', 'ехать на платформе / украшать платформу'],
+    ['set up a sound system / a really loud sound system', 'to prepare music equipment', 'установить звуковую аппаратуру / очень громкая аппаратура'],
+    ['make a costume / hire a fancy dress costume', 'to get something to dress up in', 'сшить костюм / взять напрокат маскарадный костюм'],
+    ['sit round a bonfire / throw wood on a bonfire', 'to be at, or feed, an outdoor fire', 'сидеть у костра / подбросить дров в костёр'],
+    ['take part in celebrations', 'to join in a festival', 'участвовать в празднованиях'],
+    ['set off fireworks / watch a fireworks display', 'to launch, or see, fireworks', 'запускать фейерверк / смотреть фейерверк']
+  ]},
+  { id: 'v2_19', title: 'p.19 · Party round the world', words: [
+    ['caricatured', 'made fun of by exaggerating features', 'высмеивал, изображал в виде карикатуры'],
+    ['blast out', 'to play loudly (music)', 'греметь, громко играть'],
+    ['reef', 'a line of rocks or coral in the sea', 'риф'],
+    ['kick off', 'to start (an event)', 'начинаться (о мероприятии)'],
+    ['mock', 'not real; playful, pretend', 'ненастоящий, шуточный'],
+    ['passers-by', 'people walking past a place', 'прохожие'],
+    ['lounge', 'to stand, sit or lie in a relaxed way', 'отдыхать, развалиться'],
+    ['culminate', 'to reach the end or final point', 'достигать кульминации']
+  ]},
+  { id: 'v2_gl', title: 'Moodle · I can talk about holidays', words: [
+    ['thriving', 'growing and developing; very successful (syn. flourishing)', 'процветающий'],
+    ['vibrant', 'full of life and energy', 'яркий, полный жизни'],
+    ['cobbled streets', 'streets covered with old round stones', 'мощёные улицы, булыжная мостовая'],
+    ['remarkably', 'in an unusual or surprising way', 'удивительно, на редкость'],
+    ['diverse', 'of many different kinds', 'разнообразный'],
+    ['undergo sth', 'to experience a process of change', 'проходить через, подвергаться (изменению)'],
+    ['restoration', 'the work of repairing old buildings, paintings, etc.', 'реставрация'],
+    ['laze around', 'to relax and do very little', 'бездельничать, лениться'],
+    ['soak sth up', 'to absorb something into your senses, body or mind', 'впитывать (атмосферу)'],
+    ['go for a wander (around / in)', 'to walk slowly without a real purpose', 'пойти побродить'],
+    ['retain sth', 'to keep something (formal)', 'сохранять'],
+    ['charm', 'a pleasant or attractive quality', 'очарование, шарм'],
+    ['off the beaten track', 'far away from other people and houses', 'в стороне от туристических троп'],
+    ['trek', 'a long, hard walk, often in the mountains', 'поход, трек'],
+    ['unique', 'the only one of its kind', 'уникальный'],
+    ['get away from it all', 'to go somewhere different for a rest or holiday', 'уехать от всего, отключиться от суеты'],
+    ['remote', 'far from places where other people live (syn. isolated)', 'отдалённый, глухой'],
+    ['unspoilt', 'beautiful because it has not been changed or built on', 'нетронутый, не испорченный цивилизацией']
+  ]},
+  { id: 'v2_rel', title: 'Moodle · Spotlight: relax', words: [
+    ['unwind', 'to relax after work or stress', 'расслабиться, отдохнуть'],
+    ['take it easy', 'to relax and not work hard (informal)', 'не напрягаться, расслабиться'],
+    ['chill out', 'to relax completely (informal)', 'расслабиться, «охладиться»'],
+    ['recharge your batteries', 'to get your energy back on a break (idiom)', 'восстановить силы, «перезарядиться»']
+  ]},
+  { id: 'v2_202a', title: 'p.202 track · Lesson 2A: Belgrade tour', words: [
+    ['entertainment venue', 'a place where concerts and sports events are held', 'место проведения концертов и мероприятий'],
+    ['waterside', 'the land beside a river or the sea', 'набережная, берег'],
+    ['light up', 'to fill with light; to illuminate at night', 'подсвечивать, освещать'],
+    ['landmark', 'a famous building or place that is easy to recognise', 'знаковая достопримечательность'],
+    ['tomb', 'a place where a dead person is buried', 'гробница, усыпальница'],
+    ['emperor', 'the ruler of an empire', 'император'],
+    ['embassy', 'the official office of one country in another', 'посольство'],
+    ['site', 'the place where something was built or happened', 'место, участок (где стоит здание)'],
+    ['aristocratic', 'belonging to the highest social class', 'аристократический'],
+    ['celebrity', 'a famous person', 'знаменитость'],
+    ['fortress', 'a strong building used for defence', 'крепость']
+  ]},
+  { id: 'v2_202b', title: 'p.202 track · Lesson 2C: listening', words: [
+    ['a waste of money', 'a bad use of money', 'пустая трата денег'],
+    ['insist', 'to say firmly that something must happen', 'настаивать'],
+    ['give in', 'to stop resisting and agree', 'сдаться, уступить'],
+    ['afford', 'to have enough money to pay for something', 'позволить себе (по деньгам)'],
+    ['put in an offer', 'to offer a price for a property', 'сделать предложение о цене'],
+    ['competitive market', 'a market where many buyers compete', 'конкурентный рынок'],
+    ['bound to', 'certain to happen', 'непременно, обязательно'],
+    ['opposition', 'people who disagree with a plan', 'противодействие, оппозиция'],
+    ['protester', 'a person who publicly shows disagreement', 'протестующий'],
+    ['due to be approved', 'expected to be officially accepted', 'должен быть одобрен'],
+    ['vintage vehicles', 'old cars that are valued for their quality', 'раритетные автомобили'],
+    ['restricted numbers', 'a limited amount of tickets or places', 'ограниченное количество'],
+    ['sell out', 'to sell all of the tickets', 'распродаться']
   ]}
 ];
