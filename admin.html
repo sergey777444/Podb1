@@ -2,34 +2,40 @@
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>🛠 Админка — ФЛ1-ПОДб-11</title>
 <link rel="stylesheet" href="theme.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <script src="app.js?v=14"></script>
 <style>
-.tools{position:sticky;top:var(--bar-h);z-index:50;margin-bottom:14px;padding:12px;background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
-.tools .row{display:flex;gap:10px}
-.tools .row .form-control{flex:1;min-width:0}
-.cnt{margin-top:8px;color:var(--soft);font-size:12px;font-weight:700}
-.list{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-@media(max-width:700px){.list{grid-template-columns:1fr}}
-.acc{padding:14px;background:var(--card);border:2px solid var(--line);border-top:10px solid var(--violet);border-radius:var(--r);box-shadow:var(--sh)}
+.container,.container *{min-width:0}
+.tools{position:sticky;top:calc(var(--bar-h) + 4px);z-index:50;margin-bottom:14px;padding:8px;background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.tools .row{display:flex;gap:8px;align-items:center}
+.tools .row .form-control{flex:1 1 auto;width:auto;min-width:0;padding:9px 12px}
+.tools .row .btn{flex:none;padding:9px 12px;white-space:nowrap;min-height:40px}
+.cnt{margin-top:6px;color:var(--soft);font-size:12px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+.acc{min-width:0;overflow:hidden;padding:12px;background:var(--card);border:2px solid var(--line);border-top:10px solid var(--violet);border-radius:var(--r);box-shadow:var(--sh)}
 .acc.adm{border-top-color:var(--red)}
-.head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.head{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.head .av{flex:none}
 .who{min-width:0;flex:1}
-.nick{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:italic 800 18px var(--serif)}
-.fio{color:var(--soft);font-size:12.5px}
+.nick{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:italic 800 17px var(--serif)}
+.fio{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--soft);font-size:12.5px}
 .role{display:inline-block;margin-left:6px;padding:1px 7px;border:2px solid var(--line);border-radius:6px;background:var(--red);color:#fff;font:800 10px var(--sans);text-transform:uppercase;font-style:normal;vertical-align:middle}
-.kv{display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 6px 6px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg)}
-.kv small{flex:0 0 58px;color:var(--soft);font:800 10px var(--sans);letter-spacing:.06em;text-transform:uppercase}
-.kv code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font:700 15px ui-monospace,Menlo,monospace}
+.kv{display:flex;align-items:center;gap:6px;margin-top:8px;padding:5px 5px 5px 10px;border:2px solid var(--line);border-radius:12px;background:var(--bg);min-width:0}
+.kv small{flex:0 0 52px;color:var(--soft);font:800 10px var(--sans);letter-spacing:.04em;text-transform:uppercase}
+.kv code{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 15px ui-monospace,Menlo,monospace}
 .kv button{flex:none;width:36px;height:36px;border:2px solid var(--line);border-radius:10px;background:var(--card);font-size:15px;box-shadow:2px 2px 0 var(--shc)}
 .kv button:active{transform:translate(2px,2px);box-shadow:none}
 .nopass{color:var(--soft);font-style:italic;font-size:13px}
-.msg{padding:14px;border:2px dashed var(--red);border-radius:var(--r);background:var(--no-bg);font-size:14px;line-height:1.6}
-.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 12px);transform:translateX(-50%);z-index:100002;padding:8px 16px;border:2px solid var(--line);border-radius:99px;background:var(--yel);color:#1b1f3b;font:800 13px var(--sans);box-shadow:3px 3px 0 var(--shc);opacity:0;pointer-events:none;transition:opacity .2s}
+.msg{padding:14px;border:2px dashed var(--red);border-radius:var(--r);background:var(--no-bg);font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 12px);transform:translateX(-50%);z-index:100002;padding:8px 16px;border:2px solid var(--line);border-radius:99px;background:var(--yel);color:#1b1f3b;font:800 13px var(--sans);box-shadow:3px 3px 0 var(--shc);opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
+@media(max-width:520px){
+  .hero{padding:18px 14px}
+  .cnt{font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -42,7 +48,7 @@
 
   <section class="tools">
     <div class="row">
-      <input id="q" class="form-control" type="search" placeholder="Поиск по ФИО, нику или логину" autocomplete="off">
+      <input id="q" class="form-control" type="search" placeholder="Поиск: ФИО, ник, логин" autocomplete="off">
       <button class="btn ghost" id="copyAll" type="button">📋 Всё</button>
     </div>
     <div class="cnt" id="cnt"></div>
@@ -93,7 +99,7 @@
     const sub = nick ? p.name : '';
     const adm = p.role === 'admin';
     return `<article class="acc${adm ? ' adm' : ''}" data-l="${esc(p.login)}">
-      <div class="head">${window.avatarHtml(p.pr, 52, (title || '?').charAt(0).toUpperCase())}
+      <div class="head">${window.avatarHtml(p.pr, 48, (title || '?').charAt(0).toUpperCase())}
         <div class="who"><div class="nick">${esc(title)}${adm ? '<i class="role">админ</i>' : ''}</div><div class="fio">${esc(sub || (nick ? '' : 'без никнейма'))}</div></div></div>
       <div class="kv"><small>Логин</small><code>${esc(p.login)}</code><button type="button" data-a="cl" aria-label="Копировать логин">📋</button></div>
       <div class="kv"><small>Пароль</small>${p.pass
@@ -106,7 +112,7 @@
     const list = people.filter(p => !s || (p.name + ' ' + (p.pr.nick || '') + ' ' + p.login).toLowerCase().includes(s));
     out.innerHTML = list.length ? `<div class="list">${list.map(card).join('')}</div>` : '<div class="empty">Никого не найдено</div>';
     const nicks = people.filter(p => p.pr.nick).length, avs = people.filter(p => p.pr.photo || p.pr.emoji).length;
-    cnt.textContent = `Показано ${list.length} из ${people.length} · с никнеймом: ${nicks} · с аватаркой: ${avs}`;
+    cnt.textContent = `Показано ${list.length} из ${people.length} · с ником: ${nicks} · с аватаркой: ${avs}`;
   }
   q.oninput = render;
   out.addEventListener('click', e => {
