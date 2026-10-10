@@ -14,7 +14,9 @@
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
 .frame .wait{position:absolute;inset:0;display:grid;place-items:center;color:var(--soft);font-style:italic}
 .alt{position:absolute;inset:0;display:none;overflow:auto;padding:14px;text-align:center;background:var(--card)}
-.alt img{width:100%;max-width:1800px;height:auto;border:2px solid var(--line);border-radius:12px}
+.alt img{display:block;max-width:none;height:auto;border:2px solid var(--line);border-radius:6px;background:#fff}
+.zb{position:sticky;top:0;left:0;z-index:2;display:flex;gap:8px;width:max-content;margin:0 0 10px;padding:6px;background:var(--card);border:2px solid var(--line);border-radius:12px;box-shadow:2px 2px 0 var(--shc)}
+.zb button,.zb a{min-width:40px;min-height:36px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--line);border-radius:10px;background:var(--yel);color:#1b1f3b;font:800 14px var(--sans);text-decoration:none}
 .alt .big{margin:30px 0 8px;font:italic 800 22px var(--serif)}
 .alt p{color:var(--soft);font-size:14px;margin-bottom:16px}
 .sub{margin:2px 0 10px;color:var(--soft);font-size:13px}
@@ -58,6 +60,23 @@
   const alt = document.getElementById('alt');
   let timer;
   function showAlt(html) { alt.innerHTML = html; alt.style.display = 'block'; fr.style.display = 'none'; wait.style.display = 'none'; }
+  function showImage(src, j) {
+    alt.innerHTML = `<div class="zb"><button type="button" data-z="out" aria-label="Уменьшить">−</button><button type="button" data-z="in" aria-label="Увеличить">+</button><button type="button" data-z="fit">По ширине</button><button type="button" data-z="orig">1:1</button><a href="${esc(j.url)}" target="_blank" rel="noopener" aria-label="Открыть оригинал">↗</a></div><img src="${esc(src)}" referrerpolicy="no-referrer" alt="${esc(j.title)}">`;
+    alt.style.display = 'block'; fr.style.display = 'none'; wait.style.display = 'none';
+    const im = alt.querySelector('img');
+    let w = 0;
+    const apply = v => { w = Math.max(240, Math.min(v, 9000)); im.style.width = w + 'px'; };
+    const fitW = () => Math.max(240, alt.clientWidth - 30);
+    im.onload = () => apply(im.naturalWidth > fitW() ? im.naturalWidth : fitW());
+    alt.querySelector('.zb').onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      const z = b.dataset.z;
+      if (z === 'in') apply(w * 1.4);
+      else if (z === 'out') apply(w / 1.4);
+      else if (z === 'fit') apply(fitW());
+      else apply(im.naturalWidth || fitW());
+    };
+  }
   let pickNow = '';
   async function pick(id) {
     const j = all.find(x => x.id === id) || all[0];
@@ -106,7 +125,7 @@
       let ok = null;
       for (const u of cands) { ok = await tryLoad(u); if (ok) break; }
       if (pickNow !== j.id) return;
-      if (ok) return showAlt(`<img src="${esc(ok)}" referrerpolicy="no-referrer" alt="${esc(j.title)}">`);
+      if (ok) return showImage(ok, j);
       return showAlt(`<div class="big">${esc(j.icon || '📓')} ${esc(j.title)}</div><p>Яндекс.Диск не отдаёт картинку для показа на сайте — она откроется в новой вкладке.</p><a class="btn" href="${esc(j.url)}" target="_blank" rel="noopener">Открыть картинку ↗</a>`);
     }
     wait.style.display = 'grid'; wait.textContent = 'Загрузка таблицы…';
