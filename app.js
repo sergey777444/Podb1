@@ -247,11 +247,11 @@
   }
   async function loadEnWords() {
     const a = await loadScriptOnce('words-data.js?v=6', 'EN_WORDS');
-    const b = await loadScriptOnce('words-vb.js?v=1', 'EN_VB');
+    const b = await loadScriptOnce('words-vb.js?v=2', 'EN_VB');
     return a.concat(b);
   }
-  /* ключ слова в сохранении: у групп Vocabulary Builder (scoped) — свой, независимый от остальных категорий */
-  const enKey = (g, w) => g.scoped ? g.id + ':' + w[0] : w[0];
+  /* ключ слова в сохранении — само слово: выученное в одной категории считается выученным во всех */
+  const enKey = (g, w) => w[0];
 
   /* ---------- стили окна прогресса и отступ под нижнюю панель ---------- */
   const css2 = document.createElement('style');
