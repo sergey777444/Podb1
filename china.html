@@ -83,7 +83,18 @@ footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin
 .done{text-align:center;padding:40px 10px;font-family:system-ui,sans-serif}
 .done h3{font-size:22px;margin:0 0 8px}
 .done button{margin-top:14px;padding:11px 20px;border-radius:12px;border:0;background:var(--cobalt);color:var(--bg);font:700 14px system-ui,sans-serif;cursor:pointer}
-@media (prefers-reduced-motion:reduce){.fc .inner{transition:none}}
+
+/* ---- ввод пиньиня ---- */
+.pyform{display:flex;gap:8px;margin:0 4px 16px}
+.pyform input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:600 16px system-ui,sans-serif;outline:none}
+.pyform input:focus{border-color:var(--cobalt)}
+.pyform input.good{border-color:var(--t2);background:rgba(15,138,95,.12)}
+.pyform input.bad{border-color:var(--t4);background:rgba(200,50,30,.1);animation:shk .35s}
+.pyform button{padding:0 16px;border-radius:12px;border:0;background:var(--cobalt);color:var(--bg);font:700 14px system-ui,sans-serif;cursor:pointer}
+.pyres{text-align:center;font:600 14px system-ui,sans-serif;min-height:20px;margin:-6px 4px 10px}
+.pyres.good{color:var(--t2)}.pyres.bad{color:var(--t4)}
+@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){.fc .inner{transition:none}.pyform input.bad{animation:none}}
 </style>
 </head>
 <body>
@@ -102,12 +113,17 @@ footer{text-align:center;color:var(--mute);font:13px system-ui,sans-serif;margin
   <div class="pbar"><div id="cProg"></div></div>
   <div class="pstat"><span id="cS1"></span><span id="cS2"></span></div>
   <div class="deck" id="deck"></div>
+  <form class="pyform" id="pyForm" autocomplete="off">
+    <input id="pyIn" type="text" placeholder="Введите пиньинь (ni hao, nǐ hǎo или ni3 hao3)" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
+    <button type="submit" id="pyBtn">Проверить</button>
+  </form>
+  <div class="pyres" id="pyRes"></div>
   <div class="ctl">
     <button class="no" id="bNo" aria-label="Повторить">✕</button>
     <button class="sm" id="bUndo" aria-label="Вернуть">↺</button>
     <button class="ok" id="bOk" aria-label="Выучил">✓</button>
   </div>
-  <p class="dhint">Тап — перевернуть · вправо — выучил · влево — повторить</p>
+  <p class="dhint">Тап — перевернуть · вправо — выучил · влево — повторить · или введите пиньинь</p>
   <p class="dnote" id="cNote"></p>
 </section>
 
@@ -170,7 +186,7 @@ fill('vb',[['去','qù','идти, проходить'],['哪儿 / 哪里','nǎr
 /* ---------- карточки ---------- */
 (function(){
 var $=function(s){return document.querySelector(s)};
-var KEY='chinese_learned_words',learned=new Set(),fg='all',dir='zh',queue=[],hist=[];
+var KEY='chinese_learned_words',learned=new Set(),fg='all',dir='zh',queue=[],hist=[],busy=false;
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(Array.from(learned)))}catch(e){}}
 var st;function saveCloud(){clearTimeout(st);st=setTimeout(async function(){
@@ -183,6 +199,54 @@ function loadLocal(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');if(Ar
 async function loadCloud(){try{if(window.userData&&window.currentUser){var s=await window.userData.get(KEY);if(Array.isArray(s))learned=new Set(s)}}catch(e){console.error(e)}start()}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0;var x=a[i];a[i]=a[j];a[j]=x}return a}
 var inG=function(c){return fg==='all'||c.g===fg};
+
+/* ---------- проверка пиньиня ---------- */
+/* без тонов: убираем диакритику, цифры, пробелы; ü = v = u */
+function plain(s){
+  return String(s).toLowerCase().replace(/ü|ǖ|ǘ|ǚ|ǜ/g,'v').replace(/u:/g,'v')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+}
+/* строка тонов, например 'ni3hao3' -> '33'; null, если пользователь тоны не вводил */
+function toneSeq(s){
+  s=String(s).toLowerCase();
+  var digits=s.replace(/[^1-5]/g,'');
+  if(digits)return digits.replace(/5/g,'');
+  var out='',any=false;
+  s.normalize('NFC').split('').forEach(function(c){if(T[c]){out+=T[c];any=true}});
+  return any?out:null;
+}
+function variants(p){
+  var v=[p];
+  p.split('/').forEach(function(x){v.push(x)});
+  return v;
+}
+function checkPinyin(input,card){
+  var u=plain(input);if(!u)return null;
+  var vs=variants(card.p),hit=null;
+  for(var i=0;i<vs.length;i++){if(plain(vs[i])===u){hit=vs[i];break}}
+  if(!hit)return {ok:false};
+  var ts=toneSeq(input),good=toneSeq(hit);
+  /* если тоны введены — сверяем (лёгкий тон 5/без метки не учитываем) */
+  if(ts!==null&&good!==null&&ts!==good)return {ok:false,tones:true};
+  return {ok:true,tonesUnchecked:ts===null};
+}
+function resetInput(){var i=$('#pyIn');i.value='';i.className='';$('#pyRes').textContent='';$('#pyRes').className='pyres';busy=false}
+function submitPinyin(e){
+  e.preventDefault();
+  if(busy||!queue.length)return;
+  var inp=$('#pyIn'),res=$('#pyRes'),card=queue[0],top=$('.fc.top');
+  var r=checkPinyin(inp.value,card);
+  if(!r)return;
+  if(top)top.classList.add('flip');
+  if(r.ok){
+    busy=true;inp.className='good';res.className='pyres good';
+    res.innerHTML='✓ Верно: '+col(card.p)+(r.tonesUnchecked?' <span style="font-weight:400;opacity:.8">(тоны не проверялись)</span>':'');
+    setTimeout(function(){go(true)},1100);
+  }else{
+    inp.className='';void inp.offsetWidth;inp.className='bad';res.className='pyres bad';
+    res.innerHTML=(r.tones?'Слоги верные, но тоны другие: ':'Неверно. Правильно: ')+col(card.p);
+  }
+}
 function chips(){
   var gs=['all'].concat(Object.keys(CAT).map(function(k){return CAT[k]}));
   $('#cGr').innerHTML=gs.map(function(g){return '<button aria-pressed="'+(fg===g)+'" data-g="'+esc(g)+'">'+(g==='all'?'Все':esc(g))+'</button>'}).join('');
@@ -196,11 +260,12 @@ function mk(c,cls){
   el.innerHTML='<div class="stR">ЗНАЮ</div><div class="stL">ЕЩЁ РАЗ</div><div class="inner"><div class="face"><span class="tag">'+esc(c.g)+'</span>'+front+'</div><div class="face back"><span class="tag">'+esc(c.g)+'</span>'+back+'</div></div>';
   return el}
 function draw(){
-  chips();
+  chips();resetInput();
   var total=CARDS.filter(inG).length,done=total-CARDS.filter(function(c){return inG(c)&&!learned.has(c.h)}).length;
   $('#cProg').style.width=(total?done/total*100:0)+'%';
   $('#cS1').textContent='Выучено '+done+' из '+total;$('#cS2').textContent='Осталось '+(total-done);
   var d=$('#deck');d.innerHTML='';
+  $('#pyForm').style.display=queue.length?'flex':'none';
   if(!queue.length){d.style.height='auto';
     d.innerHTML='<div class="done"><h3>'+(total?'Все слова выучены 🎉':'Здесь пока нет слов')+'</h3>'+(total?'<button id="again">Начать заново</button>':'')+'</div>';
     var b=$('#again');if(b)b.onclick=function(){CARDS.filter(inG).forEach(function(c){learned.delete(c.h)});persist();start()};return}
@@ -222,8 +287,11 @@ function go(ok,c){
   c.style.transition='transform .3s,opacity .3s';c.style.transform='translateX('+(ok?600:-600)+'px) rotate('+(ok?30:-30)+'deg)';c.style.opacity=0;
   var x=queue.shift();hist.push({x:x,ok:ok});
   if(ok){learned.add(x.h);persist()}else queue.push(x);
+  busy=true;
   setTimeout(draw,260)}
-$('#bOk').onclick=function(){go(true)};$('#bNo').onclick=function(){go(false)};
+$('#pyForm').addEventListener('submit',submitPinyin);
+$('#pyIn').addEventListener('input',function(){this.className='';if(!busy)$('#pyRes').textContent=''});
+$('#bOk').onclick=function(){if(!busy)go(true)};$('#bNo').onclick=function(){if(!busy)go(false)};
 $('#bUndo').onclick=function(){var h=hist.pop();if(!h)return;
   if(h.ok){learned.delete(h.x.h);persist()}else{var i=queue.lastIndexOf(h.x);if(i>-1)queue.splice(i,1)}
   queue.unshift(h.x);draw()};
