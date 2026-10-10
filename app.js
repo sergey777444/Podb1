@@ -189,8 +189,6 @@
   window.avatarHtml = avatarHtml;
 
   function statusSuffix() {
-    if (window.isAdmin) return ' · админ';
-    if (!window.isVerified) return ' · ждёт подтверждения';
     return '';
   }
 
@@ -646,7 +644,6 @@
       back.querySelector('#prgBox').innerHTML =
         `<div class="top"><h3>📊 Прогресс: ${esc((window.userProfile && window.userProfile.nick) || login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
         (window.authUser ? `<div class="pcard">${avatarHtml(window.userProfile, 46, (login || '?').charAt(0).toUpperCase())}<div class="pn"><b>${esc((window.userProfile && window.userProfile.nick) || login)}</b><small>логин: ${esc(login)}</small></div><button type="button" class="pedit">✏️ Изменить</button></div>` : '') +
-        (window.authUser && !window.isVerified ? `<div class="pend">⏳ Аккаунт ждёт подтверждения админом. Пока он не подтверждён, прогресс хранится только в этом браузере, а Конспекты, База и Журнал скрыты. Профиль (ник и аватарка) сохраняется.</div>` : '') +
         `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
         (subj === 'all' ? enHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
       back.querySelector('.x').onclick = close;
