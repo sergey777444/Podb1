@@ -3,81 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=10"></script>
 <title>📚 Дневник ДЗ — ФЛ1-ПОДб-11</title>
-<script>
-  if (localStorage.getItem('user-theme') === 'light') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', 'dark');
-</script>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js?v=12"></script>
 <style>
-:root{--bg:#080b14;--bg2:#0e1320;--card:rgba(19,25,40,.78);--card-h:rgba(25,32,51,.9);--text:#f4f7ff;--text2:#aeb8cc;--muted:#78839a;--border:rgba(255,255,255,.09);--accent:#7c6cff;--accent3:#8b5cf6;--danger:#ff6878;--shadow:0 20px 70px rgba(0,0,0,.35);--rl:20px;--rm:14px}
-[data-theme="light"]{--bg:#f3f6fb;--bg2:#fff;--card:rgba(255,255,255,.84);--card-h:rgba(255,255,255,.98);--text:#172033;--text2:#5d687b;--muted:#7c8799;--border:rgba(20,30,50,.09);--accent:#6557e8;--accent3:#7848dc;--shadow:0 20px 60px rgba(40,50,80,.12)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;font-family:Inter,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(124,108,255,.17),transparent 28%),radial-gradient(circle at 90% 20%,rgba(69,202,255,.12),transparent 25%),var(--bg);padding:20px 10px 60px}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
-.container{width:min(900px,calc(100% - 32px));margin:0 auto}
-.hero{padding:34px;margin-bottom:24px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(124,108,255,.14),rgba(69,202,255,.05) 45%,var(--card));box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(124,108,255,.13);border:1px solid rgba(124,108,255,.24);color:#bdb6ff;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
-[data-theme="light"] .badge{color:#5c50c9}
-.hero h1{font-size:clamp(22px,4vw,32px);letter-spacing:-.03em}
-.theme-btn{height:48px;padding:0 16px;border:1px solid var(--border);border-radius:14px;color:var(--text);background:rgba(255,255,255,.05);font-weight:700;display:inline-flex;align-items:center;gap:8px}
-.date-box,.admin-box{border:1px solid var(--border);border-radius:var(--rl);padding:24px;margin-bottom:24px;background:var(--card);box-shadow:var(--shadow)}
 .date-box{text-align:center}
-.date-box label,.form-group label{display:block;font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
-.form-control{width:min(280px,100%);padding:12px 14px;font-size:14px;border:1px solid var(--border);border-radius:var(--rm);background:rgba(255,255,255,.035);color:var(--text);outline:none;text-align:center}
-.form-control:focus{border-color:rgba(124,108,255,.65)}
-input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1)}
-[data-theme="light"] input[type=date]::-webkit-calendar-picker-indicator{filter:none}
-.week-info{font-size:13px;font-weight:800;color:var(--accent);margin-top:12px;text-transform:uppercase;letter-spacing:.05em}
-.status-bar{text-align:center;font-size:12px;color:var(--muted);margin-bottom:16px;font-weight:600}
-.pairs-grid{display:grid;gap:16px;margin-bottom:28px}
-.pair-card{background:var(--card);border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:var(--rl);padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.12)}
-.pair-card.lecture-card{border-left-color:var(--accent3);background:linear-gradient(135deg,rgba(139,92,246,.08),var(--card))}
-.pair-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px}
-.pair-title{font-size:16px;font-weight:800}
-.pair-num{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--accent);background:rgba(124,108,255,.12);padding:4px 10px;border-radius:8px;border:1px solid rgba(124,108,255,.25);white-space:nowrap}
-.lecture-badge{display:inline-block;background:rgba(139,92,246,.15);color:#d8b4fe;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;margin-bottom:8px;border:1px solid rgba(139,92,246,.25)}
-.hw-text{font-size:13px;line-height:1.6;color:var(--text2);white-space:pre-line;word-break:break-word}
-.no-hw{color:var(--muted);font-style:italic}
-.admin-toggle-box{text-align:center;margin-bottom:24px}
-.btn-toggle{background:rgba(255,255,255,.045);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:var(--rm);font-size:13px;font-weight:700}
+.date-box .form-control{width:min(280px,100%);text-align:center}
+.week-info{margin-top:12px;color:var(--red);font:800 13px var(--sans);letter-spacing:.05em;text-transform:uppercase}
+.pairs-grid{display:grid;gap:14px;margin:18px 0 26px}
+.pair-card{padding:16px 18px;background:var(--card);border:2px solid var(--line);border-left:10px solid var(--blue);border-radius:var(--r);box-shadow:var(--sh)}
+.pair-card.lecture-card{border-left-color:var(--red)}
+.pair-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.pair-title{font:italic 800 18px var(--serif)}
+.pair-num{padding:2px 9px;border:2px solid var(--line);border-radius:8px;background:var(--yel);color:#1b1f3b;font:800 11px var(--sans);text-transform:uppercase;white-space:nowrap}
+.lecture-badge{display:inline-block;margin-bottom:8px;padding:2px 9px;border:2px solid var(--line);border-radius:6px;background:var(--red);color:#fff;font:800 11px var(--sans)}
+.hw-text{color:var(--soft);font-size:14px;line-height:1.6;white-space:pre-line;word-break:break-word}
+.hw-text:not(.no-hw){color:var(--ink)}
+.no-hw{font-style:italic}
+.admin-toggle-box{text-align:center;margin-bottom:20px}
 .admin-box{display:none}
-.admin-box h4{margin-bottom:16px;font-size:16px}
-.form-group{margin-bottom:14px}
-select.form-control,textarea.form-control{width:100%;text-align:left}
-textarea.form-control{resize:vertical;min-height:90px}
-select.form-control option{background:var(--bg2);color:var(--text)}
+.admin-box h4{margin-bottom:14px;font:italic 800 19px var(--serif)}
 .btn-group{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:16px}
 @media(max-width:600px){.btn-group{grid-template-columns:1fr}}
-.btn-save{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;padding:12px;border-radius:var(--rm);font-weight:700;font-size:13px}
-.btn-delete{background:rgba(255,104,120,.15);border:1px solid rgba(255,104,120,.35);color:var(--danger);padding:12px;border-radius:var(--rm);font-weight:700;font-size:13px}
 </style>
 </head>
 <body>
 <div class="container">
   <header class="hero">
-    <div>
-      <div class="badge">🎓 ФЛ1 • ПОДб-11</div>
-      <h1>📚 Дневник домашнего задания</h1>
-    </div>
-    <button class="theme-btn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeText">Светлая</span></button>
+    <span class="badge">🎓 ФЛ1 • ПОДб-11</span>
+    <h1>Дневник <span class="hl">ДЗ</span></h1>
+    <p>Домашние задания по датам занятий</p>
   </header>
 
-  <div class="date-box">
-    <label for="dateSelect">Выберите дату занятий</label>
+  <div class="box date-box">
+    <label class="lbl" for="dateSelect">Выберите дату занятий</label>
     <input type="date" id="dateSelect" class="form-control" onchange="renderSchedule()">
     <div class="week-info" id="weekInfo">Загрузка...</div>
   </div>
 
-  <div class="status-bar" id="statusBar"></div>
+  <div class="status" id="statusBar"></div>
   <div class="pairs-grid" id="scheduleContainer"></div>
 
   <div class="admin-toggle-box">
-    <button class="btn-toggle" onclick="toggleAdmin()">⚙️ Редактировать ДЗ / Лекции на эту дату</button>
+    <button class="btn ghost btn-toggle" onclick="toggleAdmin()">⚙️ Редактировать ДЗ / Лекции на эту дату</button>
   </div>
 
-  <div class="admin-box" id="adminBox">
+  <div class="box admin-box" id="adminBox">
     <h4>📝 Редактирование задания</h4>
     <div class="form-group">
       <label for="subjectSelect">Пара</label>
@@ -88,8 +60,8 @@ select.form-control option{background:var(--bg2);color:var(--text)}
       <textarea id="hwInput" class="form-control" placeholder="Введите текст задания..."></textarea>
     </div>
     <div class="btn-group">
-      <button class="btn-save" onclick="saveHW()">Сохранить задание</button>
-      <button class="btn-delete" onclick="deleteHW()">Удалить ДЗ</button>
+      <button class="btn" onclick="saveHW()">Сохранить задание</button>
+      <button class="btn danger" onclick="deleteHW()">Удалить ДЗ</button>
     </div>
   </div>
 </div>
@@ -116,18 +88,6 @@ select.form-control option{background:var(--bg2);color:var(--text)}
   };
 
   let hwDatabase = {};
-  const html = document.documentElement;
-
-  function applyTheme(theme) {
-    const icon = document.getElementById("themeIcon"), text = document.getElementById("themeText");
-    if (theme === 'light') { html.removeAttribute('data-theme'); icon.textContent = "🌙"; text.textContent = "Тёмная"; }
-    else { html.setAttribute('data-theme', 'dark'); icon.textContent = "☀️"; text.textContent = "Светлая"; }
-  }
-  function toggleTheme() {
-    const t = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('user-theme', t); applyTheme(t);
-  }
-  applyTheme(localStorage.getItem('user-theme') || 'dark');
 
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -191,7 +151,7 @@ select.form-control option{background:var(--bg2);color:var(--text)}
     subjectSelect.innerHTML = '';
 
     if (dayOfWeek === 0 || dayOfWeek === 6) {
-      container.innerHTML = '<div class="pair-card" style="text-align:center;color:var(--muted)">В этот день нет занятий! 🎉</div>';
+      container.innerHTML = '<div class="pair-card" style="text-align:center;color:var(--soft)">В этот день нет занятий! 🎉</div>';
       return;
     }
 
