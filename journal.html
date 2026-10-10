@@ -58,12 +58,15 @@
   const alt = document.getElementById('alt');
   let timer;
   function showAlt(html) { alt.innerHTML = html; alt.style.display = 'block'; fr.style.display = 'none'; wait.style.display = 'none'; }
+  let pickNow = '';
   async function pick(id) {
     const j = all.find(x => x.id === id) || all[0];
+    pickNow = j.id;
     try { localStorage.setItem('journal_subject', j.id); } catch (e) {}
     subj.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === j.id));
     full.textContent = j.full || j.title;
     open.href = j.url;
+    open.textContent = j.type === 'image' ? 'Открыть оригинал ↗' : j.type === 'link' ? 'Открыть в новой вкладке ↗' : 'Открыть в Google Таблицах ↗';
     hint.textContent = '';
     clearTimeout(timer);
     alt.style.display = 'none'; fr.style.display = '';
@@ -72,14 +75,33 @@
     }
     if (j.type === 'image') {
       wait.style.display = 'grid'; wait.textContent = 'Загружаю картинку…';
+      const tryLoad = u => new Promise(res => {
+        const im = new Image();
+        im.referrerPolicy = 'no-referrer';
+        im.onload = () => res(u);
+        im.onerror = () => res(null);
+        im.src = u;
+      });
+      const api = 'https://cloud-api.yandex.net/v1/disk/public/resources';
+      const key = encodeURIComponent(j.url);
+      const cands = [];
       try {
-        const r = await fetch('https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=' + encodeURIComponent(j.url));
+        const r = await fetch(`${api}?public_key=${key}&preview_size=XXXL&preview_crop=false`);
         const d = await r.json();
-        if (!d.href) throw new Error('no href');
-        return showAlt(`<img src="${esc(d.href)}" alt="${esc(j.title)}">`);
-      } catch (e) {
-        return showAlt(`<div class="big">${esc(j.icon || '📓')} ${esc(j.title)}</div><p>Картинку не удалось показать здесь — откройте её по ссылке.</p><a class="btn" href="${esc(j.url)}" target="_blank" rel="noopener">Открыть ↗</a>`);
-      }
+        if (d.sizes) d.sizes.forEach(s => s.url && cands.push(s.url));
+        if (d.preview) cands.push(d.preview);
+        if (d.file) cands.push(d.file);
+      } catch (e) {}
+      try {
+        const r = await fetch(`${api}/download?public_key=${key}`);
+        const d = await r.json();
+        if (d.href) cands.push(d.href);
+      } catch (e) {}
+      let ok = null;
+      for (const u of cands) { ok = await tryLoad(u); if (ok) break; }
+      if (pickNow !== j.id) return;
+      if (ok) return showAlt(`<img src="${esc(ok)}" referrerpolicy="no-referrer" alt="${esc(j.title)}">`);
+      return showAlt(`<div class="big">${esc(j.icon || '📓')} ${esc(j.title)}</div><p>Яндекс.Диск не отдаёт картинку для показа на сайте — она откроется в новой вкладке.</p><a class="btn" href="${esc(j.url)}" target="_blank" rel="noopener">Открыть картинку ↗</a>`);
     }
     wait.style.display = 'grid'; wait.textContent = 'Загрузка таблицы…';
     fr.onload = () => { wait.style.display = 'none'; clearTimeout(timer); };
