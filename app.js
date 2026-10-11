@@ -11,16 +11,38 @@
   const DOMAIN = '@group.local';
 
   /* ---------- тема: одна на все страницы ---------- */
+  const THEMES = [['dark', '🌙 Тёмная'], ['light', '☀️ Светлая'], ['forest', '🌲 Лес'], ['sakura', '🌸 Сакура'], ['paper', '📜 Бумага'], ['midnight', '🌌 Полночь']];
   function applyTheme(t) {
+    if (!THEMES.some(x => x[0] === t)) t = 'dark';
     document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('user-theme', t); } catch (e) {}
   }
   let savedTheme = 'dark';
-  try { savedTheme = localStorage.getItem('user-theme') === 'light' ? 'light' : 'dark'; } catch (e) {}
+  try { const v = localStorage.getItem('user-theme'); if (THEMES.some(x => x[0] === v)) savedTheme = v; } catch (e) {}
   document.documentElement.setAttribute('data-theme', savedTheme);
+  window.setTheme = applyTheme;
+  /* кнопка 🌓: тёмная ↔ светлая (остальные темы выбираются в профиле) */
   window.toggleTheme = function () {
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   };
+
+  /* дополнительные темы: переопределяют переменные из theme.css, HTML менять не нужно */
+  const themeCss = document.createElement('style');
+  themeCss.textContent = `
+  [data-theme="forest"]{--bg:#0f1f17;--grid:#183226;--ink:#eef3e6;--soft:#9db3a2;--card:#162b21;--line:#dfe8d3;--shc:#000;
+    --blue:#6fb7ff;--blue-s:#25507a;--red:#ff6b6b;--red-s:#6b2a2a;--green:#4ade80;--violet:#b79cff;--ok-bg:rgba(74,222,128,.14);--no-bg:rgba(255,107,107,.14)}
+  [data-theme="midnight"]{--bg:#000;--grid:#101018;--ink:#f5f5f7;--soft:#8c8c9c;--card:#0c0c14;--line:#cfcfdc;--shc:#2a2a44;
+    --blue:#5aa2ff;--blue-s:#1c3a6b;--red:#ff5a70;--red-s:#5c2230;--green:#34d27b;--violet:#a290ff;--ok-bg:rgba(52,210,123,.14);--no-bg:rgba(255,90,112,.14)}
+  [data-theme="sakura"]{--bg:#fff1f3;--grid:#f3d6dc;--ink:#3a1f2b;--soft:#7d5a68;--card:#ffffff;--line:#3a1f2b;--shc:#3a1f2b;
+    --blue:#3b6fe0;--blue-s:#c5d5fa;--red:#e11d48;--red-s:#fbc4d0;--green:#16a34a;--violet:#a855f7;--ok-bg:rgba(22,163,74,.14);--no-bg:rgba(225,29,72,.12)}
+  [data-theme="paper"]{--bg:#f3ead7;--grid:#e2d5b8;--ink:#2b2218;--soft:#6b5a43;--card:#fbf5e6;--line:#2b2218;--shc:#2b2218;
+    --blue:#2b6cb0;--blue-s:#bfd3ea;--red:#c0392b;--red-s:#efc3bd;--green:#2f855a;--violet:#7b5cc4;--ok-bg:rgba(47,133,90,.14);--no-bg:rgba(192,57,43,.12)}
+  [data-theme="forest"] input[type=date]::-webkit-calendar-picker-indicator,
+  [data-theme="midnight"] input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1)}
+  /* цвета тонов на странице китайского */
+  [data-theme="forest"],[data-theme="midnight"]{--t1:#7aa2ff!important;--t2:#4fd1a0!important;--t3:#f0b44c!important;--t4:#ff7b63!important}
+  `;
+  document.head.appendChild(themeCss);
 
   const sb = supabase.createClient(SB_URL, SB_KEY);
   window.sb = sb;
@@ -215,6 +237,8 @@
       <div class="em">${AV_EMOJI.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')}</div>
       <div class="cl">${AV_COLORS.map(c => `<button type="button" data-c="${c}" style="background:${c}" aria-label="Цвет"></button>`).join('')}</div>
       <div class="ph"><button type="button" id="pfPhoto">📷 Своё фото</button><button type="button" id="pfDel">Убрать фото</button></div>
+      <label>Тема сайта (на этом устройстве)</label>
+      <div class="th">${THEMES.map(([k, t]) => `<button type="button" data-t="${k}">${t}</button>`).join('')}</div>
       <input type="file" id="pfFile" accept="image/*" hidden>
       <div id="pfErr"></div>
       <button type="button" class="go" id="pfSave">Сохранить</button>
@@ -233,6 +257,9 @@
       back.querySelectorAll('.cl button').forEach(b => b.classList.toggle('on', b.dataset.c === st.color));
       $('#pfDel').style.display = st.photo ? '' : 'none';
     };
+    const syncTh = () => back.querySelectorAll('.th button').forEach(b => b.classList.toggle('on', b.dataset.t === document.documentElement.getAttribute('data-theme')));
+    back.querySelectorAll('.th button').forEach(b => b.onclick = () => { applyTheme(b.dataset.t); syncTh(); });
+    syncTh();
     back.querySelectorAll('.em button').forEach(b => b.onclick = () => { st.emoji = b.dataset.e; st.photo = ''; sync(); });
     back.querySelectorAll('.cl button').forEach(b => b.onclick = () => { st.color = b.dataset.c; sync(); });
     $('#pfDel').onclick = () => { st.photo = ''; sync(); };
@@ -486,6 +513,9 @@
   #pfBox .cl button{width:34px;height:34px;border:2px solid var(--line,#e9e6d8);border-radius:50%;cursor:pointer}
   #pfBox .em button.on,#pfBox .cl button.on{outline:3px solid var(--violet,#a290ff);outline-offset:2px}
   #pfBox .ph button{padding:9px 14px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);color:var(--ink,#fff);font:700 13px var(--sans,system-ui,sans-serif);cursor:pointer}
+  #pfBox .th{display:flex;flex-wrap:wrap;gap:8px}
+  #pfBox .th button{padding:8px 13px;border:2px solid var(--line,#e9e6d8);border-radius:99px;background:var(--card,#1e2240);color:var(--ink,#fff);font:700 13px var(--sans,system-ui,sans-serif);cursor:pointer}
+  #pfBox .th button.on{background:var(--yel,#ffd84d);color:#1b1f3b}
   #pfErr{min-height:18px;margin-top:8px;color:var(--red,#ff5a70);font-size:13px;font-weight:700}
   #pfBox .go{display:block;width:100%;margin-top:8px;padding:12px;border:2px solid var(--line,#e9e6d8);border-radius:12px;background:var(--yel,#ffd84d);color:#1b1f3b;text-align:center;font:800 15px var(--sans,system-ui,sans-serif);box-shadow:3px 3px 0 var(--shc,#000);cursor:pointer}
   #pfBox .go.ghost{background:var(--card,#1e2240);color:var(--ink,#fff)}
