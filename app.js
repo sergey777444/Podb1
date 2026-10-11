@@ -11,7 +11,8 @@
   const DOMAIN = '@group.local';
 
   /* ---------- тема: одна на все страницы ---------- */
-  const THEMES = [['dark', '🌙 Тёмная'], ['light', '☀️ Светлая'], ['forest', '🌲 Лес'], ['sakura', '🌸 Сакура'], ['paper', '📜 Бумага'], ['midnight', '🌌 Полночь']];
+  const THEMES = [['dark', '📓 Тетрадь · тёмная'], ['light', '📓 Тетрадь · светлая'], ['paper', '📜 Бумага'], ['sakura', '🌸 Сакура'], ['forest', '🌲 Лес'], ['midnight', '🌌 Полночь'],
+    ['terminal', '💻 Терминал'], ['glass', '🧊 Стекло'], ['neon', '🌆 Неон'], ['minimal', '⬜ Минимал']];
   function applyTheme(t) {
     if (!THEMES.some(x => x[0] === t)) t = 'dark';
     document.documentElement.setAttribute('data-theme', t);
@@ -38,9 +39,52 @@
   [data-theme="paper"]{--bg:#f3ead7;--grid:#e2d5b8;--ink:#2b2218;--soft:#6b5a43;--card:#fbf5e6;--line:#2b2218;--shc:#2b2218;
     --blue:#2b6cb0;--blue-s:#bfd3ea;--red:#c0392b;--red-s:#efc3bd;--green:#2f855a;--violet:#7b5cc4;--ok-bg:rgba(47,133,90,.14);--no-bg:rgba(192,57,43,.12)}
   [data-theme="forest"] input[type=date]::-webkit-calendar-picker-indicator,
-  [data-theme="midnight"] input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1)}
+  [data-theme="midnight"] input[type=date]::-webkit-calendar-picker-indicator,
+  [data-theme="terminal"] input[type=date]::-webkit-calendar-picker-indicator,
+  [data-theme="glass"] input[type=date]::-webkit-calendar-picker-indicator,
+  [data-theme="neon"] input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1)}
   /* цвета тонов на странице китайского */
-  [data-theme="forest"],[data-theme="midnight"]{--t1:#7aa2ff!important;--t2:#4fd1a0!important;--t3:#f0b44c!important;--t4:#ff7b63!important}
+  [data-theme="forest"],[data-theme="midnight"],[data-theme="terminal"],[data-theme="glass"],[data-theme="neon"]{--t1:#7aa2ff!important;--t2:#4fd1a0!important;--t3:#f0b44c!important;--t4:#ff7b63!important}
+
+  /* ===== стили (меняют не только цвета, но и форму, шрифты и фон) ===== */
+
+  /* 💻 Терминал: моноширинный шрифт, острые углы, зелёный свет, строки развёртки */
+  [data-theme="terminal"]{--bg:#050805;--grid:#0c170c;--ink:#a6ffb4;--soft:#4fa86a;--card:#091209;--line:#2fd35a;--shc:transparent;--r:0px;--sh:none;
+    --blue:#3dd9ff;--blue-s:#0b3a45;--red:#ff5470;--red-s:#4a1620;--green:#39ff6a;--violet:#c792ff;--ok-bg:rgba(57,255,106,.12);--no-bg:rgba(255,84,112,.14);
+    --serif:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  [data-theme="terminal"] *,[data-theme="terminal"] *::before,[data-theme="terminal"] *::after{border-radius:0!important;font-style:normal!important}
+  [data-theme="terminal"] body::before{display:none}
+  [data-theme="terminal"] body::after{left:0;right:0;width:auto;opacity:.5;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px)}
+  [data-theme="terminal"] .hero::after{display:none}
+  [data-theme="terminal"] h1{text-shadow:0 0 10px rgba(57,255,106,.55)}
+  [data-theme="terminal"] .hero h1::before{content:"> "}
+
+  /* 🧊 Стекло: размытие, мягкие градиенты, большие скругления */
+  [data-theme="glass"]{--bg:#0b1030;--grid:rgba(255,255,255,.06);--ink:#f4f6ff;--soft:#a9b2dd;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.22);--shc:transparent;--r:24px;--sh:0 10px 34px rgba(0,0,0,.35);
+    --blue:#7aa2ff;--blue-s:rgba(122,162,255,.25);--red:#ff6b8a;--red-s:rgba(255,107,138,.25);--green:#4be3a0;--violet:#b39cff;--ok-bg:rgba(75,227,160,.15);--no-bg:rgba(255,107,138,.15)}
+  [data-theme="glass"] body{background-image:radial-gradient(620px 420px at 12% 8%,rgba(124,92,255,.5),transparent 62%),radial-gradient(520px 520px at 90% 28%,rgba(45,226,230,.3),transparent 62%),radial-gradient(640px 520px at 40% 98%,rgba(255,43,214,.28),transparent 62%);background-size:auto;background-attachment:fixed}
+  [data-theme="glass"] body::before,[data-theme="glass"] body::after,[data-theme="glass"] .hero::after{display:none}
+  [data-theme="glass"] .hero,[data-theme="glass"] .box,[data-theme="glass"] .alert,[data-theme="glass"] .subject,[data-theme="glass"] .note-card,[data-theme="glass"] .pair-card,[data-theme="glass"] .acc,[data-theme="glass"] .w,[data-theme="glass"] .today-pair,[data-theme="glass"] .q-btn,[data-theme="glass"] .tools{-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:var(--sh)}
+  [data-theme="glass"] .deck .face{background:#1a2050;-webkit-backdrop-filter:none;backdrop-filter:none}
+  [data-theme="glass"] #authGate{background-image:radial-gradient(620px 420px at 12% 8%,rgba(124,92,255,.5),transparent 62%),radial-gradient(520px 520px at 90% 28%,rgba(45,226,230,.3),transparent 62%)}
+
+  /* 🌆 Неон: тёмно-фиолетовый фон, голубые рамки, розовые тени и свечение */
+  [data-theme="neon"]{--bg:#12002b;--grid:#2a0a55;--ink:#fdf2ff;--soft:#b79adf;--card:#1d0a3d;--line:#2de2e6;--shc:#ff2bd6;--yel:#ffe94d;
+    --blue:#4cc9f0;--blue-s:#3a1f7a;--red:#ff3d81;--red-s:#5a1040;--green:#3dffb0;--violet:#b388ff;--ok-bg:rgba(61,255,176,.14);--no-bg:rgba(255,61,129,.16)}
+  [data-theme="neon"] body::before{background:#ff2bd6;box-shadow:0 0 12px #ff2bd6;opacity:.9}
+  [data-theme="neon"] body::after{display:none}
+  [data-theme="neon"] h1{text-shadow:0 0 16px rgba(255,43,214,.7)}
+  [data-theme="neon"] .hero,[data-theme="neon"] .box{box-shadow:4px 4px 0 var(--shc),0 0 22px rgba(45,226,230,.25)}
+
+  /* ⬜ Минимал: светлый, без сетки и теней, тонкие линии */
+  [data-theme="minimal"]{--bg:#f7f7f9;--grid:#ececf0;--ink:#15151a;--soft:#6a6a78;--card:#ffffff;--line:#d8d8e0;--shc:transparent;--yel:#ffe08a;--r:12px;--sh:0 1px 3px rgba(0,0,0,.08);
+    --blue:#2563eb;--blue-s:#dbe6fd;--red:#e11d48;--red-s:#fde1e7;--green:#16a34a;--violet:#7c5cff;--ok-bg:rgba(22,163,74,.1);--no-bg:rgba(225,29,72,.08);
+    --serif:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  [data-theme="minimal"] body{background-image:none}
+  [data-theme="minimal"] body::before,[data-theme="minimal"] body::after,[data-theme="minimal"] .hero::after{display:none}
+  [data-theme="minimal"] *{font-style:normal!important}
+  [data-theme="minimal"] #authGate{background-image:none}
+  [data-theme="minimal"] .badge{transform:none}
   `;
   document.head.appendChild(themeCss);
 
