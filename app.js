@@ -11,69 +11,122 @@
   const DOMAIN = '@group.local';
 
   /* ---------- тема: одна на все страницы ---------- */
-  /* ---------- фон темы «Терминал»: цифровой дождь (рисуется на canvas, включается только в этой теме) ---------- */
-  let rain = null;
-  function stopRain() {
-    if (!rain) return;
-    cancelAnimationFrame(rain.raf);
-    window.removeEventListener('resize', rain.onResize);
-    document.removeEventListener('visibilitychange', rain.onVis);
-    rain.c.remove();
-    rain = null;
+  /* ---------- анимированные фоны тем (canvas): Терминал, Сакура, Лес, Космос ---------- */
+  const FXMAP = { terminal: { op: 0.3, fps: 15 }, sakura: { op: 1, fps: 40 }, forest: { op: 1, fps: 40 }, midnight: { op: 1, fps: 30 } };
+  let fx = null;
+  function buildFx(kind, ctx, w, h) {
+    const R = Math.random, TAU = Math.PI * 2;
+    if (kind === 'terminal') {
+      const FS = 16, CH = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789'.split('');
+      ctx.fillStyle = '#050805'; ctx.fillRect(0, 0, w, h);
+      const drops = Array.from({ length: Math.ceil(w / FS) }, () => -R() * (h / FS));
+      return () => {
+        ctx.fillStyle = 'rgba(5,8,5,.14)'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#39ff6a'; ctx.font = FS + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+          if (drops[i] > 0) ctx.fillText(CH[R() * CH.length | 0], i * FS, drops[i] * FS);
+          if (drops[i] * FS > h && R() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      };
+    }
+    if (kind === 'sakura') {
+      const n = Math.max(14, Math.min(36, Math.round(w / 32)));
+      const P = Array.from({ length: n }, () => ({ x: R() * w, y: R() * h, s: 6 + R() * 8, vy: 0.5 + R(), ph: R() * TAU, sw: 0.4 + R() * 0.8, r: R() * TAU, vr: (R() - 0.5) * 0.04, a: 0.55 + R() * 0.4 }));
+      return () => {
+        ctx.clearRect(0, 0, w, h);
+        for (const p of P) {
+          p.y += p.vy; p.ph += 0.02; p.x += Math.sin(p.ph) * p.sw + 0.25; p.r += p.vr;
+          if (p.y > h + 20 || p.x > w + 20) { p.y = -20; p.x = R() * w * 0.9; }
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = p.a;
+          ctx.fillStyle = '#ffb3c9'; ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s * 0.55, 0, 0, TAU); ctx.fill();
+          ctx.fillStyle = '#ff8fb0'; ctx.beginPath(); ctx.ellipse(p.s * 0.35, 0, p.s * 0.4, p.s * 0.22, 0, 0, TAU); ctx.fill();
+          ctx.restore();
+        }
+      };
+    }
+    if (kind === 'forest') {
+      const n = Math.max(16, Math.min(40, Math.round(w / 28)));
+      const F = Array.from({ length: n }, () => ({ x: R() * w, y: R() * h, a: R() * TAU, s: 0.2 + R() * 0.4, ph: R() * TAU, r: 1.2 + R() * 1.8 }));
+      return () => {
+        ctx.clearRect(0, 0, w, h);
+        for (const f of F) {
+          f.a += (R() - 0.5) * 0.25; f.x += Math.cos(f.a) * f.s; f.y += Math.sin(f.a) * f.s * 0.8 - 0.05; f.ph += 0.03;
+          if (f.x < -10) f.x = w + 10; if (f.x > w + 10) f.x = -10; if (f.y < -10) f.y = h + 10; if (f.y > h + 10) f.y = -10;
+          const al = 0.35 + 0.65 * (Math.sin(f.ph) * 0.5 + 0.5);
+          const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 7);
+          g.addColorStop(0, 'rgba(230,255,122,' + al + ')'); g.addColorStop(1, 'rgba(230,255,122,0)');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 7, 0, TAU); ctx.fill();
+        }
+      };
+    }
+    if (kind === 'midnight') {
+      const n = Math.min(170, Math.round(w * h / 7000));
+      const S = Array.from({ length: n }, () => ({ x: R() * w, y: R() * h, r: 0.3 + R() * 1.1, ph: R() * TAU, sp: 0.01 + R() * 0.03 }));
+      let shoot = null, next = 120;
+      return () => {
+        ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#fff';
+        for (const s of S) { s.ph += s.sp; ctx.globalAlpha = 0.25 + 0.75 * (Math.sin(s.ph) * 0.5 + 0.5); ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, TAU); ctx.fill(); }
+        ctx.globalAlpha = 1;
+        if (--next <= 0 && !shoot) { shoot = { x: R() * w * 0.7, y: R() * h * 0.4, l: 0 }; next = 200 + R() * 300; }
+        if (shoot) {
+          shoot.x += 9; shoot.y += 4.5; shoot.l++;
+          const g = ctx.createLinearGradient(shoot.x, shoot.y, shoot.x - 70, shoot.y - 35);
+          g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(shoot.x, shoot.y); ctx.lineTo(shoot.x - 70, shoot.y - 35); ctx.stroke();
+          if (shoot.l > 45) shoot = null;
+        }
+      };
+    }
+    return null;
   }
-  function startRain() {
-    if (rain || !document.body) return;
+  function stopFx() {
+    if (!fx) return;
+    cancelAnimationFrame(fx.raf);
+    window.removeEventListener('resize', fx.onResize);
+    document.removeEventListener('visibilitychange', fx.onVis);
+    fx.c.remove();
+    fx = null;
+  }
+  function startFx(kind) {
+    const cfg = FXMAP[kind];
+    if (!cfg || !document.body) return;
+    if (fx && fx.kind === kind) return;
+    stopFx();
     if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
     const c = document.createElement('canvas');
-    c.id = 'bgRain';
+    c.id = 'bgFx';
     c.setAttribute('aria-hidden', 'true');
-    c.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.3';
+    c.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:' + cfg.op;
     document.body.insertBefore(c, document.body.firstChild);
     const ctx = c.getContext('2d');
-    const FS = 16, CH = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789'.split('');
-    let w = 0, h = 0, drops = [], last = 0;
-    const size = () => {
-      w = c.width = window.innerWidth; h = c.height = window.innerHeight;
-      ctx.fillStyle = '#050805'; ctx.fillRect(0, 0, w, h);
-      drops = Array.from({ length: Math.ceil(w / FS) }, () => -Math.random() * (h / FS));
+    let last = 0;
+    const build = () => { c.width = window.innerWidth; c.height = window.innerHeight; fx.draw = buildFx(kind, ctx, c.width, c.height); };
+    const loop = t => {
+      fx.raf = requestAnimationFrame(loop);
+      if (t - last < 1000 / cfg.fps || !fx.draw) return;
+      last = t; fx.draw();
     };
-    const draw = t => {
-      rain.raf = requestAnimationFrame(draw);
-      if (t - last < 65) return;
-      last = t;
-      ctx.fillStyle = 'rgba(5,8,5,.14)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = '#39ff6a';
-      ctx.font = FS + 'px monospace';
-      for (let i = 0; i < drops.length; i++) {
-        if (drops[i] > 0) ctx.fillText(CH[Math.random() * CH.length | 0], i * FS, drops[i] * FS);
-        if (drops[i] * FS > h && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-      }
-    };
-    rain = {
-      c, raf: 0,
-      onResize: size,
-      onVis: () => { if (document.hidden) cancelAnimationFrame(rain.raf); else rain.raf = requestAnimationFrame(draw); }
-    };
-    size();
-    window.addEventListener('resize', rain.onResize);
-    document.addEventListener('visibilitychange', rain.onVis);
-    rain.raf = requestAnimationFrame(draw);
+    fx = { kind, c, raf: 0, draw: null, onResize: () => build(), onVis: () => { if (document.hidden) cancelAnimationFrame(fx.raf); else fx.raf = requestAnimationFrame(loop); } };
+    build();
+    window.addEventListener('resize', fx.onResize);
+    document.addEventListener('visibilitychange', fx.onVis);
+    fx.raf = requestAnimationFrame(loop);
   }
-  function syncRain() {
-    if (document.documentElement.getAttribute('data-theme') === 'terminal') startRain(); else stopRain();
+  function syncFx() {
+    const t = document.documentElement.getAttribute('data-theme');
+    if (FXMAP[t]) startFx(t); else stopFx();
   }
-  document.addEventListener('DOMContentLoaded', syncRain);
-  if (document.body) syncRain();
+  document.addEventListener('DOMContentLoaded', syncFx);
+  if (document.body) syncFx();
 
-  const THEMES = [['dark', '📓 Тетрадь · тёмная'], ['light', '📓 Тетрадь · светлая'], ['paper', '📜 Бумага'], ['sakura', '🌸 Сакура'], ['forest', '🌲 Лес'], ['midnight', '🌌 Полночь'],
-    ['terminal', '💻 Терминал'], ['glass', '🧊 Стекло'], ['neon', '🌆 Неон'], ['minimal', '⬜ Минимал']];
+  const THEMES = [['dark', '📓 Тетрадь · тёмная'], ['light', '📓 Тетрадь · светлая'], ['sakura', '🌸 Сакура'], ['forest', '🌲 Лес'], ['midnight', '🌌 Космос'],
+    ['paper', '📜 Старая бумага'], ['glass', '🧊 Аврора'], ['minimal', '⬜ Минимал'], ['terminal', '💻 Терминал'], ['neon', '🌆 Неон']];
   function applyTheme(t) {
     if (!THEMES.some(x => x[0] === t)) t = 'dark';
     document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('user-theme', t); } catch (e) {}
-    syncRain();
+    syncFx();
   }
   let savedTheme = 'dark';
   try { const v = localStorage.getItem('user-theme'); if (THEMES.some(x => x[0] === v)) savedTheme = v; } catch (e) {}
@@ -87,14 +140,6 @@
   /* дополнительные темы: переопределяют переменные из theme.css, HTML менять не нужно */
   const themeCss = document.createElement('style');
   themeCss.textContent = `
-  [data-theme="forest"]{--bg:#0f1f17;--grid:#183226;--ink:#eef3e6;--soft:#9db3a2;--card:#162b21;--line:#dfe8d3;--shc:#000;
-    --blue:#6fb7ff;--blue-s:#25507a;--red:#ff6b6b;--red-s:#6b2a2a;--green:#4ade80;--violet:#b79cff;--ok-bg:rgba(74,222,128,.14);--no-bg:rgba(255,107,107,.14)}
-  [data-theme="midnight"]{--bg:#000;--grid:#101018;--ink:#f5f5f7;--soft:#8c8c9c;--card:#0c0c14;--line:#cfcfdc;--shc:#2a2a44;
-    --blue:#5aa2ff;--blue-s:#1c3a6b;--red:#ff5a70;--red-s:#5c2230;--green:#34d27b;--violet:#a290ff;--ok-bg:rgba(52,210,123,.14);--no-bg:rgba(255,90,112,.14)}
-  [data-theme="sakura"]{--bg:#fff1f3;--grid:#f3d6dc;--ink:#3a1f2b;--soft:#7d5a68;--card:#ffffff;--line:#3a1f2b;--shc:#3a1f2b;
-    --blue:#3b6fe0;--blue-s:#c5d5fa;--red:#e11d48;--red-s:#fbc4d0;--green:#16a34a;--violet:#a855f7;--ok-bg:rgba(22,163,74,.14);--no-bg:rgba(225,29,72,.12)}
-  [data-theme="paper"]{--bg:#f3ead7;--grid:#e2d5b8;--ink:#2b2218;--soft:#6b5a43;--card:#fbf5e6;--line:#2b2218;--shc:#2b2218;
-    --blue:#2b6cb0;--blue-s:#bfd3ea;--red:#c0392b;--red-s:#efc3bd;--green:#2f855a;--violet:#7b5cc4;--ok-bg:rgba(47,133,90,.14);--no-bg:rgba(192,57,43,.12)}
   [data-theme="forest"] input[type=date]::-webkit-calendar-picker-indicator,
   [data-theme="midnight"] input[type=date]::-webkit-calendar-picker-indicator,
   [data-theme="terminal"] input[type=date]::-webkit-calendar-picker-indicator,
@@ -103,7 +148,7 @@
   /* цвета тонов на странице китайского */
   [data-theme="forest"],[data-theme="midnight"],[data-theme="terminal"],[data-theme="glass"],[data-theme="neon"]{--t1:#7aa2ff!important;--t2:#4fd1a0!important;--t3:#f0b44c!important;--t4:#ff7b63!important}
 
-  /* ===== стили (меняют не только цвета, но и форму, шрифты и фон) ===== */
+  /* ===== стили: меняют форму, шрифты, фон и анимацию, а не только цвета ===== */
 
   /* 💻 Терминал: моноширинный шрифт, острые углы, зелёный свет, строки развёртки */
   [data-theme="terminal"]{--bg:#050805;--grid:#0c170c;--ink:#a6ffb4;--soft:#4fa86a;--card:#091209;--line:#2fd35a;--shc:transparent;--r:0px;--sh:none;
@@ -116,15 +161,6 @@
   [data-theme="terminal"] h1{text-shadow:0 0 10px rgba(57,255,106,.55)}
   [data-theme="terminal"] .hero h1::before{content:"> "}
 
-  /* 🧊 Стекло: размытие, мягкие градиенты, большие скругления */
-  [data-theme="glass"]{--bg:#0b1030;--grid:rgba(255,255,255,.06);--ink:#f4f6ff;--soft:#a9b2dd;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.22);--shc:transparent;--r:24px;--sh:0 10px 34px rgba(0,0,0,.35);
-    --blue:#7aa2ff;--blue-s:rgba(122,162,255,.25);--red:#ff6b8a;--red-s:rgba(255,107,138,.25);--green:#4be3a0;--violet:#b39cff;--ok-bg:rgba(75,227,160,.15);--no-bg:rgba(255,107,138,.15)}
-  [data-theme="glass"] body{background-image:radial-gradient(620px 420px at 12% 8%,rgba(124,92,255,.5),transparent 62%),radial-gradient(520px 520px at 90% 28%,rgba(45,226,230,.3),transparent 62%),radial-gradient(640px 520px at 40% 98%,rgba(255,43,214,.28),transparent 62%);background-size:auto;background-attachment:fixed}
-  [data-theme="glass"] body::before,[data-theme="glass"] body::after,[data-theme="glass"] .hero::after{display:none}
-  [data-theme="glass"] .hero,[data-theme="glass"] .box,[data-theme="glass"] .alert,[data-theme="glass"] .subject,[data-theme="glass"] .note-card,[data-theme="glass"] .pair-card,[data-theme="glass"] .acc,[data-theme="glass"] .w,[data-theme="glass"] .today-pair,[data-theme="glass"] .q-btn,[data-theme="glass"] .tools{-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:var(--sh)}
-  [data-theme="glass"] .deck .face{background:#1a2050;-webkit-backdrop-filter:none;backdrop-filter:none}
-  [data-theme="glass"] #authGate{background-image:radial-gradient(620px 420px at 12% 8%,rgba(124,92,255,.5),transparent 62%),radial-gradient(520px 520px at 90% 28%,rgba(45,226,230,.3),transparent 62%)}
-
   /* 🌆 Неон: тёмно-фиолетовый фон, голубые рамки, розовые тени и свечение */
   [data-theme="neon"]{--bg:#12002b;--grid:#2a0a55;--ink:#fdf2ff;--soft:#b79adf;--card:#1d0a3d;--line:#2de2e6;--shc:#ff2bd6;--yel:#ffe94d;
     --blue:#4cc9f0;--blue-s:#3a1f7a;--red:#ff3d81;--red-s:#5a1040;--green:#3dffb0;--violet:#b388ff;--ok-bg:rgba(61,255,176,.14);--no-bg:rgba(255,61,129,.16)}
@@ -136,15 +172,70 @@
   [data-theme="neon"] h1{text-shadow:0 0 16px rgba(255,43,214,.7)}
   [data-theme="neon"] .hero,[data-theme="neon"] .box{box-shadow:4px 4px 0 var(--shc),0 0 22px rgba(45,226,230,.25)}
 
-  /* ⬜ Минимал: светлый, без сетки и теней, тонкие линии */
-  [data-theme="minimal"]{--bg:#f7f7f9;--grid:#ececf0;--ink:#15151a;--soft:#6a6a78;--card:#ffffff;--line:#d8d8e0;--shc:transparent;--yel:#ffe08a;--r:12px;--sh:0 1px 3px rgba(0,0,0,.08);
-    --blue:#2563eb;--blue-s:#dbe6fd;--red:#e11d48;--red-s:#fde1e7;--green:#16a34a;--violet:#7c5cff;--ok-bg:rgba(22,163,74,.1);--no-bg:rgba(225,29,72,.08);
-    --serif:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  
+  /* 🌸 Сакура: нежный розовый, мягкие тени, округлый шрифт, лепестки */
+  [data-theme="sakura"]{--bg:#fff0f4;--grid:rgba(240,150,180,.12);--ink:#4a2332;--soft:#9a6b7d;--card:#fffafc;--line:#f0b4c8;--shc:rgba(232,120,160,.28);--yel:#ffc2d4;--r:24px;--sh:0 10px 28px rgba(232,120,160,.22);
+    --blue:#6b8cff;--blue-s:#d9e2ff;--red:#ec4f83;--red-s:#ffd0df;--green:#3fb97a;--violet:#b583f5;--ok-bg:rgba(63,185,122,.14);--no-bg:rgba(236,79,131,.12);
+    --serif:"Playfair Display",Georgia,"Times New Roman",serif;--sans:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,sans-serif}
+  [data-theme="sakura"] body{background-image:linear-gradient(180deg,#fff0f4 0%,#ffe2ec 60%,#ffd6e4 100%);background-size:auto;background-attachment:fixed}
+  [data-theme="sakura"] body::before{left:0;right:0;width:auto;opacity:1;background:radial-gradient(520px 380px at 92% 0%,rgba(255,170,200,.5),transparent 70%),radial-gradient(440px 340px at 0% 100%,rgba(255,200,215,.55),transparent 70%)}
+  [data-theme="sakura"] body::after,[data-theme="sakura"] .hero::after{display:none}
+  [data-theme="sakura"] .hero,[data-theme="sakura"] .box,[data-theme="sakura"] .subject,[data-theme="sakura"] .note-card,[data-theme="sakura"] .pair-card,[data-theme="sakura"] .acc{box-shadow:var(--sh)}
+  [data-theme="sakura"] #authGate{background-image:linear-gradient(180deg,#fff0f4,#ffd6e4)}
+
+  /* 🌲 Лес: глубокий зелёный, туман внизу, светлячки */
+  [data-theme="forest"]{--bg:#0b1a12;--grid:rgba(120,180,140,.06);--ink:#e8f1e2;--soft:#8fae98;--card:#132a1d;--line:#3d6b52;--shc:rgba(0,0,0,.55);--yel:#f2d36b;--r:18px;--sh:0 8px 24px rgba(0,0,0,.45);
+    --blue:#7cc4ff;--blue-s:#1f4a63;--red:#ff8a7a;--red-s:#5a2a24;--green:#6ee7a0;--violet:#c2a6ff;--ok-bg:rgba(110,231,160,.14);--no-bg:rgba(255,138,122,.14);
+    --serif:"Merriweather",Georgia,serif}
+  [data-theme="forest"] body{background-image:radial-gradient(760px 520px at 50% -10%,rgba(80,160,100,.28),transparent 70%),linear-gradient(180deg,#0b1a12,#07110b);background-size:auto;background-attachment:fixed}
+  [data-theme="forest"] body::before{left:0;right:0;top:auto;bottom:0;width:auto;height:38vh;opacity:1;background:linear-gradient(0deg,rgba(70,140,90,.3),transparent)}
+  [data-theme="forest"] body::after,[data-theme="forest"] .hero::after{display:none}
+  [data-theme="forest"] .hero,[data-theme="forest"] .box,[data-theme="forest"] .subject,[data-theme="forest"] .note-card,[data-theme="forest"] .pair-card,[data-theme="forest"] .acc{box-shadow:var(--sh)}
+  [data-theme="forest"] #authGate{background-image:linear-gradient(180deg,#0b1a12,#07110b)}
+
+  /* 🌌 Космос: чёрное небо, мерцающие звёзды, луна, падающие звёзды */
+  [data-theme="midnight"]{--bg:#02030a;--grid:rgba(120,130,255,.05);--ink:#e9ecff;--soft:#8a90bd;--card:#0a0d1f;--line:#38407f;--shc:rgba(90,100,255,.3);--yel:#ffd666;--r:14px;--sh:0 0 0 1px rgba(110,120,255,.18),0 10px 30px rgba(0,0,40,.6);
+    --blue:#6c8dff;--blue-s:#1c2a66;--red:#ff6b8a;--red-s:#4a1a2c;--green:#4be3a0;--violet:#9b8cff;--ok-bg:rgba(75,227,160,.14);--no-bg:rgba(255,107,138,.14)}
+  [data-theme="midnight"] body{background-image:radial-gradient(900px 600px at 85% -10%,rgba(80,90,220,.28),transparent 65%),radial-gradient(700px 500px at 0% 100%,rgba(120,60,200,.18),transparent 65%);background-size:auto;background-attachment:fixed}
+  [data-theme="midnight"] body::before{left:auto;right:6%;top:5%;bottom:auto;width:64px;height:64px;border-radius:50%;opacity:.9;background:radial-gradient(circle at 35% 35%,#fff,#cfd6ff 55%,#8f9aff 100%);box-shadow:0 0 60px 12px rgba(150,160,255,.35)}
+  [data-theme="midnight"] body::after,[data-theme="midnight"] .hero::after{display:none}
+  [data-theme="midnight"] #authGate{background-image:none}
+
+  /* 📜 Старая бумага: газетный шрифт с засечками, двойные рамки, плотная бумага с виньеткой */
+  [data-theme="paper"]{--bg:#eee3c8;--grid:rgba(90,65,30,.1);--ink:#2a2016;--soft:#6b5a43;--card:#f8f0da;--line:#3b2d1a;--shc:rgba(59,45,26,.45);--yel:#e9c46a;--r:3px;--sh:3px 3px 0 rgba(59,45,26,.4);
+    --blue:#1f4e79;--blue-s:#c3d2e0;--red:#a63a2b;--red-s:#e8c5be;--green:#3d6b3a;--violet:#6b4a8a;--ok-bg:rgba(61,107,58,.14);--no-bg:rgba(166,58,43,.12);
+    --serif:Georgia,"Times New Roman",serif;--sans:Georgia,"Times New Roman",serif}
+  [data-theme="paper"] body{background-image:repeating-linear-gradient(0deg,rgba(90,65,30,.045) 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,rgba(90,65,30,.03) 0 1px,transparent 1px 5px),radial-gradient(ellipse at center,transparent 50%,rgba(120,80,30,.22) 100%);background-size:auto;background-attachment:fixed}
+  [data-theme="paper"] *:not(.av){border-radius:4px!important}
+  [data-theme="paper"] .hero,[data-theme="paper"] .box{border-style:double;border-width:5px}
+  [data-theme="paper"] h1{text-transform:uppercase;letter-spacing:.04em;font-style:normal}
+  [data-theme="paper"] .hero::after{display:none}
+  [data-theme="paper"] #authGate{background-image:none}
+
+  /* 🧊 Аврора: матовое стекло поверх переливающегося северного сияния */
+  @keyframes auroraMove{0%{transform:translate3d(-3%,-2%,0) scale(1)}50%{transform:translate3d(4%,3%,0) scale(1.08)}100%{transform:translate3d(-2%,5%,0) scale(1.02)}}
+  [data-theme="glass"]{--bg:#0a0f2c;--grid:rgba(255,255,255,.05);--ink:#f4f6ff;--soft:#b3bbe6;--card:rgba(255,255,255,.1);--line:rgba(255,255,255,.28);--shc:transparent;--r:26px;--sh:inset 0 1px 0 rgba(255,255,255,.28),0 14px 40px rgba(0,0,0,.35);
+    --blue:#8fb0ff;--blue-s:rgba(143,176,255,.25);--red:#ff7aa0;--red-s:rgba(255,122,160,.25);--green:#5eeab0;--violet:#c2a8ff;--ok-bg:rgba(94,234,176,.16);--no-bg:rgba(255,122,160,.16);
+    --sans:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif}
+  [data-theme="glass"] body{background-image:none;background-color:#0a0f2c}
+  [data-theme="glass"] body::before{left:-20%;right:-20%;top:-20%;bottom:-20%;width:auto;opacity:1;animation:auroraMove 22s ease-in-out infinite alternate;
+    background:radial-gradient(560px 420px at 20% 20%,rgba(124,92,255,.65),transparent 65%),radial-gradient(520px 480px at 80% 30%,rgba(45,226,230,.45),transparent 65%),radial-gradient(620px 520px at 50% 85%,rgba(255,60,200,.4),transparent 65%),radial-gradient(420px 380px at 10% 80%,rgba(60,200,120,.3),transparent 65%)}
+  [data-theme="glass"] body::after,[data-theme="glass"] .hero::after{display:none}
+  [data-theme="glass"] .hero,[data-theme="glass"] .box,[data-theme="glass"] .alert,[data-theme="glass"] .subject,[data-theme="glass"] .note-card,[data-theme="glass"] .pair-card,[data-theme="glass"] .acc,[data-theme="glass"] .w,[data-theme="glass"] .today-pair,[data-theme="glass"] .q-btn,[data-theme="glass"] .tools{-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);box-shadow:var(--sh)}
+  [data-theme="glass"] .deck .face{background:#1b2260;-webkit-backdrop-filter:none;backdrop-filter:none}
+  [data-theme="glass"] #authGate{background-image:radial-gradient(560px 420px at 20% 20%,rgba(124,92,255,.6),transparent 65%),radial-gradient(520px 480px at 80% 30%,rgba(45,226,230,.4),transparent 65%)}
+
+  /* ⬜ Минимал (швейцарский): чёрное на белом, один оранжевый акцент, острые углы, плотный гротеск */
+  [data-theme="minimal"]{--bg:#ffffff;--grid:#ededed;--ink:#000;--soft:#5c5c5c;--card:#ffffff;--line:#000;--shc:transparent;--yel:#ff5a1f;--r:0px;--sh:none;
+    --blue:#0050ff;--blue-s:#d6e2ff;--red:#ff2d2d;--red-s:#ffd6d6;--green:#00a651;--violet:#6a3dff;--ok-bg:rgba(0,166,81,.1);--no-bg:rgba(255,45,45,.08);
+    --serif:"Helvetica Neue",Helvetica,Arial,sans-serif;--sans:"Helvetica Neue",Helvetica,Arial,sans-serif}
+  [data-theme="minimal"] *:not(.av){border-radius:0!important}
+  [data-theme="minimal"] *{font-style:normal!important}
   [data-theme="minimal"] body{background-image:none}
   [data-theme="minimal"] body::before,[data-theme="minimal"] body::after,[data-theme="minimal"] .hero::after{display:none}
-  [data-theme="minimal"] *{font-style:normal!important}
-  [data-theme="minimal"] #authGate{background-image:none}
+  [data-theme="minimal"] h1{text-transform:uppercase;letter-spacing:-.03em;font-weight:900}
   [data-theme="minimal"] .badge{transform:none}
+  [data-theme="minimal"] #authGate{background-image:none}
   `;
   document.head.appendChild(themeCss);
 
