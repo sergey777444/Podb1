@@ -11,12 +11,69 @@
   const DOMAIN = '@group.local';
 
   /* ---------- тема: одна на все страницы ---------- */
+  /* ---------- фон темы «Терминал»: цифровой дождь (рисуется на canvas, включается только в этой теме) ---------- */
+  let rain = null;
+  function stopRain() {
+    if (!rain) return;
+    cancelAnimationFrame(rain.raf);
+    window.removeEventListener('resize', rain.onResize);
+    document.removeEventListener('visibilitychange', rain.onVis);
+    rain.c.remove();
+    rain = null;
+  }
+  function startRain() {
+    if (rain || !document.body) return;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    const c = document.createElement('canvas');
+    c.id = 'bgRain';
+    c.setAttribute('aria-hidden', 'true');
+    c.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.3';
+    document.body.insertBefore(c, document.body.firstChild);
+    const ctx = c.getContext('2d');
+    const FS = 16, CH = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789'.split('');
+    let w = 0, h = 0, drops = [], last = 0;
+    const size = () => {
+      w = c.width = window.innerWidth; h = c.height = window.innerHeight;
+      ctx.fillStyle = '#050805'; ctx.fillRect(0, 0, w, h);
+      drops = Array.from({ length: Math.ceil(w / FS) }, () => -Math.random() * (h / FS));
+    };
+    const draw = t => {
+      rain.raf = requestAnimationFrame(draw);
+      if (t - last < 65) return;
+      last = t;
+      ctx.fillStyle = 'rgba(5,8,5,.14)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#39ff6a';
+      ctx.font = FS + 'px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        if (drops[i] > 0) ctx.fillText(CH[Math.random() * CH.length | 0], i * FS, drops[i] * FS);
+        if (drops[i] * FS > h && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    };
+    rain = {
+      c, raf: 0,
+      onResize: size,
+      onVis: () => { if (document.hidden) cancelAnimationFrame(rain.raf); else rain.raf = requestAnimationFrame(draw); }
+    };
+    size();
+    window.addEventListener('resize', rain.onResize);
+    document.addEventListener('visibilitychange', rain.onVis);
+    rain.raf = requestAnimationFrame(draw);
+  }
+  function syncRain() {
+    if (document.documentElement.getAttribute('data-theme') === 'terminal') startRain(); else stopRain();
+  }
+  document.addEventListener('DOMContentLoaded', syncRain);
+  if (document.body) syncRain();
+
   const THEMES = [['dark', '📓 Тетрадь · тёмная'], ['light', '📓 Тетрадь · светлая'], ['paper', '📜 Бумага'], ['sakura', '🌸 Сакура'], ['forest', '🌲 Лес'], ['midnight', '🌌 Полночь'],
     ['terminal', '💻 Терминал'], ['glass', '🧊 Стекло'], ['neon', '🌆 Неон'], ['minimal', '⬜ Минимал']];
   function applyTheme(t) {
     if (!THEMES.some(x => x[0] === t)) t = 'dark';
     document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('user-theme', t); } catch (e) {}
+    syncRain();
   }
   let savedTheme = 'dark';
   try { const v = localStorage.getItem('user-theme'); if (THEMES.some(x => x[0] === v)) savedTheme = v; } catch (e) {}
@@ -73,6 +130,9 @@
     --blue:#4cc9f0;--blue-s:#3a1f7a;--red:#ff3d81;--red-s:#5a1040;--green:#3dffb0;--violet:#b388ff;--ok-bg:rgba(61,255,176,.14);--no-bg:rgba(255,61,129,.16)}
   [data-theme="neon"] body::before{background:#ff2bd6;box-shadow:0 0 12px #ff2bd6;opacity:.9}
   [data-theme="neon"] body::after{display:none}
+  [data-theme="neon"] body{background-image:radial-gradient(560px 420px at 10% 0%,rgba(255,43,214,.28),transparent 65%),radial-gradient(520px 480px at 100% 35%,rgba(45,226,230,.2),transparent 65%);background-size:auto;background-attachment:fixed}
+  [data-theme="neon"] #authGate,[data-theme="terminal"] #authGate{background-image:none}
+  [data-theme="terminal"] body{background-image:none}
   [data-theme="neon"] h1{text-shadow:0 0 16px rgba(255,43,214,.7)}
   [data-theme="neon"] .hero,[data-theme="neon"] .box{box-shadow:4px 4px 0 var(--shc),0 0 22px rgba(45,226,230,.25)}
 
