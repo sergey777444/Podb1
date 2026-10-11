@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Эререре барни — ФЛ1-ПОДб-11</title>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="app.js?v=23"></script>
+<style>
+.container{visibility:hidden}.container.ok{visibility:visible}
+.wide{width:min(1200px,calc(100% - 36px))}
+.frame{position:relative;padding:0;overflow:hidden;height:calc(100dvh - var(--bar-h) - var(--nav-h) - 260px);min-height:420px}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.acts .btn{text-decoration:none;display:inline-flex;align-items:center}
+</style>
+</head>
+<body>
+<div class="container wide">
+  <header class="hero">
+    <span class="badge">🤫 Только для своих</span>
+    <h1>Эререре <span class="hl">барни</span></h1>
+    <p>Пособие Финогеевой и ответы к зачёту — для нас с Владом</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-f="finogeeva.html">📘 Пособие</button>
+    <button role="tab" aria-selected="false" data-f="zachet.html">📝 Зачёт</button>
+  </nav>
+
+  <div class="box frame"><iframe id="fr" title="Материал" src="finogeeva.html"></iframe></div>
+  <div class="acts"><a class="btn ghost" id="open" href="finogeeva.html" target="_blank" rel="noopener">Открыть на весь экран ↗</a></div>
+</div>
+
+<script>
+(async function () {
+  /* логины тех, кому можно сюда (как при входе, строчными буквами) */
+  const ALLOWED = ['ВАШ_ЛОГИН', 'ЛОГИН_ВЛАДА'];
+  await window.authReady;
+  const me = String(window.userLogin || '').toLowerCase();
+  if (!window.authUser || !ALLOWED.map(x => x.toLowerCase()).includes(me)) { location.replace('index.html'); return; }
+  document.querySelector('.container').classList.add('ok');
+  const fr = document.getElementById('fr'), open = document.getElementById('open');
+  const tabs = document.querySelectorAll('.tabs button');
+  function pick(f) {
+    tabs.forEach(b => b.setAttribute('aria-selected', b.dataset.f === f));
+    fr.src = f; open.href = f;
+    history.replaceState(null, '', '#' + f.replace('.html', ''));
+    try { localStorage.setItem('erere_tab', f); } catch (e) {}
+  }
+  tabs.forEach(b => b.onclick = () => pick(b.dataset.f));
+  let f = location.hash.slice(1);
+  if (f) f += '.html'; else { try { f = localStorage.getItem('erere_tab') || ''; } catch (e) {} }
+  if (f === 'finogeeva.html' || f === 'zachet.html') pick(f);
+})();
+</script>
+</body>
+</html>
