@@ -36,7 +36,7 @@
 <script>
 (async function () {
   /* логины тех, кому можно сюда (как при входе, строчными буквами) */
-  const ALLOWED = ['ВАШ_ЛОГИН', 'ЛОГИН_ВЛАДА'];
+  const ALLOWED = ['zsv111405', 'mvt112582'];
   await window.authReady;
   const me = String(window.userLogin || '').toLowerCase();
   if (!window.authUser || !ALLOWED.map(x => x.toLowerCase()).includes(me)) { location.replace('index.html'); return; }
