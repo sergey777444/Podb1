@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>🏛️ Латынь — ФЛ1-ПОДб-11</title>
+<link rel="stylesheet" href="theme.css?v=2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
+<script src="words-latin.js?v=1"></script>
+<script src="app.js?v=24"></script>
+<style>
+.panel{margin-bottom:16px}
+.chips.cat .chip{padding:7px 12px}
+.form-control{margin-top:14px}
+.deck{height:340px}
+.hint{text-align:center;margin:14px 0 4px}
+.note{min-height:16px;margin-top:8px;text-align:center;color:var(--soft);font-size:12px}
+.group{margin-bottom:22px}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 10px}
+.gh h2{font:italic 800 16px var(--serif)}.gh small{color:var(--soft);font-weight:700;white-space:nowrap}
+.w{display:flex;gap:12px;align-items:center;margin-bottom:8px;padding:11px 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;user-select:none}
+.w:active{transform:translate(2px,2px)}
+.w.ok{background:var(--ok-bg);border-color:var(--green)}
+.chk{flex:0 0 26px;height:26px;display:grid;place-items:center;border:2px solid var(--line);border-radius:8px;color:transparent;font-size:14px;font-weight:800}
+.w.ok .chk{background:var(--green);border-color:var(--green);color:#fff}
+.la{font:italic 800 17px var(--serif);word-break:break-word}
+.ru2{margin-top:1px;color:var(--blue);font-size:13px;font-weight:700}
+.d2{margin-top:3px;color:var(--soft);font-size:12.5px;font-style:italic}
+.big.lat{font-style:italic}
+.def.forms{font:italic 600 16px var(--serif);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="container narrow">
+  <header class="hero">
+    <span class="badge">🎓 ФЛ1 • ПОДб-11</span>
+    <h1>🏛️ Латинский <span class="hl">язык</span></h1>
+    <p>Лексические минимумы 1–27 · Ярхо В.Н., Лобода В.И.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-t="c">Карточки</button>
+    <button role="tab" aria-selected="false" data-t="l">Список</button>
+  </nav>
+
+  <div class="box panel">
+    <div class="stat"><span id="st1">Выучено 0 из 0</span><span id="st2">0%</span></div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="chips scroll cat" id="grChips"></div>
+  </div>
+
+  <section id="c" class="pane on">
+    <div class="chips" id="dirChips"></div>
+    <div class="deck" id="deck"></div>
+    <div class="ctl">
+      <button class="no" id="bNo" aria-label="Повторить">✕</button>
+      <button class="sm" id="bUndo" aria-label="Вернуть">↺</button>
+      <button class="ok" id="bOk" aria-label="Выучил">✓</button>
+    </div>
+    <p class="hint">Тап — перевернуть · вправо — выучил · влево — повторить</p>
+  </section>
+
+  <section id="l" class="pane">
+    <div class="chips" id="stChips"></div>
+    <input type="search" id="q" class="form-control" placeholder="🔍 Поиск по слову или переводу…" autocomplete="off">
+    <div class="hint">Нажми на слово, чтобы отметить его выученным</div>
+    <div id="list"></div>
+  </section>
+  <div class="note" id="note"></div>
+</div>
+
+<script>
+  const KEY = 'latin_learned_words';   /* тот же ключ читает окно прогресса в app.js */
+  const GROUPS = window.LAT_WORDS || [];
+  /* слово: [лемма (уникальный id), формы, перевод] */
+  const ALL = GROUPS.flatMap(g => g.words.map(w => ({ w: w[0], d: w[1], r: w[2], g: g.id, gt: g.title, k: w[0] })));
+  const $ = s => document.querySelector(s);
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  let learned = new Set(), fGroup = 'all', fStatus = 'all', fQuery = '', dir = 'la';
+  let queue = [], hist = [];
+
+  /* ---------- сохранение ---------- */
+  function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify([...learned])); } catch (e) {} }
+  let saveTimer;
+  function saveCloud() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try {
+        if (window.userData && window.currentUser) { await window.userData.set(KEY, [...learned]); $('#note').textContent = '☁️ Сохранено в профиле'; }
+        else $('#note').textContent = 'Войдите в аккаунт, чтобы прогресс сохранялся в профиле';
+      } catch (e) { console.error(e); $('#note').textContent = '❌ Не удалось сохранить в облако'; }
+      setTimeout(() => { $('#note').textContent = ''; }, 2500);
+    }, 400);
+  }
+  function loadLocal() { try { const a = JSON.parse(localStorage.getItem(KEY) || '[]'); if (Array.isArray(a)) learned = new Set(a); } catch (e) {} }
+  async function loadCloud() {
+    try {
+      if (window.userData && window.currentUser) {
+        const s = await window.userData.get(KEY);
+        if (Array.isArray(s)) learned = new Set(s);
+      }
+    } catch (e) { console.error(e); }
+    start(); renderList();
+  }
+  const persist = () => { saveLocal(); saveCloud(); };
+
+  /* ---------- фильтры и шапка ---------- */
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  const inGroup = x => fGroup === 'all' || x.g === fGroup;
+  function header() {
+    const scope = ALL.filter(inGroup);
+    const done = scope.filter(x => learned.has(x.k)).length, total = scope.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    $('#st1').textContent = `Выучено ${done} из ${total}`;
+    $('#st2').textContent = pct + '%';
+    $('#prog').style.width = pct + '%';
+    $('#grChips').innerHTML = [`<button class="chip${fGroup === 'all' ? ' on' : ''}" data-g="all">Все</button>`]
+      .concat(GROUPS.map(g => `<button class="chip${fGroup === g.id ? ' on' : ''}" data-g="${g.id}">ЛМ ${g.id.slice(2)}</button>`)).join('');
+    $('#dirChips').innerHTML = [['la', 'LA → RU'], ['ru', 'RU → LA']].map(([k, t]) => `<button class="chip${dir === k ? ' on' : ''}" data-d="${k}">${t}</button>`).join('');
+  }
+
+  /* ---------- карточки ---------- */
+  function start() {
+    queue = shuffle(ALL.filter(x => inGroup(x) && !learned.has(x.k)));
+    hist = [];
+    renderDeck();
+  }
+  /* формы показываем, если они дают больше, чем сама лемма */
+  const formsHtml = x => x.d && x.d !== x.w ? `<div class="def forms">${esc(x.d)}</div>` : '';
+  function mk(x, cls) {
+    const c = document.createElement('div'); c.className = 'card ' + cls;
+    const front = dir === 'la'
+      ? `<div class="big lat">${esc(x.w)}</div><div class="tip">тап — перевод</div>`
+      : `<div class="big ru">${esc(x.r)}</div><div class="tip">тап — слово</div>`;
+    const back = dir === 'la'
+      ? `<div class="big ru">${esc(x.r)}</div>${formsHtml(x)}`
+      : `<div class="big lat">${esc(x.w)}</div>${formsHtml(x)}<div class="def">${esc(x.r)}</div>`;
+    c.innerHTML = `<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ РАЗ</div><div class="inner">
+      <div class="face"><span class="tag">${esc(x.gt)}</span>${front}</div>
+      <div class="face back"><span class="tag">${esc(x.gt)}</span>${back}</div></div>`;
+    return c;
+  }
+  function renderDeck() {
+    header();
+    const d = $('#deck'); d.innerHTML = '';
+    const total = ALL.filter(inGroup).length;
+    if (!queue.length) {
+      d.style.height = 'auto';
+      d.innerHTML = `<div class="done"><h3>${total ? 'Все слова выучены 🎉' : 'Здесь пока нет слов'}</h3><div class="tip">${total ? total + ' карточек пройдено' : ''}</div>${total ? '<button id="again">Начать заново</button>' : ''}</div>`;
+      const b = $('#again');
+      if (b) b.onclick = () => { ALL.filter(inGroup).forEach(x => learned.delete(x.k)); persist(); start(); renderList(); };
+      return;
+    }
+    d.style.height = '340px';
+    [2, 1, 0].forEach(n => { if (queue[n]) d.appendChild(mk(queue[n], n === 0 ? 'top' : n === 1 ? 'under' : 'under2')); });
+    bind(d.querySelector('.top'));
+  }
+  function bind(c) {
+    let x0 = 0, dx = 0, drag = false, moved = false;
+    const sR = c.querySelector('.stampR'), sL = c.querySelector('.stampL');
+    c.onpointerdown = e => { drag = true; moved = false; dx = 0; x0 = e.clientX; c.setPointerCapture(e.pointerId); c.style.transition = 'none'; };
+    c.onpointermove = e => { if (!drag) return; dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true;
+      c.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+      sR.style.opacity = Math.max(0, Math.min(1, dx / 90)); sL.style.opacity = Math.max(0, Math.min(1, -dx / 90)); };
+    c.onpointerup = () => { if (!drag) return; drag = false;
+      if (!moved) { c.classList.toggle('flip'); c.style.transform = ''; return; }
+      if (Math.abs(dx) > 90) go(dx > 0, c);
+      else { c.style.transition = 'transform .25s'; c.style.transform = ''; sR.style.opacity = sL.style.opacity = 0; }
+      dx = 0; };
+    c.onpointercancel = () => { drag = false; c.style.transform = ''; };
+  }
+  function go(ok, c) {
+    c = c || $('.card.top'); if (!c || !queue.length) return;
+    c.style.transition = 'transform .3s,opacity .3s';
+    c.style.transform = `translateX(${ok ? 600 : -600}px) rotate(${ok ? 30 : -30}deg)`; c.style.opacity = 0;
+    const x = queue.shift(); hist.push({ x, ok });
+    if (ok) { learned.add(x.k); persist(); } else queue.push(x);
+    setTimeout(() => { renderDeck(); renderList(); }, 260);
+  }
+  $('#bOk').onclick = () => go(true);
+  $('#bNo').onclick = () => go(false);
+  $('#bUndo').onclick = () => {
+    const h = hist.pop(); if (!h) return;
+    if (h.ok) { learned.delete(h.x.k); persist(); } else { const i = queue.lastIndexOf(h.x); if (i > -1) queue.splice(i, 1); }
+    queue.unshift(h.x); renderDeck(); renderList();
+  };
+  document.addEventListener('keydown', e => {
+    if ($('#c').classList.contains('on') && !/INPUT/.test(document.activeElement.tagName)) {
+      if (e.key === 'ArrowRight') go(true);
+      else if (e.key === 'ArrowLeft') go(false);
+      else if (e.key === ' ') { e.preventDefault(); const c = $('.card.top'); if (c) c.classList.toggle('flip'); }
+    }
+  });
+
+  /* ---------- список ---------- */
+  function renderList() {
+    header();
+    $('#stChips').innerHTML = [['all', 'Все'], ['new', '⏳ Не выучено'], ['done', '✅ Выучено']]
+      .map(([k, t]) => `<button class="chip${fStatus === k ? ' on' : ''}" data-s="${k}">${t}</button>`).join('');
+    const q = fQuery.trim().toLowerCase(); let out = '';
+    GROUPS.forEach(g => {
+      if (fGroup !== 'all' && g.id !== fGroup) return;
+      const list = ALL.filter(x => x.g === g.id).filter(x => {
+        const d = learned.has(x.k);
+        if (fStatus === 'new' && d) return false;
+        if (fStatus === 'done' && !d) return false;
+        return !q || (x.w + ' ' + x.d + ' ' + x.r).toLowerCase().includes(q);
+      });
+      if (!list.length) return;
+      const n = g.words.filter(w => learned.has(w[0])).length;
+      out += `<div class="group"><div class="gh"><h2>${esc(g.title)}</h2><small>${n} / ${g.words.length}</small></div>` +
+        list.map(x => `<div class="w${learned.has(x.k) ? ' ok' : ''}" data-w="${esc(x.k)}" role="button" tabindex="0">
+          <div class="chk">✓</div><div><div class="la">${esc(x.w)}</div><div class="ru2">${esc(x.r)}</div>${x.d && x.d !== x.w ? `<div class="d2">${esc(x.d)}</div>` : ''}</div></div>`).join('') + '</div>';
+    });
+    $('#list').innerHTML = out || '<div class="empty">Ничего не найдено</div>';
+  }
+  function toggle(w) { learned.has(w) ? learned.delete(w) : learned.add(w); persist(); renderList(); start(); }
+  $('#list').addEventListener('click', e => { const w = e.target.closest('.w'); if (w) toggle(w.dataset.w); });
+  $('#list').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const w = e.target.closest('.w'); if (w) { e.preventDefault(); toggle(w.dataset.w); } });
+  $('#stChips').addEventListener('click', e => { const k = e.target.dataset.s; if (k) { fStatus = k; renderList(); } });
+  $('#q').addEventListener('input', e => { fQuery = e.target.value; renderList(); });
+  $('#grChips').addEventListener('click', e => { const k = e.target.dataset.g; if (k) { fGroup = k; start(); renderList(); } });
+  $('#dirChips').addEventListener('click', e => { const k = e.target.dataset.d; if (k) { dir = k; start(); } });
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.querySelectorAll('section.pane').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
+  });
+
+  loadLocal(); start(); renderList();
+  document.addEventListener('auth-ready', loadCloud);
+  if (window.currentUser) loadCloud();
+</script>
+</body>
+</html>
