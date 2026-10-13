@@ -650,6 +650,10 @@
     const b = await loadScriptOnce('words-vb.js?v=2', 'EN_VB');
     return a.concat(b);
   }
+  /* латынь: лексические минимумы лежат в words-latin.js (LAT_WORDS); ключ слова в сохранении — лемма (w[0]) */
+  async function loadLatWords() {
+    return loadScriptOnce('words-latin.js?v=1', 'LAT_WORDS');
+  }
   /* ключ слова в сохранении — само слово: выученное в одной категории считается выученным во всех */
   const enKey = (g, w) => w[0];
 
@@ -728,6 +732,7 @@
     ['base.html', '🗂️', 'База'],
     ['phonetics.html', '🔤', 'Фонетика'],
     ['words.html', '🇬🇧', 'Слова'],
+    ['latin.html', '🏛️', 'Латынь'],
     ['china.html', '🀄', 'Китайский']
   ];
   /* неподтверждённые не видят Конспекты, Базу и Журнал */
@@ -777,7 +782,7 @@
     const close = () => back.remove();
     back.addEventListener('click', e => { if (e.target === back) close(); });
 
-    let learned = new Set(), enLearned = new Set(), chLearned = new Set();
+    let learned = new Set(), enLearned = new Set(), chLearned = new Set(), laLearned = new Set();
     try {
       const saved = await window.userData.get('phonetics_learned_words');
       if (Array.isArray(saved)) learned = new Set(saved);
@@ -789,6 +794,10 @@
     try {
       const saved = await window.userData.get('chinese_learned_words');
       if (Array.isArray(saved)) chLearned = new Set(saved);
+    } catch (e) { console.error(e); }
+    try {
+      const saved = await window.userData.get('latin_learned_words');
+      if (Array.isArray(saved)) laLearned = new Set(saved);
     } catch (e) { console.error(e); }
     /* если облако пустое — подтянуть localStorage (в т.ч. для неподтверждённых) */
     try {
@@ -804,8 +813,13 @@
         const a = JSON.parse(localStorage.getItem('chinese_learned_words') || '[]');
         if (Array.isArray(a)) chLearned = new Set(a);
       }
+      if (!laLearned.size) {
+        const a = JSON.parse(localStorage.getItem('latin_learned_words') || '[]');
+        if (Array.isArray(a)) laLearned = new Set(a);
+      }
     } catch (e) {}
     const EN = await loadEnWords();
+    const LA = await loadLatWords();
 
     const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -842,6 +856,22 @@
       }).join('') +
       `<a class="go" href="words.html">Открыть слова</a>` : '';
 
+    /* латынь: лексические минимумы */
+    const laTotal = LA.reduce((n, g) => n + g.words.length, 0);
+    const laDone = LA.reduce((n, g) => n + g.words.filter(w => laLearned.has(w[0])).length, 0);
+    const laPct = laTotal ? Math.round(laDone / laTotal * 100) : 0;
+
+    const laHtml = laTotal ?
+      `<h4>🏛️ Латынь</h4>
+       <div class="sub">Выучено слов: ${laDone} из ${laTotal} (${laPct}%)</div>
+       <div class="bar"><i style="width:${laPct}%"></i></div>` +
+      LA.map(g => {
+        const n = g.words.filter(w => laLearned.has(w[0])).length;
+        return `<div class="grp"><div class="gh"><span>${esc(g.title)}</span><small>${n} / ${g.words.length}</small></div>
+          <div class="ch">${g.words.map(w => { const ok = laLearned.has(w[0]); return `<span class="${ok ? 'ok' : ''}">${ok ? '✓ ' : ''}${esc(w[0])}</span>`; }).join('')}</div></div>`;
+      }).join('') +
+      `<a class="go" href="latin.html">Открыть слова</a>` : '';
+
     /* китайский */
     const chKeys = Object.keys(CH_WORDS);
     const chTotal = chKeys.reduce((n, k) => n + CH_WORDS[k].length, 0);
@@ -860,8 +890,8 @@
       `<a class="go" href="china.html">Открыть карточки</a>`;
 
     /* выбор предмета: запоминаем в браузере */
-    const SUBJ = [['all', 'Все'], ['en', '🇬🇧 Английский'], ['ph', '🔤 Фонетика'], ['ch', '🀄 Китайский']];
-    const BLOCK = { en: enHtml, ph: phHtml, ch: chHtml };
+    const SUBJ = [['all', 'Все'], ['en', '🇬🇧 Английский'], ['la', '🏛️ Латынь'], ['ph', '🔤 Фонетика'], ['ch', '🀄 Китайский']];
+    const BLOCK = { en: enHtml, la: laHtml, ph: phHtml, ch: chHtml };
     let subj = 'all';
     try { subj = localStorage.getItem('prg_subject') || 'all'; } catch (e) {}
     if (!BLOCK[subj]) subj = 'all';
@@ -870,7 +900,7 @@
         `<div class="top"><h3>📊 Прогресс: ${esc((window.userProfile && window.userProfile.nick) || login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
         (window.authUser ? `<div class="pcard">${avatarHtml(window.userProfile, 46, (login || '?').charAt(0).toUpperCase())}<div class="pn"><b>${esc((window.userProfile && window.userProfile.nick) || login)}</b><small>логин: ${esc(login)}</small></div><button type="button" class="pedit">✏️ Изменить</button></div>` : '') +
         `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
-        (subj === 'all' ? enHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
+        (subj === 'all' ? enHtml + laHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
       back.querySelector('.x').onclick = close;
       const pe = back.querySelector('.pedit');
       if (pe) pe.onclick = () => openProfileEditor(login, paint);
