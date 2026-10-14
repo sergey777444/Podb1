@@ -28,6 +28,49 @@
 .d2{margin-top:3px;color:var(--soft);font-size:12.5px;font-style:italic}
 .big.lat{font-style:italic}
 .def.forms{font:italic 600 16px var(--serif);color:var(--ink)}
+
+/* ---------- тест ---------- */
+#tSetup[hidden],#tRun[hidden],#tRes[hidden]{display:none}
+.t-box{margin-bottom:14px}
+.t-lab{margin:16px 0 6px;color:var(--soft);font:800 11px var(--sans);letter-spacing:.07em;text-transform:uppercase}
+.t-lab:first-child{margin-top:0}
+.t-help{margin:6px 0 0;color:var(--soft);font-size:12px;line-height:1.45}
+.t-chips{display:flex;flex-wrap:wrap;gap:6px}
+.t-chips .chip{padding:7px 12px}
+.t-n{width:84px;padding:7px 10px;border:2px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font:700 13px var(--sans);outline:none}
+.t-btn{padding:12px 16px;border:2px solid var(--line);border-radius:12px;background:var(--yel);color:#1b1f3b;font:800 15px var(--sans);box-shadow:3px 3px 0 var(--shc);cursor:pointer}
+.t-btn:active{transform:translate(3px,3px);box-shadow:none}
+.t-btn:disabled{opacity:.5}
+.t-btn.ghost{background:var(--card);color:var(--ink)}
+.t-btn.full{display:block;width:100%;margin-top:16px}
+.t-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.t-act .t-btn{flex:1 1 auto}
+.t-top{display:flex;justify-content:space-between;margin:0 2px 8px;font-weight:800;font-size:13px}
+.t-q{margin-top:14px;padding:18px 16px;border:2px solid var(--line);border-radius:16px;background:var(--card);box-shadow:4px 4px 0 var(--shc);text-align:center}
+.t-ask{color:var(--soft);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.t-big{margin-top:8px;font:italic 800 30px var(--serif);word-break:break-word}
+.t-big.ru{font-style:normal;font-family:var(--sans);font-size:26px;color:var(--blue)}
+.t-sub{margin-top:6px;color:var(--soft);font-size:13px;font-weight:600}
+.t-sub.ru{color:var(--blue);font-weight:700}
+.t-in{display:block;width:100%;box-sizing:border-box;margin-top:14px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:600 18px var(--serif);outline:none}
+.t-in:focus{box-shadow:3px 3px 0 var(--yel)}
+.t-opt{display:block;width:100%;margin-top:8px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:700 15px var(--sans);text-align:left;cursor:pointer}
+.t-opt.ok{background:var(--ok-bg);border-color:var(--green)}
+.t-opt.no{background:var(--no-bg);border-color:var(--red)}
+.t-kb{display:grid;gap:6px;margin-top:10px}
+.t-kb .r{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.t-kb .r span{width:18px;color:var(--soft);font-weight:800;text-align:center}
+.t-kb button{min-width:40px;height:40px;padding:0 9px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:italic 700 18px var(--serif);box-shadow:2px 2px 0 var(--shc);cursor:pointer}
+.t-kb button.m{background:var(--yel);color:#1b1f3b}
+.t-kb button:active{transform:translate(2px,2px);box-shadow:none}
+.t-fb{margin-top:12px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:14px;line-height:1.5}
+.t-fb.ok{background:var(--ok-bg);border-color:var(--green)}
+.t-fb.no{background:var(--no-bg);border-color:var(--red)}
+.t-fb b{font-family:var(--serif);font-style:italic}
+.t-fb .e{margin-top:4px;color:var(--soft);font-size:13px}
+.t-score{text-align:center;font:italic 800 46px var(--serif)}
+.t-wr{margin-top:8px;padding:10px 12px;border:2px solid var(--red);border-radius:12px;background:var(--no-bg);font-size:14px;line-height:1.5}
+.t-wr .e{color:var(--soft);font-size:12.5px}
 </style>
 </head>
 <body>
@@ -41,6 +84,7 @@
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-t="c">Карточки</button>
     <button role="tab" aria-selected="false" data-t="l">Список</button>
+    <button role="tab" aria-selected="false" data-t="t">Тест</button>
   </nav>
 
   <div class="box panel">
@@ -65,6 +109,12 @@
     <input type="search" id="q" class="form-control" placeholder="🔍 Поиск по слову или переводу…" autocomplete="off">
     <div class="hint">Нажми на слово, чтобы отметить его выученным</div>
     <div id="list"></div>
+  </section>
+
+  <section id="t" class="pane">
+    <div id="tSetup"></div>
+    <div id="tRun" hidden></div>
+    <div id="tRes" hidden></div>
   </section>
   <div class="note" id="note"></div>
 </div>
@@ -101,6 +151,7 @@
       }
     } catch (e) { console.error(e); }
     start(); renderList();
+    if (tView === 'setup') tSetup();
   }
   const persist = () => { saveLocal(); saveCloud(); };
 
@@ -221,12 +272,317 @@
   $('#q').addEventListener('input', e => { fQuery = e.target.value; renderList(); });
   $('#grChips').addEventListener('click', e => { const k = e.target.dataset.g; if (k) { fGroup = k; start(); renderList(); } });
   $('#dirChips').addEventListener('click', e => { const k = e.target.dataset.d; if (k) { dir = k; start(); } });
+
+  /* =====================================================================
+     ТЕСТ
+     режимы: ru — лат → рус, la — рус → лат (N форм), fm — допиши формы по лемме
+     ===================================================================== */
+  const T_CFG = 'latin_test_cfg', T_ERR = 'latin_test_mistakes';
+  const T_DEF = { modes: ['ru', 'la'], forms: '1', input: 'type', groups: [], status: 'all', n: 20, check: 'now',
+    strict: false, allVals: false, showForms: true, kbd: true, shuffle: true, autoLearn: false, autoUnlearn: false };
+  let T = Object.assign({}, T_DEF, { modes: ['ru', 'la'], groups: [] });
+  let tErr = new Set(), tq = [], ti = 0, tView = 'setup', tBad = [];
+  try { const c = JSON.parse(localStorage.getItem(T_CFG) || 'null'); if (c && typeof c === 'object') T = Object.assign(T, c); } catch (e) {}
+  try { const a = JSON.parse(localStorage.getItem(T_ERR) || '[]'); if (Array.isArray(a)) tErr = new Set(a); } catch (e) {}
+  if (!Array.isArray(T.modes) || !T.modes.length) T.modes = ['ru', 'la'];
+  if (!Array.isArray(T.groups)) T.groups = [];
+  const tSave = () => { try { localStorage.setItem(T_CFG, JSON.stringify(T)); } catch (e) {} };
+  const tSaveErr = () => { try { localStorage.setItem(T_ERR, JSON.stringify([...tErr])); } catch (e) {} };
+
+  /* --- нормализация --- */
+  const stripD = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  /* латынь: без регистра, без пробелов вокруг, j = i, дефис не важен; долготу убираем, если не strict */
+  const nl = (s, strict) => { s = String(s).normalize('NFC').toLowerCase(); if (!strict) s = stripD(s); return s.replace(/j/g, 'i').replace(/-/g, '').replace(/\s+/g, ' ').trim(); };
+  /* русский: без регистра, ё = е, без знаков */
+  const nr = s => String(s).toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9\s\-]/g, ' ').replace(/\s+/g, ' ').trim();
+  /* словарная запись → список форм без рода/спряжения/скобок */
+  function toks(d) {
+    return String(d).replace(/\([^)]*\)/g, ' ').replace(/\bpl\.\s*/g, '').replace(/\?/g, '')
+      .split(/[,;]/).map(t => t.trim().replace(/(\s+(m|f|n|[1-4]))+$/, '').trim())
+      .filter(t => t && t !== '-' && !/^(m|f|n)$/.test(t));
+  }
+  const fs = x => x._t || (x._t = (() => { const t = toks(x.d && x.d.trim() ? x.d : x.w); return t.length ? t : [x.w]; })());
+  const rtoks = r => String(r).replace(/\([^)]*\)/g, ' ').replace(/\bpl\.\s*/g, '').split(/[;,?]/).map(nr).filter(t => t && t[0] !== '-');
+  const effFor = x => { const t = fs(x); return T.forms === 'all' ? t.length : Math.min(+T.forms || 1, t.length); };
+  const expList = (x, mode) => mode === 'la' ? fs(x).slice(0, effFor(x)) : fs(x).slice(1);
+  const tExp = q => q.mode === 'ru' ? q.x.r : expList(q.x, q.mode).join(', ');
+
+  /* --- проверка ответа --- */
+  function tCheck(q, text) {
+    const x = q.x;
+    if (q.mode === 'ru') {
+      const e = rtoks(x.r), u = rtoks(text);
+      if (!e.length) return nr(text) === nr(x.r);
+      return T.allVals ? e.every(t => u.includes(t)) : u.some(t => e.includes(t));
+    }
+    const strict = T.strict;
+    const user = toks(text).map(s => nl(s, strict));
+    /* несколько слов с одним русским значением (neco / occido) — подойдёт любое */
+    const cands = q.mode === 'la' ? ALL.filter(y => y === x || nr(y.r) === nr(x.r)) : [x];
+    return cands.some(y => {
+      const e = expList(y, q.mode).map(s => nl(s, strict));
+      let u = user;
+      if (u.length === 1 && e.length > 1) u = u[0].split(' ');
+      return e.length === u.length && e.every((s, i) => s === u[i]);
+    });
+  }
+
+  /* --- выбор из вариантов --- */
+  const tDisp = (y, mode) => mode === 'ru' ? y.r : expList(y, mode).join(', ');
+  function tOpts(q) {
+    const x = q.x, m = q.mode, ans = tDisp(x, m), seen = new Set([nl(ans, true)]);
+    let c = shuffle(ALL.filter(y => y.k !== x.k && (m !== 'fm' || fs(y).length > 1) && (m !== 'la' || nr(y.r) !== nr(x.r))));
+    c = c.filter(y => { const k = nl(tDisp(y, m), true); if (seen.has(k)) return false; seen.add(k); return true; });
+    const same = fs(x).length;
+    c.sort((a, b) => (fs(b).length === same) - (fs(a).length === same));
+    const o = c.slice(0, 3).map(y => ({ t: tDisp(y, m), ok: false }));
+    o.push({ t: ans, ok: true });
+    return shuffle(o);
+  }
+
+  /* --- пул слов и вопросы --- */
+  function tPool() {
+    let p = ALL.filter(x => !T.groups.length || T.groups.includes(x.g));
+    if (T.status === 'new') p = p.filter(x => !learned.has(x.k));
+    else if (T.status === 'done') p = p.filter(x => learned.has(x.k));
+    else if (T.status === 'err') p = p.filter(x => tErr.has(x.k));
+    if (T.modes.length === 1 && T.modes[0] === 'fm') p = p.filter(x => fs(x).length > 1);
+    return p;
+  }
+  function mkQ(x, mode) {
+    const q = { x, mode, mc: T.input === 'mc', ans: '', ok: false, done: false, hint: 0, pick: null, opts: null };
+    if (q.mc) q.opts = tOpts(q);
+    return q;
+  }
+  function tBuild(pool) {
+    let arr = T.shuffle ? shuffle(pool.slice()) : pool.slice();
+    if (T.n > 0) arr = arr.slice(0, T.n);
+    return arr.map(x => {
+      const ok = T.modes.filter(m => m !== 'fm' || fs(x).length > 1);
+      return mkQ(x, ok[Math.random() * ok.length | 0]);
+    });
+  }
+
+  /* --- настройки --- */
+  const tShow = v => {
+    tView = v;
+    $('#tSetup').hidden = v !== 'setup'; $('#tRun').hidden = v !== 'run'; $('#tRes').hidden = v !== 'res';
+    if (v === 'setup') tSetup();
+  };
+  function tSetup() {
+    const avail = tPool().length, cnt = T.n > 0 ? Math.min(T.n, avail) : avail;
+    const ch = (a, v, l, on) => `<button type="button" class="chip${on ? ' on' : ''}" data-${a}="${v}">${l}</button>`;
+    const opt = (k, l) => ch('to', k, (T[k] ? '✓ ' : '') + l, T[k]);
+    $('#tSetup').innerHTML = `<div class="box t-box">
+      <div class="t-lab">Что спрашивать (можно несколько сразу)</div>
+      <div class="t-chips">${ch('tm', 'ru', 'Латынь → Русский', T.modes.includes('ru'))}${ch('tm', 'la', 'Русский → Латынь', T.modes.includes('la'))}${ch('tm', 'fm', 'Формы по лемме', T.modes.includes('fm'))}</div>
+      <div class="t-help">«Формы по лемме»: дана начальная форма — допиши остальные (aqua → ae).</div>
+
+      <div class="t-lab">Сколько форм писать (Русский → Латынь)</div>
+      <div class="t-chips">${[['1', '1 · слово'], ['2', '2 формы'], ['3', '3 формы'], ['4', '4 формы'], ['all', 'Все']].map(([v, l]) => ch('tf', v, l, T.forms === v)).join('')}</div>
+      <div class="t-help">1 — только начальная форма (aqua), 2 — «aqua, ae», «Все» — весь ряд из словаря. Род и спряжение (f, m, 1…) писать не нужно.</div>
+
+      <div class="t-lab">Как отвечать</div>
+      <div class="t-chips">${ch('tp', 'type', '⌨️ Печатать', T.input === 'type')}${ch('tp', 'mc', '🔘 Выбор из 4', T.input === 'mc')}</div>
+
+      <div class="t-lab">Какие слова</div>
+      <div class="t-chips">${ch('tg', 'all', 'Все ЛМ', !T.groups.length)}${GROUPS.map(g => ch('tg', g.id, 'ЛМ ' + g.id.slice(2), T.groups.includes(g.id))).join('')}</div>
+      <div class="t-chips" style="margin-top:8px">${[['all', 'Любые'], ['new', '⏳ Не выучено'], ['done', '✅ Выучено'], ['err', '❌ Мои ошибки (' + tErr.size + ')']].map(([v, l]) => ch('ts', v, l, T.status === v)).join('')}</div>
+
+      <div class="t-lab">Сколько вопросов</div>
+      <div class="t-chips">${[10, 20, 30, 50].map(n => ch('tn', n, n, T.n === n)).join('')}${ch('tn', 0, 'Все', T.n === 0)}<input class="t-n" id="tN" type="number" min="0" max="999" inputmode="numeric" placeholder="своё" value="${[10, 20, 30, 50, 0].includes(T.n) ? '' : T.n}"></div>
+
+      <div class="t-lab">Проверка</div>
+      <div class="t-chips">${ch('tc', 'now', 'После каждого ответа', T.check === 'now')}${ch('tc', 'end', 'Только в конце', T.check === 'end')}</div>
+
+      <div class="t-lab">Дополнительно</div>
+      <div class="t-chips">
+        ${opt('strict', 'Учитывать долготу и краткость')}${opt('allVals', 'Перевод: нужны все значения')}${opt('showForms', 'Формы в вопросе')}
+        ${opt('kbd', 'Клавиатура ā ă')}${opt('shuffle', 'Перемешивать')}${opt('autoLearn', 'Верно → «выучено»')}${opt('autoUnlearn', 'Ошибка → снять «выучено»')}
+      </div>
+      <div class="t-help">Долгота/краткость сверяются со словарём: в ЛМ 1–20 она как в учебнике, в остальных расставлена приблизительно. По умолчанию a и ā считаются одним и тем же, i = j.</div>
+
+      <div class="t-help" id="tAvail">Подходит слов: ${avail}${T.status === 'err' && !avail ? ' — ошибок пока нет' : ''}</div>
+      <button type="button" class="t-btn full" id="tStart"${avail ? '' : ' disabled'}>▶ Начать · ${cnt} вопр.</button>
+      <button type="button" class="t-btn ghost full" data-tdef="1" style="margin-top:8px">Сбросить настройки</button>
+    </div>`;
+  }
+
+  /* --- клавиатура с долготой и краткостью --- */
+  function kbHtml() {
+    const b = (s, l, c) => `<button type="button" data-ins="${s}"${c ? ` class="${c}"` : ''}>${l || s}</button>`;
+    return `<div class="t-kb">
+      <div class="r"><span>¯</span>${[...'āēīōūȳ'].map(c => b(c)).join('')}${b('\u0304', '\u25CC\u0304', 'm')}</div>
+      <div class="r"><span>˘</span>${[...'ăĕĭŏŭ'].map(c => b(c)).join('')}${b('\u0306', '\u25CC\u0306', 'm')}</div>
+      <div class="r">${b(', ', ',')}${b('-', '-')}${b(' ', 'пробел')}<button type="button" data-bk="1">⌫</button></div></div>`;
+  }
+  function tIns(s) {
+    const el = $('#tIn'); if (!el || el.disabled) return;
+    const a = el.selectionStart == null ? el.value.length : el.selectionStart, b = el.selectionEnd == null ? a : el.selectionEnd;
+    const left = (el.value.slice(0, a) + s).normalize('NFC');   /* гласная + ◌̄ склеиваются в ā */
+    el.value = left + el.value.slice(b);
+    el.focus(); el.setSelectionRange(left.length, left.length);
+  }
+  function tBk() {
+    const el = $('#tIn'); if (!el || el.disabled) return;
+    let a = el.selectionStart == null ? el.value.length : el.selectionStart; const b = el.selectionEnd == null ? a : el.selectionEnd;
+    if (a !== b) el.value = el.value.slice(0, a) + el.value.slice(b);
+    else if (a > 0) { const l = Array.from(el.value.slice(0, a)); l.pop(); const nw = l.join(''); el.value = nw + el.value.slice(a); a = nw.length; }
+    el.focus(); el.setSelectionRange(a, a);
+  }
+
+  /* --- прохождение --- */
+  function tStartTest(list) {
+    if (list) tq = list;
+    else { const p = tPool(); if (!p.length) return; tq = tBuild(p); }
+    ti = 0; tSave(); tShow('run'); tRender();
+  }
+  const tLemma = x => fs(x)[0];
+  function tHintText(q) {
+    const s = q.mode === 'ru' ? (rtoks(q.x.r)[0] || '') : expList(q.x, q.mode).join(', ');
+    return s.slice(0, q.hint) + s.slice(q.hint).replace(/[^\s,\-]/g, '_');
+  }
+  function tRender() {
+    const q = tq[ti], x = q.x, dn = tq.filter(z => z.done), okN = dn.filter(z => z.ok).length;
+    let ask, big, sub = '', bigCls = '', subCls = '';
+    if (q.mode === 'ru') { ask = 'Переведи на русский'; big = esc(T.showForms ? x.d : tLemma(x)); }
+    else if (q.mode === 'la') {
+      ask = 'Переведи на латынь'; bigCls = ' ru'; big = esc(x.r);
+      const e = effFor(x);
+      sub = e <= 1 ? 'пиши только начальную (словарную) форму' : (T.forms === 'all' ? 'все формы' : e + (e < 5 ? ' формы' : ' форм')) + ' через запятую · род и спряжение не нужны';
+    } else { ask = 'Допиши остальные формы через запятую'; big = esc(tLemma(x)); sub = esc(x.r); subCls = ' ru'; }
+
+    let body;
+    if (q.mc) {
+      body = q.opts.map((o, i) => {
+        let c = 't-opt'; if (q.done) { if (o.ok) c += ' ok'; else if (q.pick === i) c += ' no'; }
+        return `<button type="button" class="${c}" data-opt="${i}"${q.done ? ' disabled' : ''}>${i + 1}. ${esc(o.t)}</button>`;
+      }).join('');
+    } else {
+      body = `<input id="tIn" class="t-in" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${q.mode === 'ru' ? 'перевод по-русски…' : 'по-латыни…'}" value="${esc(q.ans)}"${q.done ? ' disabled' : ''}>` +
+        (T.kbd && q.mode !== 'ru' && !q.done ? kbHtml() : '');
+    }
+    body += `<div class="t-sub" id="tHintOut">${q.hint && !q.done ? 'Подсказка: ' + esc(tHintText(q)) : ''}</div>`;
+
+    let fb = '';
+    if (q.done && T.check === 'now') {
+      fb = `<div class="t-fb ${q.ok ? 'ok' : 'no'}"><b>${q.ok ? '✓ Верно' : '✗ Неверно'}</b>${q.ok ? '' : `<div>Правильно: <b>${esc(tExp(q))}</b></div>`}<div class="e">${esc(x.d)} — ${esc(x.r)}</div></div>`;
+    }
+    let act = '';
+    if (q.done && T.check === 'now') act = `<button type="button" class="t-btn" id="tNext">${ti + 1 < tq.length ? 'Дальше →' : 'Результат'}</button>`;
+    else if (!q.mc) act = `<button type="button" class="t-btn" id="tCheck">${T.check === 'now' ? 'Проверить' : 'Дальше →'}</button><button type="button" class="t-btn ghost" id="tHint">💡 Подсказка</button><button type="button" class="t-btn ghost" id="tSkip">Пропустить</button>`;
+    else act = `<button type="button" class="t-btn ghost" id="tSkip">Пропустить</button>`;
+    act += `<button type="button" class="t-btn ghost" id="tStop">Завершить</button>`;
+
+    $('#tRun').innerHTML = `<div class="t-top"><span>Вопрос ${ti + 1} / ${tq.length}</span><span>✅ ${okN} · ❌ ${dn.length - okN}</span></div>
+      <div class="bar"><i style="width:${Math.round(ti / tq.length * 100)}%"></i></div>
+      <div class="t-q"><span class="tag">${esc(x.gt)}</span><div class="t-ask">${ask}</div><div class="t-big${bigCls}">${big}</div>${sub ? `<div class="t-sub${subCls}">${sub}</div>` : ''}</div>
+      ${body}${fb}<div class="t-act">${act}</div>`;
+    const el = $('#tIn');
+    if (el && !q.done) el.focus({ preventScroll: true });
+  }
+  function tAnswer(q, v, pick) {
+    q.done = true;
+    if (q.mc) { q.pick = pick; q.ans = pick != null ? q.opts[pick].t : ''; q.ok = pick != null && q.opts[pick].ok; }
+    else { q.ans = v; q.ok = v ? tCheck(q, v) : false; }
+    q.ok = !!q.ok;
+    if (T.check === 'now') tRender(); else tNext();
+  }
+  function tSubmit() {
+    const q = tq[ti]; if (!q || q.done) return;
+    const el = $('#tIn'), v = el ? el.value.trim() : '';
+    if (!v && T.check === 'now') { if (el) el.focus(); return; }
+    tAnswer(q, v);
+  }
+  function tNext() { ti++; if (ti >= tq.length) tFinish(); else tRender(); }
+
+  function tFinish() {
+    const dn = tq.filter(q => q.done);
+    if (!dn.length) { tShow('setup'); return; }
+    let changed = false;
+    dn.forEach(q => {
+      if (q.ok) { tErr.delete(q.x.k); if (T.autoLearn && !learned.has(q.x.k)) { learned.add(q.x.k); changed = true; } }
+      else { tErr.add(q.x.k); if (T.autoUnlearn && learned.has(q.x.k)) { learned.delete(q.x.k); changed = true; } }
+    });
+    tSaveErr();
+    if (changed) { persist(); renderList(); start(); }
+    const ok = dn.filter(q => q.ok).length, pct = Math.round(ok / dn.length * 100);
+    tBad = dn.filter(q => !q.ok);
+    const emo = pct >= 90 ? '🏆' : pct >= 70 ? '👍' : pct >= 50 ? '🙂' : '💪';
+    $('#tRes').innerHTML = `<div class="box t-box">
+      <div class="t-score">${pct}% ${emo}</div>
+      <div class="stat"><span>Верно ${ok} из ${dn.length}</span><span>${tBad.length ? 'ошибок: ' + tBad.length : 'без ошибок!'}</span></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      ${tBad.map(q => `<div class="t-wr"><div><b>${esc(q.mode === 'la' ? q.x.r : q.x.d)}</b></div><div>Твой ответ: ${esc(q.ans) || '—'}</div><div>Верно: <b>${esc(tExp(q))}</b></div><div class="e">${esc(q.x.d)} — ${esc(q.x.r)}</div></div>`).join('')}
+      <div class="t-act">${tBad.length ? `<button type="button" class="t-btn" id="tRetry">🔁 Повторить ошибки (${tBad.length})</button>` : ''}<button type="button" class="t-btn${tBad.length ? ' ghost' : ''}" id="tAgain">Новый тест</button><button type="button" class="t-btn ghost" id="tBack">Настройки</button></div>
+    </div>`;
+    tShow('res');
+  }
+
+  /* --- события --- */
+  $('#t').addEventListener('mousedown', e => { if (e.target.closest('.t-kb')) e.preventDefault(); });
+  $('#t').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const d = b.dataset, id = b.id;
+    if (d.ins !== undefined) { tIns(d.ins); return; }
+    if (d.bk !== undefined) { tBk(); return; }
+    if (d.opt !== undefined) { const q = tq[ti]; if (q && !q.done) tAnswer(q, '', +d.opt); return; }
+    if (d.tm !== undefined) { const i = T.modes.indexOf(d.tm); if (i > -1) { if (T.modes.length > 1) T.modes.splice(i, 1); } else T.modes.push(d.tm); tSave(); tSetup(); return; }
+    if (d.tf !== undefined) { T.forms = d.tf; tSave(); tSetup(); return; }
+    if (d.tp !== undefined) { T.input = d.tp; tSave(); tSetup(); return; }
+    if (d.tg !== undefined) {
+      if (d.tg === 'all') T.groups = [];
+      else { const i = T.groups.indexOf(d.tg); if (i > -1) T.groups.splice(i, 1); else T.groups.push(d.tg); }
+      tSave(); tSetup(); return;
+    }
+    if (d.ts !== undefined) { T.status = d.ts; tSave(); tSetup(); return; }
+    if (d.tn !== undefined) { T.n = +d.tn; tSave(); tSetup(); return; }
+    if (d.tc !== undefined) { T.check = d.tc; tSave(); tSetup(); return; }
+    if (d.to !== undefined) { T[d.to] = !T[d.to]; tSave(); tSetup(); return; }
+    if (d.tdef !== undefined) { T = Object.assign({}, T_DEF, { modes: ['ru', 'la'], groups: [] }); tSave(); tSetup(); return; }
+    if (id === 'tStart') tStartTest();
+    else if (id === 'tCheck') tSubmit();
+    else if (id === 'tNext') tNext();
+    else if (id === 'tSkip') { const q = tq[ti]; if (q && !q.done) tAnswer(q, '', null); }
+    else if (id === 'tStop') tFinish();
+    else if (id === 'tHint') {
+      const q = tq[ti]; if (!q || q.done) return;
+      q.hint++; $('#tHintOut').textContent = 'Подсказка: ' + tHintText(q);
+      const el = $('#tIn'); if (el) el.focus();
+    }
+    else if (id === 'tRetry') tStartTest(tBad.map(q => mkQ(q.x, q.mode)));
+    else if (id === 'tAgain') tStartTest();
+    else if (id === 'tBack') tShow('setup');
+  });
+  /* своё число вопросов — без перерисовки, чтобы не терять фокус */
+  $('#t').addEventListener('input', e => {
+    if (e.target.id !== 'tN') return;
+    T.n = Math.max(0, Math.min(999, parseInt(e.target.value, 10) || 0)); tSave();
+    const avail = tPool().length;
+    $('#tStart').textContent = `▶ Начать · ${T.n > 0 ? Math.min(T.n, avail) : avail} вопр.`;
+    $('#tSetup').querySelectorAll('[data-tn]').forEach(c => c.classList.toggle('on', +c.dataset.tn === T.n));
+  });
+  document.addEventListener('keydown', e => {
+    if (tView !== 'run' || !$('#t').classList.contains('on')) return;
+    const q = tq[ti]; if (!q) return;
+    const ae = document.activeElement.tagName;
+    if (e.key === 'Enter') {
+      if (/BUTTON/.test(ae)) return;
+      if (!q.done && !q.mc) { e.preventDefault(); tSubmit(); }
+      else if (q.done && T.check === 'now') { e.preventDefault(); tNext(); }
+      return;
+    }
+    if (q.mc && !q.done && /^[1-4]$/.test(e.key) && q.opts[e.key - 1]) tAnswer(q, '', e.key - 1);
+  });
+
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
     document.querySelectorAll('section.pane').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
+    $('.panel').style.display = b.dataset.t === 't' ? 'none' : '';
+    if (b.dataset.t === 't' && tView === 'setup') tSetup();
   });
 
-  loadLocal(); start(); renderList();
+  loadLocal(); start(); renderList(); tSetup();
   document.addEventListener('auth-ready', loadCloud);
   if (window.currentUser) loadCloud();
 </script>
