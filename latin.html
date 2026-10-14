@@ -331,10 +331,17 @@
   const tDisp = (y, mode) => mode === 'ru' ? y.r : expList(y, mode).join(', ');
   function tOpts(q) {
     const x = q.x, m = q.mode, ans = tDisp(x, m), seen = new Set([nl(ans, true)]);
-    let c = shuffle(ALL.filter(y => y.k !== x.k && (m !== 'fm' || fs(y).length > 1) && (m !== 'la' || nr(y.r) !== nr(x.r))));
-    c = c.filter(y => { const k = nl(tDisp(y, m), true); if (seen.has(k)) return false; seen.add(k); return true; });
+    const inSel = y => !T.groups.length || T.groups.includes(y.g);
+    const okY = y => y.k !== x.k && (m !== 'fm' || fs(y).length > 1) && (m !== 'la' || nr(y.r) !== nr(x.r));
+    const uniq = arr => arr.filter(y => { const k = nl(tDisp(y, m), true); if (seen.has(k)) return false; seen.add(k); return true; });
     const same = fs(x).length;
-    c.sort((a, b) => (fs(b).length === same) - (fs(a).length === same));
+    const byForms = (a, b) => (fs(b).length === same) - (fs(a).length === same);
+
+    /* сначала только из выбранных ЛМ */
+    let c = uniq(shuffle(ALL.filter(y => okY(y) && inSel(y)))).sort(byForms);
+    /* если там меньше 3 вариантов — добираем из остальных, чтобы вопрос не сломался */
+    if (c.length < 3) c = c.concat(uniq(shuffle(ALL.filter(y => okY(y) && !inSel(y)))).sort(byForms));
+
     const o = c.slice(0, 3).map(y => ({ t: tDisp(y, m), ok: false }));
     o.push({ t: ans, ok: true });
     return shuffle(o);
