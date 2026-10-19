@@ -29,6 +29,7 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
 .ipa{font:600 clamp(24px,8vw,36px)/1.2 "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif}
 .chips{flex-wrap:wrap}
 .chips button{font-family:ui-monospace,monospace}
+#dchips{margin-bottom:10px}
 
 /* ---- ввод транскрипции ---- */
 .tform{display:flex;gap:8px;margin:0 4px 8px}
@@ -278,8 +279,21 @@ CLAIRE: It’s over there under the chair.`]
 ];
 
 function parse(t){const m={};return t.split("\n").map(l=>{const i=l.indexOf(": "),s=l.slice(0,i);if(!(s in m))m[s]=Object.keys(m).length%2?"b":"a";return[s,l.slice(i+2),m[s]]})}
-$("#d").innerHTML='<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
-DL.map((d,i)=>`<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+parse(d[1]).map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")).join("");
+
+/* выбор звука в диалогах */
+let dFilt="all";
+function renderD(){
+  const keys=DL.map(d=>d[0].match(/\[(.*?)\]/)[1]);
+  const chipsHtml='<div class="chips" id="dchips">'+["all",...keys].map(k=>
+    `<button aria-pressed="${k==dFilt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")+'</div>';
+  $("#d").innerHTML=chipsHtml+
+  '<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
+  DL.map((d,i)=>(dFilt=="all"||keys[i]==dFilt)
+    ?`<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+parse(d[1]).map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")
+    :"").join("");
+}
+$("#d").onclick=e=>{const k=e.target.dataset.k;if(k){dFilt=k;renderD();window.scrollTo(0,0)}};
+renderD();
 
 /* ---------- скороговорки: [текст, звук, слова для подсветки] ---------- */
 const TW=[
