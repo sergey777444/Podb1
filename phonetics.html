@@ -9,8 +9,8 @@
 <script src="app.js?v=24"></script>
 <style>
 .ipa-font{font-family:"DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif}
-navnavh2.dlg{display:flex;gap:10px;align-items:center;margin:24px 0 12px;font:italic 800 20px var(--serif)}
-h2.dlg i{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:var(--bg);font:800 13px var(--sans);font-style:normal}
+h2.dlg{display:flex;gap:10px;align-items:center;margin:24px 0 12px;font:italic 800 20px var(--serif)}
+h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:var(--bg);font:800 13px var(--sans);font-style:normal}
 .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--soft);font-size:12.5px}
 .legend b{display:inline-block;width:14px;height:8px;margin-right:5px;border-radius:4px}
 .row{display:flex;flex-direction:column;margin:0 0 12px}
@@ -27,6 +27,7 @@ h2.dlg i{width:28px;height:28px;display:grid;place-items:center;border-radius:50
 .deck{height:300px}
 .word{font:800 clamp(30px,10vw,46px)/1.1 var(--serif);word-break:break-word}
 .ipa{font:600 clamp(24px,8vw,36px)/1.2 "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif}
+.chips{flex-wrap:wrap}
 .chips button{font-family:ui-monospace,monospace}
 
 /* ---- ввод транскрипции ---- */
@@ -46,7 +47,7 @@ h2.dlg i{width:28px;height:28px;display:grid;place-items:center;border-radius:50
 <header class="hero">
   <span class="badge">🎓 ФЛ1 • ПОДб-11</span>
   <h1>Say it <span class="hl">right.</span></h1>
-  <p>Диалоги, скороговорки и карточки со словами · звуки [iː] [ɪ] [e] [æ]</p>
+  <p>Диалоги, скороговорки и карточки со словами · все гласные английского</p>
 </header>
 <nav class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-t="d">Диалоги</button>
@@ -79,36 +80,264 @@ h2.dlg i{width:28px;height:28px;display:grid;place-items:center;border-radius:50
 
 <script>
 const $=s=>document.querySelector(s);
-const A="a",B="b";
+
+/* ---------- диалоги: «ИМЯ: реплика», стороны A/B чередуются по говорящим ---------- */
 const DL=[
-["In a restaurant",[["PETER","What would you like to eat, Edith?",A],["EDITH","A meat sandwich.",B],["PETER","Jean, would you like a meat sandwich or a cheese sandwich?",A],["JEAN","A cheese sandwich please, Peter.",B],["WAITER","Good evening.",B],["PETER","Good evening. We'll have one meat sandwich and two cheese sandwiches.",A],["EDITH","And three teas, please.",B],["WAITER","One meat sandwich, two cheese sandwiches and three teas.",B]]],
-["An expensive holiday",[["EDDIE","Hello Ellen. Hello Ben. Hello Jenny.",A],["BEN","Hello Eddie. Have a cigarette.",B],["EDDIE","Thanks, Ben.",A],["ELLEN","Help yourself to whisky.",B],["JENNY","It's on the shelf.",A],["BEN","How did you spend your holiday, Eddie?",B],["EDDIE","I went to America, with a friend.",A],["EVERYBODY","Well!",B],["ELLEN","We are all jealous.",A],["BEN","Was it expensive?",B],["EDDIE","Yes, very. I've spent everything.",A],["JENNY","Haven't you any money left?",B],["EDDIE","Yes, Jenny. Ten pence!",A]]],
-["An interesting film",[["BILL","Is Tim in?",B],["LYN","Is he coming to the pictures?",A],["MRS. SMITH","Tim’s ill.",B],["BILL","Here he is! Hello, Tim.",A],["TIM","Hello, Bill.",B],["LYN","Are you ill, Tim?",A],["TIM","Is it an interesting film?",B],["LYN","It’s “Big Jim and the Indians”.",A],["BILL","And it begins in six minutes.",B],["MRS. SMITH","If you’re ill, Tim…",A],["TIM","Quick! Or we’ll miss the beginning of the film!",B]]],
-["A bad hijacker",[["HOSTESS BRADLEY","Alice! Perhaps that passenger is a hijacker!",A],["HOSTESS ALLEN","Which passenger, Anne? That sad man with the camera? He’s wearing black slacks and a jacket.",B],["HOSTESS BRADLEY","No. That fat lady with the big black handbag in her left hand.",A],["HOSTESS ALLEN","Is she standing next to the lavatory?",B],["HOSTESS BRADLEY","Yes. She’s travelling to Amsterdam.",A],["HOSTESS ALLEN","You’re mad, Anne, I don’t understand. You see, when she went into the lavatory, she didn’t have that handbag in her hand, and now she’s…",B],["FAT LADY","EVERYBODY STAND! I’m a hijacker. And in this handbag, I have a…",A],["BAG","BANG!!!",A]]]];
+["[iː] In a restaurant",`PETER: What would you like to eat, Edith?
+EDITH: A meat sandwich.
+PETER: Jean, would you like a meat sandwich or a cheese sandwich?
+JEAN: A cheese sandwich please, Peter.
+WAITER: Good evening.
+PETER: Good evening. We’ll have one meat sandwich and two cheese sandwiches.
+EDITH: And three teas, please.
+WAITER: One meat sandwich, two cheese sandwiches and three teas.`],
+["[ɪ] An interesting film",`BILL: Is Tim in?
+LYN: Is he coming to the pictures?
+MRS. SMITH: Tim’s ill.
+BILL: Here he is! Hello, Tim.
+TIM: Hello, Bill.
+LYN: Are you ill, Tim?
+TIM: Is it an interesting film?
+LYN: It’s “Big Jim and the Indians”.
+BILL: And it begins in six minutes.
+MRS. SMITH: If you’re ill, Tim…
+TIM: Quick! Or we’ll miss the beginning of the film!`],
+["[e] An expensive holiday",`EDDIE: Hello Ellen. Hello Ben. Hello Jenny.
+BEN: Hello Eddie. Have a cigarette.
+EDDIE: Thanks, Ben.
+ELLEN: Help yourself to whisky.
+JENNY: It’s on the shelf.
+BEN: How did you spend your holiday, Eddie?
+EDDIE: I went to America, with a friend.
+EVERYBODY: Well!
+ELLEN: We are all jealous.
+BEN: Was it expensive?
+EDDIE: Yes, very. I’ve spent everything.
+JENNY: Haven’t you any money left?
+EDDIE: Yes, Jenny. Ten pence!`],
+["[æ] A bad hijacker",`HOSTESS BRADLEY: Alice! Perhaps that passenger is a hijacker!
+HOSTESS ALLEN: Which passenger, Anne? That sad man with the camera? He’s wearing black slacks and a jacket.
+HOSTESS BRADLEY: No. That fat lady with the big black handbag in her left hand.
+HOSTESS ALLEN: Is she standing next to the lavatory?
+HOSTESS BRADLEY: Yes. She’s travelling to Amsterdam.
+HOSTESS ALLEN: You’re mad, Anne, I don’t understand. You see, when she went into the lavatory, she didn’t have that handbag in her hand, and now she’s…
+FAT LADY: EVERYBODY STAND! I’m a hijacker. And in this handbag, I have a…
+BAG: BANG!!!`],
+["[ʌ] I love you",`RUSS: Honey, why are you so sad?
+JANET: You don’t love me, Russ!
+RUSS: But, honey, I love you very much.
+JANET: That’s untrue. You love my cousin, Sunny. You think that she’s lovely and I’m ugly.
+RUSS: Janet, just once last month I took Sunny out for lunch. You mustn’t worry. I like your company much better than Sunny’s.
+JANET: Oh, shut up, Russ.
+RUSS: But, honey, I think you’re wonderful. You mustn’t…
+JANET: Oh, SHUT UP!`],
+["[ɑː] At a party",`MARGARET: Where’s your glass, Barbara?
+BARBARA: It’s on the bar.
+MARTIN: Barbara! Margaret! Come into the garden! Martha and Charles are dancing in the dark.
+MARGARET: In the garden? What a laugh!
+BARBARA: So they are! They’re dancing on the grass!
+MARGARET: They’re dancing under the stars!
+MARTIN: And Arnold’s playing his guitar.
+BARBARA: Doesn’t Martha look smart!
+MARGARET: Look at Charles! What a marvellous dancer!
+BARBARA: Ah! Let’s take a photograph of Martha and Charles.
+MARTIN: We can’t. It’s too dark.`],
+["[ɒ] TV advertisement for ‘Onwash’",`VOICE A: What’s wrong with you, Mrs. Bloggs?
+MRS. BLOGGS: What’s wrong with me? I want a holiday from this horrible job of washing socks!
+VOICE B: Buy a bottle of ‘Onwash’, Mrs. Bloggs!
+VOICE C: ‘Onwash’ is so soft and strong!
+VOICE D: You don’t want lots of hot water with ‘Onwash’!
+VOICE A: It’s not a long job with ‘Onwash’!
+VOICE B: Use ‘Onwash’ often!
+VOICE C: You won’t be sorry when you’ve got ‘Onwash’!
+VOICE D: Everybody wants ‘Onwash’!
+EVERYBODY: ‘Onwash’ is so popular!`],
+["[ɔː] Sports report from Channel 4",`ANNOUNCER: This morning the Roarers football team arrived back from York. Paul Short is our sports reporter, and he was at the airport.
+PAUL SHORT: Good morning. This is Paul Short. All the footballers are walking towards me. Here’s George Ball, the goalkeeper. Good morning, George.
+GEORGE BALL: Good morning. Are you a reporter?
+PAUL SHORT: Yes. I’m from Channel 4. Please tell our audience about the football match with York.
+GEORGE BALL: Well, it was awful. We lost. And the score was four, forty-four. But it wasn’t my fault.
+PAUL SHORT: Whose fault was it?
+GEORGE BALL: The forwards.
+PAUL SHORT: The forwards?
+GEORGE BALL: Yes. The forwards. They were always falling down or losing the ball!`],
+["[ʊ] A lost book",`MR. COOK: Woman! Could you tell me where you’ve put my book?
+MRS. COOK: Isn’t it on the bookshelf?
+MR. COOK: No. The bookshelf is full of your cookery books.
+MRS. COOK: Then you should look in the bedroom, shouldn’t you?
+MR. COOK: I’ve looked. You took that book and put it somewhere, didn’t you?
+MRS. COOK: The living-room?
+MR. COOK: No, I’ve looked. I’m going to put all my books in a box and lock it!
+MRS. COOK: Look, Mr. Cook! It’s on the floor next to your foot.
+MR. COOK: Ah! Good!`],
+["[uː] In a good school",`MISS LUKE: Good afternoon, girls.
+GIRLS: Good afternoon, Miss Luke.
+MISS LUKE: This afternoon we’re going to learn how to cook soup. Open your books at unit twenty-two.
+LUCY: Excuse me, Miss Luke.
+MISS LUKE: Yes, Prue?
+LUCY: There’s some chewing gum on your shoe.
+MISS LUKE: Who threw their chewing gum on the floor? Was it you, Prue?
+LUCY: No, Miss Luke. It was June.
+MISS LUKE: Who?
+LUCY: June Cooke.
+SUSAN: It wasn’t me, stupid. It was Sue.
+JULIE: It was you!
+SUSAN: It wasn’t me, you stupid fool! My mouth’s full of chewing gum. Look, Miss Luke!
+JULIE: Stop pulling my hair, June. It was you!
+MISS LUKE: Excuse me! You are being very rude! You two nuisances can stay in school this afternoon instead of going to the swimming pool.`],
+["[ɜː] The worst nurse",`SIR HERBERT: Nurse!
+COLONEL BURTON: Nurse! I’m thirsty!
+SIR HERBERT: Nurse! My head hurts!
+COLONEL BURTON: NURSE!
+SIR HERBERT: Curse these nurses!
+COLONEL BURTON: Nurse Sherman always wears such dirty shirts.
+SIR HERBERT: And such short skirts.
+COLONEL BURTON: She never arrives at work early.
+SIR HERBERT: She and… er… Nurse Turner weren’t at work on Thursday, were they?
+COLONEL BURTON: No, they weren’t.
+SIR HERBERT: Nurse Sherman is the worst nurse in the ward, isn’t she?
+COLONEL BURTON: No, she isn’t. She’s the worst nurse in the world!`],
+["[ə] Shopping",`A: I’m going to the post office.
+B: Can you buy something for me at the supermarket?
+A: But the supermarket is a long way from the post office.
+B: No. Not that supermarket. Not the one that’s next to the cinema. I mean the one that’s near the fruit shop.
+A: Oh, yes. Well, what do you want?
+B: Some cigarettes, and a box of matches and an envelope.`],
+["[eɪ] At the railway station",`MR. GREY: Hey! This train’s late! I’ve been waiting here for ages.
+PORTER: Which train, sir?
+MR. GREY: The 8.18 to Baker Street.
+PORTER: The 8.18? I’m afraid you’ve made a mistake, sir.
+MR. GREY: A mistake? My timetable says: Baker Street train 8.18.
+PORTER: Oh no, sir. The Baker Street train leaves at 8.08.
+MR. GREY: At 8.08?
+PORTER: You see, sir, they changed the timetable at the end of April. It’s the first of May today.
+MR. GREY: Changed it? May I see the new timetable? What does it say?
+PORTER: It says: Baker Street train – 8.08.
+MR. GREY: Hm! So, the train isn’t late. I’m late.`],
+["[aɪ] Mike, Myra and Violet",`MYRA: Hello, Mike!
+MIKE: Hello, Myra. Hello, Violet. You’re looking nice, Violet.
+MIKE: Would you like some ice-cream, Violet?
+VIOLET: No, thanks, Mike. I’m busy typing. Talk to me some other time. I have ninety-nine pages to type by Friday.
+MIKE: Never mind. Do you like riding, Violet?
+VIOLET: Sometimes.
+MIKE: Would you like to come riding with me tonight, Violet?
+VIOLET: Not tonight, Mike. I’m going for a drive with Nigel.
+MIKE: What about Friday?
+VIOLET: I’m going climbing with Miles.
+MIKE: Hm! Oh, all right. Bye.
+MYRA: Violet, he’s put something behind your typewriter.
+VIOLET: Is it something nice, Myra?
+MYRA: No, it’s a spider.`],
+["[ɔɪ] Joyce’s Rolls Royce",`GARAGE BOY: What a terrible noise.
+JOYCE: Eh?
+GARAGE BOY: (raising his voice) What a terrible noise! This is the noisiest Rolls Royce I’ve ever heard.
+JOYCE: (pointing) It’s out of oil.
+GARAGE BOY: Out of oil? And look! The water’s boiling. Madam, a Rolls Royce isn’t a toy. Perhaps you’ve spoilt the motor or even destroyed it.
+JOYCE: How annoying! While you’re changing the oil, I’ll go and visit my boyfriend, Roy.`],
+["[aʊ] A mouse in the house",`MRS. BROWN: (shouting loudly) I’ve found a mouse!
+MR. BROWN: Oh! You’re shouting too loudly. Sit down and don’t shout.
+MRS. BROWN: (sitting down) I’ve found a mouse in the house.
+MR. BROWN: A brown mouse?
+MRS. BROWN: Yes. A little round mouse. It’s running around in the lounge.
+MR. BROWN: On the ground?
+MRS. BROWN: Yes, it’s under the couch now.
+MR. BROWN: Well, get it out.
+MRS. BROWN: How?
+MR. BROWN: Turn the couch upside-down. Get it out somehow. We don’t want a mouse in our house. Ours is the cleanest house in the town!`],
+["[əʊ] Snow in October",`JOAN: Joe! Joe! JOE! Hello!
+JOE: Oh, what is it, Joan?
+JOAN: Look out of the window.
+JOE: No. My eyes are closed, and I’m going to go to sleep again.
+JOAN: Don’t go to sleep, Joe. Look at the snow!
+JOE: Snow? But it’s only October. I know there’s no snow.
+JOAN: Come over to the window, Joe.
+JOE: You’re joking, Joan. There’s no snow.
+JOAN: OK. I’ll put my coat on and go out and make a snowball and throw it at your nose, Joe Jones!`],
+["[ɪə] A bearded mountaineer",`MR. LEAR: Let’s have a beer here, dear.
+MRS. LEAR: What a good idea! They have very good beer here. We came here last year.
+MR. LEAR: The atmosphere here is very clear.
+MRS. LEAR: And it’s windier than last year.
+MR. LEAR: (to the waiter) Two beers, please.
+MRS. LEAR: Look, dear! Look at that mountaineer drinking beer.
+MR. LEAR: His beard is in his beer.
+MRS. LEAR: His beard has nearly disappeared into his beer!
+MR. LEAR: Sh, dear! He might hear.
+WAITER: (bringing the beer) Here you are, sir. Two beers.
+MR. LEAR: (drinking his beer) Cheers, dear!
+MRS. LEAR: Cheers! Here’s to the bearded mountaineer!`],
+["[eə] A pair of hairbrushes",`MARY: I’ve lost two small hairbrushes, Claire. They’re a pair.
+CLAIRE: Have you looked carefully everywhere?
+MARY: Yes. They’re nowhere here.
+CLAIRE: Have you looked upstairs?
+MARY: Yes. I’ve looked everywhere upstairs and downstairs. They aren’t anywhere.
+CLAIRE: Hm! Are they square, Mary?
+MARY: Yes. They’re square hairbrushes. Have you seen them anywhere?
+CLAIRE: Well, you’re wearing one of them in your hair.
+MARY: Oh! Then where’s the other one?
+CLAIRE: It’s over there under the chair.`]
+];
 
+function parse(t){const m={};return t.split("\n").map(l=>{const i=l.indexOf(": "),s=l.slice(0,i);if(!(s in m))m[s]=Object.keys(m).length%2?"b":"a";return[s,l.slice(i+2),m[s]]})}
 $("#d").innerHTML='<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
-DL.map((d,i)=>`<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+d[1].map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")).join("");
+DL.map((d,i)=>`<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+parse(d[1]).map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")).join("");
 
-const TW=[["These three sheep have eaten three green leaves each.","[iː]","These|three|sheep|eaten|green|leaves|each"],
+/* ---------- скороговорки: [текст, звук, слова для подсветки] ---------- */
+const TW=[
+["These three sheep have eaten three green leaves each.","[iː]","These|three|sheep|eaten|green|leaves|each"],
 ["Is little lipstick permissible for women in Egyptian villages?","[ɪ]","Is|little|lipstick|permissible|women|Egyptian|villages"],
 ["Ted meant to spend the night in a tent but Fred felt unwell.","[e]","Ted|meant|spend|tent|Fred|felt|unwell"],
 ["Ten men went to mow, went to mow a meadow.<br>Ten men, nine men, eight men, seven men, six men, five men, four men, three men, two men, one man and his dog went to mow a meadow.","[e]","Ten|men|went|meadow|seven"],
-["Fat Pat had a fat cat. Fat Pat’s cat sat on Pat’s hat.","[æ]","Fat|Pat’s|Pat|had|cat|sat|hat"]];
+["Fat Pat had a fat cat. Fat Pat’s cat sat on Pat’s hat.","[æ]","Fat|Pat’s|Pat|had|cat|sat|hat"],
+["A skunk sat on a stump. The skunk thunk the stump stunk, but the stump thunk the skunk stunk.","[ʌ]","skunk|stump|thunk|stunk|but"],
+["The last part of the article is rather hard to grasp.","[ɑː]","last|part|article|rather|hard|grasp"],
+["Ned Nott was shot and Sam Shott was not, so it’s better to be Shott than Nott. Some say Nott was not shot, but Shott swears he shot Nott.","[ɒ]","Nott|was|shot|Shott|not"],
+["I want a cup of coffee hot from a proper copper coffee-pot.","[ɒ]","want|coffee|hot|from|proper|copper|pot"],
+["Your daughter is fond of walking on warm autumn mornings.","[ɔː]","Your|daughter|walking|warm|autumn|mornings"],
+["The cook took a good look at the cookery book and shook some sugar to a gooseberry pudding.","[ʊ]","cook|took|good|look|cookery|book|shook|sugar|gooseberry|pudding"],
+["Lucy threw her new blue balloon to Sue.","[uː]","Lucy|threw|new|blue|balloon|to|Sue"],
+["Will Earl be thirty on his birthday next Thursday?","[ɜː]","Earl|thirty|birthday|Thursday"],
+["One of the policemen told us that there was a photographer at the corner.","[ə]","of|policemen|that|photographer|at|corner"],
+["Gabe’s information came from the stables itself.<br>Ape cakes, grape cakes.","[eɪ]","Gabe’s|information|came|stables|Ape|cakes|grape"],
+["There’s no need to light the light on a light night like tonight.<br>The kite went higher and higher up in the bright blue sky.","[aɪ]","light|night|like|tonight|kite|higher|bright|sky"],
+["An oyster met an oyster, and they were oysters two. Two oysters met two oysters, and they were oysters too. Four oysters met a pint of milk and they were oyster stew.","[ɔɪ]","oyster|oysters"],
+["Burn not your house to get rid of the mouse.<br>Now, how would Brown sort that problem out.","[aʊ]","house|mouse|Now|how|Brown|out"],
+["Oh, no! Don’t go home alone. Nobody knows how long the road is.","[əʊ]","Oh|no|Don’t|go|home|alone|Nobody|knows|road"],
+["Ere her ear hears her err, her ears err here.<br>Near an ear, an eerie ear, a nearly eerie ear.","[ɪə]","Ere|ear|hears|ears|here|Near|eerie|nearly"],
+["Mary always takes care of her hair.","[eə]","Mary|care|hair"],
+["Dour Mr. Ruhr was enduring the cure after his fiasco in amour.","[ʊə]","Dour|Ruhr|enduring|cure|amour"]];
 
 /* подсветка слов без lookbehind (он не работает в старых Safari/iOS) */
 function hl(text,words){
   const set=new Set(words.split("|"));
   return text.replace(/[A-Za-z’]+/g,m=>set.has(m)?"<u>"+m+"</u>":m);
 }
-
 $("#s").innerHTML='<p class="legend" style="margin-top:14px">Жёлтым подсвечены слова с тренируемым звуком</p><div style="height:14px"></div>'+TW.map((t,i)=>`<div class="tw"><small>${t[1]}</small><b>${i+1}</b>${hl(t[0],t[2])}</div>`).join("");
 
-const WD={"iː":[["Edith","/ˈiː.dɪθ/"],["evening","/ˈiːv.nɪŋ/"],["easy","/ˈiː.zi/"],["Jean","/dʒiːn/"],["cheese","/tʃiːz/"],["see","/siː/"],["tea","/tiː/"],["pea","/piː/"],["tree","/triː/"],["eating","/ˈiː.tɪŋ/"],["Peter","/ˈpiː.tər/"],["meat","/miːt/"],["please","/pliːz/"]],
-"ɪ":[["it’s","/ɪts/"],["isn’t","/ˈɪz.ənt/"],["ill","/ɪl/"],["Indian","/ˈɪn.di.ən/"],["interesting","/ˈɪn.trə.stɪŋ/"],["Tim","/tɪm/"],["film","/fɪlm/"],["minutes","/ˈmɪn.ɪts/"],["beginning","/bɪˈɡɪn.ɪŋ/"],["Mrs. Smith","/ˈmɪs.ɪz smɪθ/"]],
-"e":[["pen","/pen/"],["Ben","/ben/"],["ten","/ten/"],["set","/set/"],["bell","/bel/"],["checks","/tʃeks/"],["any","/ˈen.i/"],["everybody","/ˈev.ri.bɒd.i/"],["everything","/ˈev.ri.θɪŋ/"],["Eddie","/ˈed.i/"],["Ellen","/ˈel.ən/"],["spend","/spend/"],["friend","/frend/"],["left","/left/"],["shelf","/ʃelf/"],["ten pence","/ten pens/"],["Jenny","/ˈdʒen.i/"],["jealous","/ˈdʒel.əs/"],["America","/əˈmer.ɪ.kə/"],["expensive","/ɪkˈspen.sɪv/"],["cigarettes","/ˌsɪɡ.əˈrets/"],["help yourself","/help jɔːˈself/"]],
-"æ":[["apple","/ˈæp.əl/"],["perhaps","/pəˈhæps/"],["passenger","/ˈpæs.ɪn.dʒər/"],["hijacker","/ˈhaɪˌdʒæk.ər/"],["black","/blæk/"],["Miss Bradley","/mɪs ˈbræd.li/"],["Anne","/æn/"],["Amsterdam","/ˌæm.stəˈdæm/"],["Alice","/ˈæl.ɪs/"],["Miss Allen","/mɪs ˈæl.ən/"],["slacks","/slæks/"],["camera","/ˈkæm.rə/"],["lavatory","/ˈlæv.ə.tri/"],["travelling","/ˈtræv.əl.ɪŋ/"],["handbag","/ˈhænd.bæɡ/"],["left hand","/left hænd/"]]};
+/* ---------- слова: "слово|транскрипция" ---------- */
+const WR={
+"iː":"Edith|ˈiː.dɪθ,evening|ˈiːv.nɪŋ,easy|ˈiː.zi,Jean|dʒiːn,cheese|tʃiːz,see|siː,tea|tiː,pea|piː,tree|triː,eating|ˈiː.tɪŋ,Peter|ˈpiː.tər,meat|miːt,please|pliːz",
+"ɪ":"it’s|ɪts,isn’t|ˈɪz.ənt,ill|ɪl,Indian|ˈɪn.di.ən,interesting|ˈɪn.trə.stɪŋ,Tim|tɪm,film|fɪlm,minutes|ˈmɪn.ɪts,beginning|bɪˈɡɪn.ɪŋ,Mrs. Smith|ˈmɪs.ɪz smɪθ",
+"e":"pen|pen,Ben|ben,ten|ten,set|set,bell|bel,checks|tʃeks,any|ˈen.i,everybody|ˈev.ri.bɒd.i,everything|ˈev.ri.θɪŋ,Eddie|ˈed.i,Ellen|ˈel.ən,spend|spend,friend|frend,left|left,shelf|ʃelf,ten pence|ten pens,Jenny|ˈdʒen.i,jealous|ˈdʒel.əs,America|əˈmer.ɪ.kə,expensive|ɪkˈspen.sɪv,cigarettes|ˌsɪɡ.əˈrets,help yourself|help jɔːˈself",
+"æ":"apple|ˈæp.əl,perhaps|pəˈhæps,passenger|ˈpæs.ɪn.dʒər,hijacker|ˈhaɪˌdʒæk.ər,black|blæk,Miss Bradley|mɪs ˈbræd.li,Anne|æn,Amsterdam|ˌæm.stəˈdæm,Alice|ˈæl.ɪs,Miss Allen|mɪs ˈæl.ən,slacks|slæks,camera|ˈkæm.rə,lavatory|ˈlæv.ə.tri,travelling|ˈtræv.əl.ɪŋ,handbag|ˈhænd.bæɡ,left hand|left hænd",
+"ʌ":"ugly|ˈʌɡ.li,untrue|ʌnˈtruː,unhappy|ʌnˈhæp.i,understand|ˌʌn.dəˈstænd,much|mʌtʃ,lunch|lʌntʃ,Sunny|ˈsʌn.i,cousin|ˈkʌz.ən,love|lʌv,lovely|ˈlʌv.li,honey|ˈhʌn.i,worry|ˈwʌr.i,company|ˈkʌm.pə.ni,wonderful|ˈwʌn.də.fəl,shut up|ʃʌt ʌp,just once|dʒʌst wʌns",
+"ɑː":"Arnold|ˈɑː.nəld,bar|bɑː,far|fɑː,car|kɑː,can’t|kɑːnt,garden|ˈɡɑː.dən,star|stɑː,photograph|ˈfəʊ.tə.ɡrɑːf,marvellous|ˈmɑː.vəl.əs,guitar|ɡɪˈtɑː,Barbara|ˈbɑː.bə.rə,Margaret|ˈmɑː.ɡə.rət,Charles|tʃɑːlz,dark|dɑːk,laugh|lɑːf,smart|smɑːt,Martin|ˈmɑː.tɪn,Martha|ˈmɑː.θə",
+"ɒ":"off|ɒf,often|ˈɒf.ən,on|ɒn,got|ɡɒt,bottle|ˈbɒt.əl,want|wɒnt,What’s wrong|wɒts rɒŋ,sorry|ˈsɒr.i,holiday|ˈhɒl.ə.deɪ,horrible|ˈhɒr.ə.bəl,washing|ˈwɒʃ.ɪŋ,popular|ˈpɒp.jə.lə,‘Onwash’|ˈɒn.wɒʃ,hot|hɒt",
+"ɔː":"or|ɔː,Paul|pɔːl,awful|ˈɔː.fəl,score|skɔː,towards|təˈwɔːdz,airport|ˈeə.pɔːt,four|fɔː,audience|ˈɔː.di.əns,reporter|rɪˈpɔː.tə,all|ɔːl,forward|ˈfɔː.wəd,forty|ˈfɔː.ti,always|ˈɔːl.weɪz,George|dʒɔːdʒ,walking|ˈwɔː.kɪŋ,York|jɔːk",
+"ʊ":"put|pʊt,look|lʊk,good|ɡʊd,foot|fʊt,could|kʊd,full|fʊl,woman|ˈwʊm.ən,bookshelf|ˈbʊk.ʃelf,cookery|ˈkʊk.ə.ri,shouldn’t|ˈʃʊd.ənt,Mr. Cook|ˈmɪs.tə kʊk,book|bʊk,took|tʊk",
+"uː":"Sue|suː,Prue|pruː,shoe|ʃuː,threw|θruː,June|dʒuːn,unit|ˈjuː.nɪt,afternoon|ˌɑːf.təˈnuːn,excuse me|ɪkˈskjuːz miː,soup|suːp,stupid|ˈstjuː.pɪd,nuisance|ˈnjuː.səns,Miss Luke|mɪs luːk,chewing gum|ˈtʃuː.ɪŋ ɡʌm,rude|ruːd,pool|puːl,boot|buːt",
+"ɜː":"nurse|nɜːs,Herbert|ˈhɜː.bət,worst|wɜːst,shirts|ʃɜːts,early|ˈɜː.li,Turner|ˈtɜː.nə,thirsty|ˈθɜː.sti,dirty|ˈdɜː.ti,world|wɜːld,Thursday|ˈθɜːz.deɪ,colonel|ˈkɜː.nəl,Burton|ˈbɜː.tən,skirts|skɜːts,Sherman|ˈʃɜː.mən,bird|bɜːd,turn|tɜːn,heard|hɜːd",
+"ə":"photographer|fəˈtɒɡ.rə.fə,about|əˈbaʊt,around|əˈraʊnd,another|əˈnʌð.ə,water|ˈwɔː.tə,mother|ˈmʌð.ə,father|ˈfɑː.ðə,sister|ˈsɪs.tə,comfortable|ˈkʌm.fə.tə.bəl,supermarket|ˈsuː.pə.mɑː.kɪt,binoculars|bɪˈnɒk.jə.ləz,suitcase|ˈsuːt.keɪs,South America|saʊθ əˈmer.ɪ.kə,policemen|pəˈliːs.mən,corner|ˈkɔː.nə,cupboard|ˈkʌb.əd",
+"eɪ":"Hey|heɪ,say|seɪ,Mr. Grey|ˈmɪs.tə ɡreɪ,may|meɪ,they|ðeɪ,today|təˈdeɪ,railway|ˈreɪl.weɪ,made|meɪd,afraid|əˈfreɪd,train|treɪn,timetable|ˈtaɪm.teɪ.bəl,ages|ˈeɪ.dʒɪz,changed|tʃeɪndʒd,late|leɪt,waiting|ˈweɪ.tɪŋ,station|ˈsteɪ.ʃən,April|ˈeɪ.prəl,eighty-eight|ˌeɪ.ti ˈeɪt",
+"aɪ":"Myra|ˈmaɪ.rə,Violet|ˈvaɪ.ə.lət,time|taɪm,mind|maɪnd,Miles|maɪlz,ice|aɪs,mice|maɪs,like|laɪk,Mike|maɪk,Nigel|ˈnaɪ.dʒəl,tonight|təˈnaɪt,all right|ˌɔːl ˈraɪt,riding|ˈraɪ.dɪŋ,climbing|ˈklaɪ.mɪŋ,ninety-nine|ˌnaɪn.ti ˈnaɪn,typewriter|ˈtaɪpˌraɪ.tə,I’m|aɪm,bye|baɪ,spider|ˈspaɪ.də",
+"ɔɪ":"toy|tɔɪ,enjoy|ɪnˈdʒɔɪ,noisiest|ˈnɔɪ.zi.ɪst,destroyed|dɪˈstrɔɪd,annoying|əˈnɔɪ.ɪŋ,boiling|ˈbɔɪ.lɪŋ,pointing|ˈpɔɪn.tɪŋ,spoilt|spɔɪlt,Joyce|dʒɔɪs,voice|vɔɪs,Rolls Royce|ˌrəʊlz ˈrɔɪs,boyfriend|ˈbɔɪ.frend,oil|ɔɪl,coin|kɔɪn,Roy|rɔɪ,oyster|ˈɔɪ.stə",
+"aʊ":"Ow|aʊ,now|naʊ,town|taʊn,found|faʊnd,round|raʊnd,ground|ɡraʊnd,Brown|braʊn,lounge|laʊndʒ,loudly|ˈlaʊd.li,upside-down|ˌʌp.saɪd ˈdaʊn,out|aʊt,mouse|maʊs,house|haʊs,shouting|ˈʃaʊ.tɪŋ,couch|kaʊtʃ,cow|kaʊ",
+"əʊ":"Oh|əʊ,no|nəʊ,Joe|dʒəʊ,go|ɡəʊ,ago|əˈɡəʊ,window|ˈwɪn.dəʊ,know|nəʊ,throw|θrəʊ,snow|snəʊ,over|ˈəʊ.və,nose|nəʊz,hello|həˈləʊ,don’t|dəʊnt,Joan|dʒəʊn,groans|ɡrəʊnz,closed|kləʊzd,coat|kəʊt,October|ɒkˈtəʊ.bə,joking|ˈdʒəʊ.kɪŋ,woke|wəʊk,OK|ˌəʊˈkeɪ",
+"ɪə":"Lear|lɪə,here|hɪə,hear|hɪə,dear|dɪə,clear|klɪə,year|jɪə,idea|aɪˈdɪə,atmosphere|ˈæt.mə.sfɪə,mountaineer|ˌmaʊn.tɪˈnɪə,Cheers|tʃɪəz,nearly|ˈnɪə.li,bearded|ˈbɪə.dɪd,disappeared|ˌdɪs.əˈpɪəd,beer|bɪə,ear|ɪə,pier|pɪə,beard|bɪəd",
+"eə":"Claire|kleə,pair|peə,chair|tʃeə,square|skweə,where|weə,there|ðeə,they’re|ðeə,wearing|ˈweə.rɪŋ,Mary|ˈmeə.ri,hairbrushes|ˈheə.brʌ.ʃɪz,carefully|ˈkeə.fəl.i,nowhere|ˈnəʊ.weə,anywhere|ˈen.i.weə,everywhere|ˈev.ri.weə,upstairs|ˌʌpˈsteəz,air|eə,hair|heə,bear|beə,pear|peə",
+"ʊə":"Ruhr|rʊə,tourist|ˈtʊə.rɪst,tourists|ˈtʊə.rɪsts,tour|tʊə,tour guide|tʊə ɡaɪd,cure|kjʊə,pure|pjʊə,dour|dʊə,enduring|ɪnˈdjʊə.rɪŋ,amour|æˈmʊə,poor|pʊə,sure|ʃʊə"};
+const KEYS=Object.keys(WR);
+const ALL=KEYS.flatMap(k=>WR[k].split(",").map(p=>{const[w,i]=p.split("|");return{w,i:"/"+i+"/",s:k}}));
 
-const ALL=Object.entries(WD).flatMap(([k,v])=>v.map(w=>({w:w[0],i:w[1],s:k})));
 let filt="all",queue=[],hist=[],learned=0,total=0,busy=false;
 let learnedWordsSet=new Set();
 
@@ -139,7 +368,7 @@ function normIpa(s){
     .replace(/[\/\[\]\.\sˈˌ'’`]/g,'');
 }
 /* кнопки со спецсимволами для телефона */
-const SYMS=["iː","ɪ","e","æ","ə","ɒ","ɔː","ɑː","ʌ","ʊ","uː","ɜː","ʃ","ʒ","θ","ð","ŋ","tʃ","dʒ","ɡ","ˈ"];
+const SYMS=["iː","ɪ","e","æ","ʌ","ɑː","ɒ","ɔː","ʊ","uː","ɜː","ə","eɪ","aɪ","ɔɪ","aʊ","əʊ","ɪə","eə","ʊə","ʃ","ʒ","θ","ð","ŋ","tʃ","dʒ","ɡ","ˈ"];
 $("#sym").innerHTML=SYMS.map(x=>`<button type="button" data-x="${x}">${x}</button>`).join("");
 $("#sym").onclick=e=>{
   const x=e.target.dataset.x;if(!x)return;
@@ -166,7 +395,7 @@ $("#tForm").addEventListener("submit",e=>{
 });
 $("#tIn").addEventListener("input",function(){this.className="";if(!busy)$("#tRes").textContent=""});
 
-function chips(){$("#chips").innerHTML=["all","iː","ɪ","e","æ"].map(k=>`<button aria-pressed="${k==filt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")}
+function chips(){$("#chips").innerHTML=["all",...KEYS].map(k=>`<button aria-pressed="${k==filt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 
 function start(){
