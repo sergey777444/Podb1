@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <script src="words-latin.js?v=1"></script>
+<script src="phrases-latin.js?v=1"></script>
 <script src="app.js?v=24"></script>
 <style>
 .panel{margin-bottom:16px}
@@ -28,6 +29,11 @@
 .d2{margin-top:3px;color:var(--soft);font-size:12.5px;font-style:italic}
 .big.lat{font-style:italic}
 .def.forms{font:italic 600 16px var(--serif);color:var(--ink)}
+
+/* ---------- фразы ---------- */
+.mask{filter:blur(7px);transition:filter .2s}
+.w.open .mask{filter:none}
+#p .chk{flex-basis:34px;height:34px}
 
 /* ---------- тест ---------- */
 #tSetup[hidden],#tRun[hidden],#tRes[hidden]{display:none}
@@ -85,6 +91,7 @@
     <button role="tab" aria-selected="true" data-t="c">Карточки</button>
     <button role="tab" aria-selected="false" data-t="l">Список</button>
     <button role="tab" aria-selected="false" data-t="t">Тест</button>
+    <button role="tab" aria-selected="false" data-t="p">Фразы</button>
   </nav>
 
   <div class="box panel">
@@ -115,6 +122,18 @@
     <div id="tSetup"></div>
     <div id="tRun" hidden></div>
     <div id="tRes" hidden></div>
+  </section>
+
+  <section id="p" class="pane">
+    <div class="box" style="margin-bottom:16px">
+      <div class="stat"><span id="pSt1"></span><span id="pSt2"></span></div>
+      <div class="bar"><i id="pProg"></i></div>
+      <div class="chips scroll cat" id="pChips"></div>
+    </div>
+    <div class="chips" id="pModes"></div>
+    <input type="search" id="pq" class="form-control" placeholder="🔍 Поиск по фразе или переводу…" autocomplete="off">
+    <div class="hint">✓ — выучил · тап по фразе — показать скрытое</div>
+    <div id="pList"></div>
   </section>
   <div class="note" id="note"></div>
 </div>
@@ -148,6 +167,8 @@
       if (window.userData && window.currentUser) {
         const s = await window.userData.get(KEY);
         if (Array.isArray(s)) learned = new Set(s);
+        const p = await window.userData.get(PKEY);
+        if (Array.isArray(p)) { pLearn = new Set(p); renderPh(); }
       }
     } catch (e) { console.error(e); }
     start(); renderList();
@@ -582,10 +603,53 @@
     if (q.mc && !q.done && /^[1-4]$/.test(e.key) && q.opts[e.key - 1]) tAnswer(q, '', e.key - 1);
   });
 
+  /* =====================================================================
+     ФРАЗЫ (крылатые выражения): данные в phrases-latin.js
+     ===================================================================== */
+  const PKEY = 'latin_learned_phrases';
+  const PH = window.LAT_PHRASES || [];
+  const PALL = PH.flatMap(g => g.items.map((it, i) => ({ k: g.id + '-' + i, l: it[0], r: it[1], g: g.id, gt: g.title })));
+  let pLearn = new Set(), pGroup = 'all', pMode = 'both', pQuery = '';
+  try { const a = JSON.parse(localStorage.getItem(PKEY) || '[]'); if (Array.isArray(a)) pLearn = new Set(a); } catch (e) {}
+  function pPersist() {
+    try { localStorage.setItem(PKEY, JSON.stringify([...pLearn])); } catch (e) {}
+    if (window.userData && window.currentUser) window.userData.set(PKEY, [...pLearn]).catch(console.error);
+  }
+  function renderPh() {
+    const sc = PALL.filter(x => pGroup === 'all' || x.g === pGroup);
+    const done = sc.filter(x => pLearn.has(x.k)).length, pct = sc.length ? Math.round(done / sc.length * 100) : 0;
+    $('#pSt1').textContent = `Выучено ${done} из ${sc.length}`; $('#pSt2').textContent = pct + '%'; $('#pProg').style.width = pct + '%';
+    $('#pChips').innerHTML = [`<button class="chip${pGroup === 'all' ? ' on' : ''}" data-pg="all">Все</button>`]
+      .concat(PH.map(g => `<button class="chip${pGroup === g.id ? ' on' : ''}" data-pg="${g.id}">${esc(g.title)}</button>`)).join('');
+    $('#pModes').innerHTML = [['both', 'Всё видно'], ['hr', 'Скрыть перевод'], ['hl', 'Скрыть латынь']]
+      .map(([k, t]) => `<button class="chip${pMode === k ? ' on' : ''}" data-pm="${k}">${t}</button>`).join('');
+    const q = stripD(pQuery.trim().toLowerCase());
+    let out = '';
+    PH.forEach(g => {
+      if (pGroup !== 'all' && g.id !== pGroup) return;
+      const list = PALL.filter(x => x.g === g.id && (!q || stripD((x.l + ' ' + x.r).toLowerCase()).includes(q)));
+      if (!list.length) return;
+      out += `<div class="group"><div class="gh"><h2>${esc(g.title)}</h2><small>${g.items.filter((_, i) => pLearn.has(g.id + '-' + i)).length} / ${g.items.length}</small></div>` +
+        list.map(x => `<div class="w${pLearn.has(x.k) ? ' ok' : ''}" data-pk="${x.k}"><div class="chk">✓</div><div>
+          <div class="la${pMode === 'hl' ? ' mask' : ''}">${esc(x.l)}</div>
+          <div class="ru2${pMode === 'hr' ? ' mask' : ''}">${esc(x.r)}</div></div></div>`).join('') + '</div>';
+    });
+    $('#pList').innerHTML = out || '<div class="empty">Ничего не найдено</div>';
+  }
+  $('#pList').addEventListener('click', e => {
+    const w = e.target.closest('.w'); if (!w) return;
+    if (e.target.closest('.chk')) { const k = w.dataset.pk; pLearn.has(k) ? pLearn.delete(k) : pLearn.add(k); pPersist(); renderPh(); }
+    else w.classList.toggle('open');
+  });
+  $('#pChips').addEventListener('click', e => { const k = e.target.dataset.pg; if (k) { pGroup = k; renderPh(); } });
+  $('#pModes').addEventListener('click', e => { const k = e.target.dataset.pm; if (k) { pMode = k; renderPh(); } });
+  $('#pq').addEventListener('input', e => { pQuery = e.target.value; renderPh(); });
+  renderPh();
+
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
     document.querySelectorAll('section.pane').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
-    $('.panel').style.display = b.dataset.t === 't' ? 'none' : '';
+    $('.panel').style.display = (b.dataset.t === 't' || b.dataset.t === 'p') ? 'none' : '';
     if (b.dataset.t === 't' && tView === 'setup') tSetup();
   });
 
