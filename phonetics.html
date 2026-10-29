@@ -90,7 +90,8 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
 <script>
 const $=s=>document.querySelector(s);
 
-/* ---------- диалоги: «ИМЯ: реплика», стороны A/B чередуются по говорящим ---------- */
+/* ---------- диалоги: «ИМЯ: реплика», стороны A/B чередуются по говорящим ----------
+   Третий элемент (необязательный) — ручная раскладка: по букве a/b на каждую реплику. */
 const DL=[
 ["[iː] In a restaurant",`PETER: What would you like to eat, Edith?
 EDITH: A meat sandwich.
@@ -99,7 +100,8 @@ JEAN: A cheese sandwich please, Peter.
 WAITER: Good evening.
 PETER: Good evening. We’ll have one meat sandwich and two cheese sandwiches.
 EDITH: And three teas, please.
-WAITER: One meat sandwich, two cheese sandwiches and three teas.`],
+WAITER: One meat sandwich, two cheese sandwiches and three teas.`,
+"aaabbbbb"],
 ["[ɪ] An interesting film",`BILL: Is Tim in?
 LYN: Is he coming to the pictures?
 MRS. SMITH: Tim’s ill.
@@ -110,7 +112,8 @@ TIM: Is it an interesting film?
 LYN: It’s “Big Jim and the Indians”.
 BILL: And it begins in six minutes.
 MRS. SMITH: If you’re ill, Tim…
-TIM: Quick! Or we’ll miss the beginning of the film!`],
+TIM: Quick! Or we’ll miss the beginning of the film!`,
+"bababababab"],
 ["[e] An expensive holiday",`EDDIE: Hello Ellen. Hello Ben. Hello Jenny.
 BEN: Hello Eddie. Have a cigarette.
 EDDIE: Thanks, Ben.
@@ -123,7 +126,8 @@ ELLEN: We are all jealous.
 BEN: Was it expensive?
 EDDIE: Yes, very. I’ve spent everything.
 JENNY: Haven’t you any money left?
-EDDIE: Yes, Jenny. Ten pence!`],
+EDDIE: Yes, Jenny. Ten pence!`,
+"abbbababababa"],
 ["[æ] A bad hijacker",`HOSTESS BRADLEY: Alice! Perhaps that passenger is a hijacker!
 HOSTESS ALLEN: Which passenger, Anne? That sad man with the camera? He’s wearing black slacks and a jacket.
 HOSTESS BRADLEY: No. That fat lady with the big black handbag in her left hand.
@@ -253,11 +257,13 @@ MARY: Oh! Then where’s the other one?
 CLAIRE: It’s over there under the chair.`]
 ];
 
-/* Каждый персонаж всегда на одной стороне (a/b).
-   Перебираем все разбиения персонажей на две стороны и берём то,
+/* Если задана ручная раскладка ov (строка из a/b) — берём её.
+   Иначе каждый персонаж всегда на одной стороне (a/b):
+   перебираем все разбиения персонажей на две стороны и берём то,
    где меньше всего подряд идущих реплик на одной стороне. */
-function parse(t){
+function parse(t,ov){
   const L=t.split("\n").map(l=>{const i=l.indexOf(": ");return[l.slice(0,i),l.slice(i+2)]});
+  if(ov)return L.map((l,i)=>[l[0],l[1],ov[i]||"a"]);
   const sp=[...new Set(L.map(l=>l[0]))];
   const side=(s,m)=>{const k=sp.indexOf(s);return k?(m>>(k-1))&1:0};
   let best=0,bc=1e9;
@@ -278,7 +284,7 @@ const dKey=d=>d[0].match(/\[(.*?)\]/)[1];
 const tKey=t=>t[1].slice(1,-1);
 
 function dlgHtml(d,i){
-  const L=parse(d[1]);
+  const L=parse(d[1],d[2]);
   const roles=[];
   L.forEach(l=>{if(!roles.some(r=>r[0]==l[0]))roles.push([l[0],l[2]])});
   return `<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+
