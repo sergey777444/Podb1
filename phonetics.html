@@ -29,7 +29,17 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
 .ipa{font:600 clamp(24px,8vw,36px)/1.2 "DejaVu Sans","Charis SIL","Segoe UI",system-ui,sans-serif}
 .chips{flex-wrap:wrap}
 .chips button{font-family:ui-monospace,monospace}
-#dchips{margin-bottom:10px}
+#pchips{margin-bottom:10px}
+.sub{margin:20px 0 14px;color:var(--soft);font:800 12px var(--sans);letter-spacing:.08em;text-transform:uppercase}
+.roles{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.roles .rl{color:var(--soft);font:700 12px var(--sans)}
+.roles button{padding:5px 11px;border:2px solid;border-radius:10px;background:var(--card);color:var(--ink);font:800 11px var(--sans);letter-spacing:.04em}
+.roles button.a{border-color:var(--blue)}
+.roles button.b{border-color:var(--red)}
+.roles button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.roles button[aria-pressed="true"]::before{content:"🙈 "}
+.row.blur .bub{filter:blur(7px);cursor:pointer;user-select:none;-webkit-user-select:none;transition:filter .2s}
+.row.blur.peek .bub{filter:none}
 
 /* ---- ввод транскрипции ---- */
 .tform{display:flex;gap:8px;margin:0 4px 8px}
@@ -51,13 +61,11 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
   <p>Диалоги, скороговорки и карточки со словами · все гласные английского</p>
 </header>
 <nav class="tabs" role="tablist">
-  <button role="tab" aria-selected="true" data-t="d">Диалоги</button>
-  <button role="tab" aria-selected="false" data-t="s">Скороговорки</button>
+  <button role="tab" aria-selected="true" data-t="p">Практика</button>
   <button role="tab" aria-selected="false" data-t="c">Карточки</button>
 </nav>
 <main>
-  <section id="d" class="pane on"></section>
-  <section id="s" class="pane"></section>
+  <section id="p" class="pane on"></section>
   <section id="c" class="pane">
     <div class="chips" id="chips"></div>
     <div class="bar"><div id="prog"></div></div>
@@ -261,20 +269,57 @@ function parse(t){
   return L.map(l=>[l[0],l[1],side(l[0],best)?"b":"a"]);
 }
 
-/* выбор звука в диалогах */
-let dFilt="all";
-function renderD(){
-  const keys=DL.map(d=>d[0].match(/\[(.*?)\]/)[1]);
-  const chipsHtml='<div class="chips" id="dchips">'+["all",...keys].map(k=>
-    `<button aria-pressed="${k==dFilt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")+'</div>';
-  $("#d").innerHTML=chipsHtml+
-  '<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
-  DL.map((d,i)=>(dFilt=="all"||keys[i]==dFilt)
-    ?`<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+parse(d[1]).map(l=>`<div class="row ${l[2]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("")
-    :"").join("");
+/* ---------- практика: диалоги + скороговорки, общий фильтр по звуку ---------- */
+let pFilt="all";
+let blurred=new Set();
+try{blurred=new Set(JSON.parse(localStorage.getItem("sr_blur")||"[]"))}catch(e){}
+function saveBlur(){try{localStorage.setItem("sr_blur",JSON.stringify([...blurred]))}catch(e){}}
+const dKey=d=>d[0].match(/\[(.*?)\]/)[1];
+const tKey=t=>t[1].slice(1,-1);
+
+function dlgHtml(d,i){
+  const L=parse(d[1]);
+  const roles=[];
+  L.forEach(l=>{if(!roles.some(r=>r[0]==l[0]))roles.push([l[0],l[2]])});
+  return `<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+
+    `<div class="roles"><span class="rl">Скрыть роль:</span>`+
+    roles.map(r=>`<button type="button" class="${r[1]}" data-role="${r[0]}" data-d="${i}" aria-pressed="${blurred.has(i+"|"+r[0])}">${r[0]}</button>`).join("")+`</div>`+
+    L.map(l=>`<div class="row ${l[2]}${blurred.has(i+"|"+l[0])?" blur":""}" data-d="${i}" data-r="${l[0]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("");
 }
-$("#d").onclick=e=>{const k=e.target.dataset.k;if(k){dFilt=k;renderD();window.scrollTo(0,0)}};
-renderD();
+
+function renderP(){
+  const chips='<div class="chips" id="pchips">'+["all",...KEYS].map(k=>
+    `<button aria-pressed="${k==pFilt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")+'</div>';
+  const legend='<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
+    '<p class="legend" style="margin-top:6px">Нажмите на роль, чтобы скрыть её реплики. Тап по скрытой реплике — подсмотреть.</p>';
+  let body="";
+  KEYS.forEach(k=>{
+    if(pFilt!="all"&&k!=pFilt)return;
+    DL.forEach((d,i)=>{if(dKey(d)==k)body+=dlgHtml(d,i)});
+    const tws=TW.map((t,i)=>[t,i]).filter(x=>tKey(x[0])==k);
+    if(tws.length)body+='<h3 class="sub">Скороговорки '+(pFilt=="all"?"["+k+"]":"")+'</h3>'+
+      tws.map(([t,i])=>`<div class="tw"><small>${t[1]}</small><b>${i+1}</b>${hl(t[0],t[2])}</div>`).join("");
+  });
+  $("#p").innerHTML=chips+legend+body;
+}
+
+$("#p").onclick=e=>{
+  const kb=e.target.closest("[data-k]");
+  if(kb){pFilt=kb.dataset.k;renderP();window.scrollTo(0,0);return}
+  const rb=e.target.closest("[data-role]");
+  if(rb){
+    const key=rb.dataset.d+"|"+rb.dataset.role,on=!blurred.has(key);
+    if(on)blurred.add(key);else blurred.delete(key);
+    saveBlur();
+    rb.setAttribute("aria-pressed",on);
+    document.querySelectorAll("#p .row").forEach(r=>{
+      if(r.dataset.d==rb.dataset.d&&r.dataset.r==rb.dataset.role){r.classList.toggle("blur",on);r.classList.remove("peek")}
+    });
+    return;
+  }
+  const row=e.target.closest(".row.blur");
+  if(row)row.classList.toggle("peek");
+};
 
 /* ---------- скороговорки: [текст, звук, слова для подсветки] ---------- */
 const TW=[
@@ -306,7 +351,6 @@ function hl(text,words){
   const set=new Set(words.split("|"));
   return text.replace(/[A-Za-z’]+/g,m=>set.has(m)?"<u>"+m+"</u>":m);
 }
-$("#s").innerHTML='<p class="legend" style="margin-top:14px">Жёлтым подсвечены слова с тренируемым звуком</p><div style="height:14px"></div>'+TW.map((t,i)=>`<div class="tw"><small>${t[1]}</small><b>${i+1}</b>${hl(t[0],t[2])}</div>`).join("");
 
 /* ---------- слова: "слово|транскрипция" ---------- */
 const WR={
@@ -331,6 +375,7 @@ const WR={
 "eə":"Claire|kleə,pair|peə,chair|tʃeə,square|skweə,where|weə,there|ðeə,they’re|ðeə,wearing|ˈweə.rɪŋ,Mary|ˈmeə.ri,hairbrushes|ˈheə.brʌ.ʃɪz,carefully|ˈkeə.fəl.i,nowhere|ˈnəʊ.weə,anywhere|ˈen.i.weə,everywhere|ˈev.ri.weə,upstairs|ˌʌpˈsteəz,air|eə,hair|heə,bear|beə,pear|peə",
 "ʊə":"Ruhr|rʊə,tourist|ˈtʊə.rɪst,tourists|ˈtʊə.rɪsts,tour|tʊə,tour guide|tʊə ɡaɪd,cure|kjʊə,pure|pjʊə,dour|dʊə,enduring|ɪnˈdjʊə.rɪŋ,amour|æˈmʊə,poor|pʊə,sure|ʃʊə"};
 const KEYS=Object.keys(WR);
+renderP();
 const ALL=KEYS.flatMap(k=>WR[k].split(",").map(p=>{const[w,i]=p.split("|");return{w,i:"/"+i+"/",s:k}}));
 
 let filt="all",queue=[],hist=[],learned=0,total=0,busy=false;
