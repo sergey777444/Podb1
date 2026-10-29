@@ -287,21 +287,22 @@ function saveBlur(){try{localStorage.setItem("sr_blur",JSON.stringify([...blurre
 const dKey=d=>d[0].match(/\[(.*?)\]/)[1];
 const tKey=t=>t[1].slice(1,-1);
 
+/* скрытие по сторонам: ключ «номер|a» или «номер|b» */
 function dlgHtml(d,i){
   const L=parse(d[1],d[2]);
-  const roles=[];
-  L.forEach(l=>{if(!roles.some(r=>r[0]==l[0]))roles.push([l[0],l[2]])});
+  const names={a:[],b:[]};
+  L.forEach(l=>{if(!names[l[2]].includes(l[0]))names[l[2]].push(l[0])});
   return `<h2 class="dlg"><i>${i+1}</i>${d[0]}</h2>`+
     `<div class="roles"><span class="rl">Скрыть роль:</span>`+
-    roles.map(r=>`<button type="button" class="${r[1]}" data-role="${r[0]}" data-d="${i}" aria-pressed="${blurred.has(i+"|"+r[0])}">${r[0]}</button>`).join("")+`</div>`+
-    L.map(l=>`<div class="row ${l[2]}${blurred.has(i+"|"+l[0])?" blur":""}" data-d="${i}" data-r="${l[0]}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("");
+    ["a","b"].filter(s=>names[s].length).map(s=>`<button type="button" class="${s}" data-role="${s}" data-d="${i}" aria-pressed="${blurred.has(i+"|"+s)}">${s.toUpperCase()} · ${names[s].join(", ")}</button>`).join("")+`</div>`+
+    L.map(l=>`<div class="row ${l[2]}${blurred.has(i+"|"+l[2])?" blur":""}" data-d="${i}"><span class="tag">${l[0]}</span><div class="bub">${l[1]}</div></div>`).join("");
 }
 
 function renderP(){
   const chips='<div class="chips" id="pchips">'+["all",...KEYS].map(k=>
     `<button aria-pressed="${k==pFilt}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")+'</div>';
   const legend='<p class="legend"><span><b style="background:var(--blue)"></b>читает один</span><span><b style="background:var(--red)"></b>читает другой</span></p>'+
-    '<p class="legend" style="margin-top:6px">Нажмите на роль, чтобы скрыть её реплики. Тап по скрытой реплике — подсмотреть.</p>';
+    '<p class="legend" style="margin-top:6px">Нажмите на A или B, чтобы скрыть реплики этой стороны. Тап по скрытой реплике — подсмотреть.</p>';
   let body="";
   KEYS.forEach(k=>{
     if(pFilt!="all"&&k!=pFilt)return;
@@ -323,7 +324,7 @@ $("#p").onclick=e=>{
     saveBlur();
     rb.setAttribute("aria-pressed",on);
     document.querySelectorAll("#p .row").forEach(r=>{
-      if(r.dataset.d==rb.dataset.d&&r.dataset.r==rb.dataset.role){r.classList.toggle("blur",on);r.classList.remove("peek")}
+      if(r.dataset.d==rb.dataset.d&&r.classList.contains(rb.dataset.role)){r.classList.toggle("blur",on);r.classList.remove("peek")}
     });
     return;
   }
