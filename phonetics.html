@@ -243,7 +243,21 @@ MARY: Oh! Then where’s the other one?
 CLAIRE: It’s over there under the chair.`]
 ];
 
-function parse(t){const m={};return t.split("\n").map(l=>{const i=l.indexOf(": "),s=l.slice(0,i);if(!(s in m))m[s]=Object.keys(m).length%2?"b":"a";return[s,l.slice(i+2),m[s]]})}
+/* Каждый персонаж всегда на одной стороне (a/b).
+   Перебираем все разбиения персонажей на две стороны и берём то,
+   где меньше всего подряд идущих реплик на одной стороне. */
+function parse(t){
+  const L=t.split("\n").map(l=>{const i=l.indexOf(": ");return[l.slice(0,i),l.slice(i+2)]});
+  const sp=[...new Set(L.map(l=>l[0]))];
+  const side=(s,m)=>{const k=sp.indexOf(s);return k?(m>>(k-1))&1:0};
+  let best=0,bc=1e9;
+  for(let m=0;m<1<<(sp.length-1);m++){
+    let c=0;
+    for(let i=1;i<L.length;i++)if(side(L[i][0],m)==side(L[i-1][0],m))c++;
+    if(c<bc){bc=c;best=m}
+  }
+  return L.map(l=>[l[0],l[1],side(l[0],best)?"b":"a"]);
+}
 
 /* выбор звука в диалогах */
 let dFilt="all";
