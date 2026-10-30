@@ -53,8 +53,9 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
 .tres.good{color:var(--green)}.tres.bad{color:var(--red)}
 
 /* ---- классификация ---- */
-.kc{margin:0 0 16px;padding:12px 14px;background:var(--card);border:2px solid var(--line);border-radius:14px;box-shadow:var(--sh);font:15px/1.7 var(--serif)}
-.kc h3{margin:0 0 6px;font:800 26px "DejaVu Sans","Charis SIL",system-ui,sans-serif}
+.kc{margin:14px 0 8px;padding:12px 14px;background:var(--card);border:2px solid var(--line);border-radius:14px;box-shadow:var(--sh);font:15px/1.7 var(--serif)}
+.kc summary{cursor:pointer;margin:0 0 4px;font:800 15px "DejaVu Sans","Charis SIL",system-ui,sans-serif}
+.kc[open] summary{margin-bottom:8px}
 .kc p{margin:0 0 4px}
 .kc u{padding:0 3px;border-radius:3px;background:var(--yel);color:#1b1f3b;text-decoration:none;font-weight:700}
 </style>
@@ -70,7 +71,6 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
   <button role="tab" aria-selected="true" data-t="p">Практика</button>
   <button role="tab" aria-selected="false" data-t="c">Карточки</button>
   <button role="tab" aria-selected="false" data-t="q">Quizlet</button>
-  <button role="tab" aria-selected="false" data-t="k">Классификация</button>
 </nav>
 <main>
   <section id="p" class="pane on"></section>
@@ -95,7 +95,6 @@ h2.dlg i{flex:none;width:28px;height:28px;display:grid;place-items:center;border
   <section id="q" class="pane">
     <iframe src="https://quizlet.com/1228414575/match/embed?i=7doja2&x=1jj1" height="500" width="100%" style="border:0;border-radius:14px" loading="lazy" title="Quizlet"></iframe>
   </section>
-  <section id="k" class="pane"></section>
 </main>
 </div>
 
@@ -314,6 +313,7 @@ function renderP(){
   let body="";
   KEYS.forEach(k=>{
     if(pFilt!="all"&&k!=pFilt)return;
+    body+=clHtml(k);
     DL.forEach((d,i)=>{if(dKey(d)==k)body+=dlgHtml(d,i)});
     const tws=TW.map((t,i)=>[t,i]).filter(x=>tKey(x[0])==k);
     if(tws.length)body+='<h3 class="sub">Скороговорки '+(pFilt=="all"?"["+k+"]":"")+'</h3>'+
@@ -393,6 +393,37 @@ const WR={
 "ɪə":"Lear|lɪə,here|hɪə,hear|hɪə,dear|dɪə,clear|klɪə,year|jɪə,idea|aɪˈdɪə,atmosphere|ˈæt.mə.sfɪə,mountaineer|ˌmaʊn.tɪˈnɪə,Cheers|tʃɪəz,nearly|ˈnɪə.li,bearded|ˈbɪə.dɪd,disappeared|ˌdɪs.əˈpɪəd,beer|bɪə,ear|ɪə,pier|pɪə,beard|bɪəd",
 "eə":"Claire|kleə,pair|peə,chair|tʃeə,square|skweə,where|weə,there|ðeə,they’re|ðeə,wearing|ˈweə.rɪŋ,Mary|ˈmeə.ri,hairbrushes|ˈheə.brʌ.ʃɪz,carefully|ˈkeə.fəl.i,nowhere|ˈnəʊ.weə,anywhere|ˈen.i.weə,everywhere|ˈev.ri.weə,upstairs|ˌʌpˈsteəz,air|eə,hair|heə,bear|beə,pear|peə",
 "ʊə":"Ruhr|rʊə,tourist|ˈtʊə.rɪst,tourists|ˈtʊə.rɪsts,tour|tʊə,tour guide|tʊə ɡaɪd,cure|kjʊə,pure|pjʊə,dour|dʊə,enduring|ɪnˈdjʊə.rɪŋ,amour|æˈmʊə,poor|pʊə,sure|ʃʊə"};
+const CL={
+"iː":["diphthongoid","front","high","unrounded","long"],
+"ɪ":["monophthong","front-retracted","high","unrounded","short"],
+"e":["monophthong","front","mid","unrounded","short"],
+"æ":["monophthong","front","low","unrounded","short"],
+"ʌ":["monophthong","central","low","unrounded","short"],
+"ɑː":["monophthong","back-advanced","low","unrounded","long"],
+"ɒ":["monophthong","back","low","rounded","short"],
+"ɔː":["monophthong","back","mid","rounded","long"],
+"ʊ":["monophthong","back-advanced","high","rounded","short"],
+"uː":["diphthongoid","back","high","rounded","long"],
+"ɜː":["monophthong","central","mid","unrounded","long"],
+"ə":["monophthong","central","mid","unrounded","short"],
+"eɪ":["diphthong","front","mid","unrounded",""],
+"aɪ":["diphthong","front-retracted","low","unrounded",""],
+"ɔɪ":["diphthong","back","low","rounded",""],
+"aʊ":["diphthong","front-retracted","low","unrounded",""],
+"əʊ":["diphthong","central","mid","unrounded",""],
+"ɪə":["diphthong","front-retracted","high","unrounded",""],
+"eə":["diphthong","front","mid","unrounded",""],
+"ʊə":["diphthong","back-advanced","high","rounded",""]};
+function clHtml(k){
+  const c=CL[k];if(!c)return"";
+  const u=x=>"<u>"+x+"</u>";
+  return `<details class="kc"><summary>Классификация [${k}]</summary>`+
+  `<p>According to the stability of articulation the sound [${k}] is a ${u(c[0])}.</p>`+
+  `<p>According to the horizontal movement of the tongue the sound [${k}] is ${u(c[1])}.</p>`+
+  `<p>According to the vertical movement of the tongue the sound [${k}] is ${u(c[2])}.</p>`+
+  `<p>According to the lip position the sound [${k}] is ${u(c[3])}.</p>`+
+  (c[4]?`<p>According to the length the sound [${k}] is ${u(c[4])}.</p>`:"")+`</details>`;
+}
 const KEYS=Object.keys(WR);
 renderP();
 const ALL=KEYS.flatMap(k=>WR[k].split(",").map(p=>{const[w,i]=p.split("|");return{w,i:"/"+i+"/",s:k}}));
@@ -539,45 +570,6 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
   window.scrollTo(0,0);
 });
 
-/* ---------- классификация гласных ---------- */
-/* [устойчивость, горизонталь, вертикаль, губы, длина] */
-const CL={
-"iː":["diphthongoid","front","high","unrounded","long"],
-"ɪ":["monophthong","front-retracted","high","unrounded","short"],
-"e":["monophthong","front","mid","unrounded","short"],
-"æ":["monophthong","front","low","unrounded","short"],
-"ʌ":["monophthong","central","low","unrounded","short"],
-"ɑː":["monophthong","back-advanced","low","unrounded","long"],
-"ɒ":["monophthong","back","low","rounded","short"],
-"ɔː":["monophthong","back","mid","rounded","long"],
-"ʊ":["monophthong","back-advanced","high","rounded","short"],
-"uː":["diphthongoid","back","high","rounded","long"],
-"ɜː":["monophthong","central","mid","unrounded","long"],
-"ə":["monophthong","central","mid","unrounded","short"],
-"eɪ":["diphthong","front","mid","unrounded",""],
-"aɪ":["diphthong","front-retracted","low","unrounded",""],
-"ɔɪ":["diphthong","back","low","rounded",""],
-"aʊ":["diphthong","front-retracted","low","unrounded",""],
-"əʊ":["diphthong","central","mid","unrounded",""],
-"ɪə":["diphthong","front-retracted","high","unrounded",""],
-"eə":["diphthong","front","mid","unrounded",""],
-"ʊə":["diphthong","back-advanced","high","rounded",""]};
-let kf="all";
-function renderK(){
-  const ch='<div class="chips">'+["all",...KEYS].map(k=>`<button aria-pressed="${k==kf}" data-k="${k}">${k=="all"?"Все":"["+k+"]"}</button>`).join("")+'</div>';
-  const body=KEYS.filter(k=>CL[k]&&(kf=="all"||kf==k)).map(k=>{
-    const c=CL[k],u=x=>"<u>"+x+"</u>";
-    return `<div class="kc"><h3>[${k}]</h3>`+
-    `<p>According to the stability of articulation the sound [${k}] is a ${u(c[0])}.</p>`+
-    `<p>According to the horizontal movement of the tongue the sound [${k}] is ${u(c[1])}.</p>`+
-    `<p>According to the vertical movement of the tongue the sound [${k}] is ${u(c[2])}.</p>`+
-    `<p>According to the lip position the sound [${k}] is ${u(c[3])}.</p>`+
-    (c[4]?`<p>According to the length the sound [${k}] is ${u(c[4])}.</p>`:"")+`</div>`;
-  }).join("");
-  $("#k").innerHTML=ch+body;
-}
-$("#k").onclick=e=>{const k=e.target.dataset.k;if(k){kf=k;renderK();window.scrollTo(0,0)}};
-renderK();
 
 window.onload=loadProgressFromCloud;
 /* после входа подтягиваем сохранённый прогресс */
