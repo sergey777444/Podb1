@@ -1,6 +1,6 @@
 /* Крылатые фразы. Формат: [латынь, перевод]. Части 1–4 как на листе.
    Долгота (ā) и краткость (ĕ) сохранены как в источнике.
-   Ударения (U+0301, ́) стоят там, где они отмечены на листе (часть 1). */
+   Ударения (U+0301, ́) стоят там, где они отмечены на листе (части 1–2). */
 window.LAT_PHRASES = [
  { "id": "ph1", "title": "Часть 1", "items": [
   ["Áquĭlam volā\u0301re dóces", "не учи учёного"],
@@ -19,19 +19,19 @@ window.LAT_PHRASES = [
   ["Ínter caécos lúscus rex", "среди слепых одноглазый – царь"]
  ]},
  { "id": "ph2", "title": "Часть 2", "items": [
-  ["Opus laudat artifĭcem", "дело хвалит мастера"],
-  ["O tempŏra, o mores!", "о, времена, о, нравы"],
-  ["Consuetūdo est altĕra natura", "привычка – вторая натура"],
-  ["Finis coronat opus", "конец – делу венец"],
-  ["Quod licet Jovi, non licet bovi", "что позволено Юпитеру, не позволено быку"],
-  ["Non est fumus absque igne", "нет дыма без огня"],
-  ["Veni, vidi, vici", "пришел, увидел, победил"],
-  ["Experientia est optĭma magistra", "опыт – лучший учитель"],
-  ["Dum spiro spero", "пока дышу, надеюсь"],
-  ["Aquĭla non captat muscas", "орёл не ловит мух"],
-  ["Qui quaerĭt, repĕrit", "кто ищет, тот находит"],
-  ["Festīna lente!", "тише едешь – дальше будешь"],
-  ["Otium post negotium", "делу время, потехе – час"]
+  ["Ópus láudat artífĭcem", "дело хвалит мастера"],
+  ["Ó témpŏra, o móres!", "о, времена, о, нравы"],
+  ["Consuetū\u0301do est áltĕra natúra", "привычка – вторая натура"],
+  ["Fínis corónat ópus", "конец – делу венец"],
+  ["Quod lícet Jóvi, non lícet bóvi", "что позволено Юпитеру, не позволено быку"],
+  ["Non est fúmus ábsque ígne", "нет дыма без огня"],
+  ["Véni, vídi, víci", "пришел, увидел, победил"],
+  ["Experiéntia est óptĭma magístra", "опыт – лучший учитель"],
+  ["Dum spíro spéro", "пока дышу, надеюсь"],
+  ["Áquĭla non cáptat múscas", "орёл не ловит мух"],
+  ["Qui quáerĭt, répĕrit", "кто ищет, тот находит"],
+  ["Festī\u0301na lénte!", "тише едешь – дальше будешь"],
+  ["Ótium post negótium", "делу время, потехе – час"]
  ]},
  { "id": "ph3", "title": "Часть 3", "items": [
   ["Aliēna vitia in ocŭlus habēmus, a tergo nostra sunt", "в чужом глазу соринку видим, в своем – бревна не замечаем"],
