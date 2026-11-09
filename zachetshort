@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Practical Grammar — шпаргалка</title>
+<style>
+:root{--ind:#2B2D6E;--teal:#128F94;--gold:#F2A93B;--ink:#23253A;--grey:#6B6F86;--line:#D5D9EC;--soft:#EEF0FA;--bg:#fff;--thc:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ind:#9EA3FF;--ink:#E6E8F5;--grey:#9A9FB8;--line:#34375A;--soft:#23264A;--bg:#14152A;--thc:#14152A}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:#2B2D6E;color:#fff;padding:28px 18px 22px}
+header h1{margin:0;font-size:28px}header p{margin:4px 0 0;color:#C9CCF0;font-size:14px}
+nav{position:sticky;top:0;z-index:5;background:#2B2D6E;display:flex;gap:2px;overflow-x:auto;padding:8px 10px}
+nav a{color:#fff;text-decoration:none;min-width:36px;text-align:center;padding:4px 8px;border-radius:8px;font-weight:700;font-size:14px}
+main{max-width:760px;margin:0 auto;padding:10px 16px 50px}
+h2{display:flex;align-items:center;gap:10px;margin:28px 0 8px;font-size:19px;color:var(--ind)}
+h2 span{background:var(--ind);color:var(--thc);border-radius:8px;min-width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px}
+ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
+b{color:var(--teal)}
+.k{background:var(--soft);border-left:4px solid var(--gold);border-radius:6px;padding:8px 12px;margin:8px 0}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+th{background:var(--ind);color:var(--thc);text-align:left;padding:6px 10px}
+td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
+i{color:var(--grey)}
+</style></head><body>
+<header><h1>Practical Grammar</h1><p>Шпаргалка к зачёту · Финогеева, ЧелГУ, 2022</p></header>
+<nav><a href="#q1">1</a><a href="#q2">2</a><a href="#q3">3</a><a href="#q4">4</a><a href="#q5">5</a><a href="#q6">6</a><a href="#q7">7</a><a href="#q8">8</a><a href="#q9">9</a><a href="#q10">10</a></nav>
+<main>
+
+<h2 id="q1"><span>1</span>Части речи</h2>
+<ul><li><b>Eastwood (8):</b> verb, noun, adjective, adverb, preposition, determiner, pronoun, linking word.</li>
+<li><b>Общая (9):</b> noun, adjective, pronoun, numeral, verb, adverb, preposition, conjunction, interjection.</li>
+<li>Делятся по значению, морфологии и синтаксической функции.</li></ul>
+
+<h2 id="q2"><span>2</span>Члены предложения</h2>
+<div class="k">Порядок: <b>Subject → Predicate → Object/Complement → Adverbial</b></div>
+<ul><li><b>Subject:</b> кто делает, стоит перед глаголом.</li>
+<li><b>Predicate:</b> глагол, обязателен.</li>
+<li><b>Object:</b> прямое (на что действует) и косвенное (кому): <i>showed me (ind.) her house (dir.)</i></li>
+<li><b>Complement:</b> после link verbs (be, seem, become, look, feel, get), объекта нет.</li>
+<li><b>Adverbial:</b> when / where / how.</li></ul>
+
+<h2 id="q3"><span>3</span>Согласование подлежащего и сказуемого</h2>
+<div class="tw"><table>
+<tr><td>1</td><td>Предлог между ними не влияет: <i>The study of languages <b>is</b>…</i></td></tr>
+<tr><td>2</td><td>A <b>and</b> B → мн. число</td></tr>
+<tr><td>3</td><td>everybody, each, none of, either/neither (без or/nor) → ед. число</td></tr>
+<tr><td>4</td><td>neither…nor, either…or, not only…but also, or → по <b>второму</b> подлежащему</td></tr>
+<tr><td>5</td><td>Pair-nouns (trousers) → мн. число</td></tr>
+<tr><td>6</td><td>There is/are → по <b>первому</b> сущ.</td></tr>
+<tr><td>7</td><td>who → по антецеденту: <i>It is I who <b>am</b>…</i></td></tr>
+<tr><td>8</td><td>Расстояние, время, деньги как целое → ед. число</td></tr>
+<tr><td>9</td><td>a lot of, some, all, most → по сущ. после <b>of</b></td></tr>
+<tr><td>10</td><td>Collective (family, jury) → ед. или мн., по смыслу</td></tr></table></div>
+
+<h2 id="q4"><span>4</span>Nouns</h2>
+<ul><li><b>Типы:</b> proper, common, countable, uncountable, pair, group, possessive, compound.</li>
+<li><b>Uncountable:</b> нет мн. числа и нет a/an: advice, information, news, money, furniture, luggage, weather.</li>
+<li><b>Uncountable на -s</b> (глагол ед.): news, physics, politics, economics, mathematics, measles.</li>
+<li><b>Always plural:</b> clothes, goods, belongings, thanks, congratulations, customs, earnings, outskirts, remains, surroundings, troops, contents, arms.</li></ul>
+<div class="tw"><table><tr><th>Noun</th><th>Countable</th><th>Uncountable</th></tr>
+<tr><td>paper</td><td>газета</td><td>бумага</td></tr>
+<tr><td>glass</td><td>стакан</td><td>стекло</td></tr>
+<tr><td>light</td><td>лампа</td><td>свет</td></tr>
+<tr><td>time</td><td>раз</td><td>время</td></tr>
+<tr><td>work</td><td>произведение</td><td>работа</td></tr>
+<tr><td>hair</td><td>один волос</td><td>волосы</td></tr>
+<tr><td>room</td><td>комната</td><td>место</td></tr>
+<tr><td>coffee</td><td>порция</td><td>вещество</td></tr></table></div>
+<p><i>Конкретное → countable, общее → uncountable.</i></p>
+<ul><li><b>Мн. число:</b> +es после -s, -ss, -sh, -ch, -x, -o (tomatoes, но photos, pianos); согл.+y → -ies; -f/-fe → -ves (но roofs, chiefs).</li>
+<li><b>Исключения:</b> man–men, foot–feet, tooth–teeth, mouse–mice, child–children, ox–oxen, goose–geese, person–people.</li>
+<li><b>Одинаковые формы:</b> sheep, deer, species, series, aircraft, means.</li></ul>
+
+<h2 id="q5"><span>5</span>Determiners I</h2>
+<ul><li><b>some</b> — утверждение; <b>any</b> — вопрос, отрицание (или «любой»).</li>
+<li><b>a lot of</b> — утверждение. <b>much</b> (uncount.) / <b>many</b> (count.) — вопрос, отрицание, после too/so/as.</li>
+<li><b>a few / a little</b> — немного, но есть (+). <b>few / little</b> — почти нет (−). few: исчисл., little: неисчисл.</li>
+<li><b>all (of), half (of)</b> — <i>of</i> можно опустить, но не перед местоимением.</li></ul>
+
+<h2 id="q6"><span>6</span>Determiners II</h2>
+<ul><li><b>most</b> — большинство; <b>most of</b> — конкретные.</li>
+<li><b>no</b> + сущ.; <b>none</b> — отдельно или с of.</li>
+<li><b>every / each</b> + ед. число. <i>every</i>: 3+, все вместе; <i>each</i>: по одному, можно про двоих.</li>
+<li><b>whole</b> + ед. число («целый»).</li>
+<li><b>both, either, neither</b> — про двоих.</li></ul>
+
+<h2 id="q7"><span>7</span>Pronouns</h2>
+<div class="tw"><table><tr><th>Тип</th><th>Суть</th></tr>
+<tr><td>Subject / Object</td><td>I, he (до глагола) / me, him (после глагола или предлога)</td></tr>
+<tr><td>Possessive</td><td>my (перед сущ.)</td></tr>
+<tr><td>Absolute</td><td>mine (без сущ.)</td></tr>
+<tr><td>Reflexive</td><td>действие на себя: enjoy oneself</td></tr>
+<tr><td>Emphatic</td><td>подчёркивает «сам»: She knitted it herself</td></tr>
+<tr><td>each other / one another</td><td>друг друга</td></tr>
+<tr><td>one / ones</td><td>замена исчисл. сущ.: a green one</td></tr>
+<tr><td>Indefinite</td><td>some-/any-/no-/every- + -one, -body, -thing, -where; глагол ед., дальше they/their</td></tr>
+<tr><td>this / that</td><td>близко / далеко или уже сказанное</td></tr>
+<tr><td>There / It</td><td>There + be: существование. It: вещь, время, погода, расстояние</td></tr></table></div>
+
+<h2 id="q8"><span>8</span>Questions</h2>
+<div class="k">Порядок: <b>question word → auxiliary → subject → verb → rest</b></div>
+<ul><li><b>Yes/No:</b> начинаются со вспомогательного. Ответ: Yes, they were.</li>
+<li><b>Wh-:</b> what (широкий выбор), which (ограниченный), how + adj/adv.</li>
+<li><b>Subject:</b> who/what + глагол без do: <i>Who works here?</i></li>
+<li><b>Object:</b> what + aux + subject + verb: <i>What does John play?</i></li>
+<li><b>Negative:</b> <i>Didn’t he…?</i> — подтверждение, удивление.</li>
+<li><b>Alternative:</b> …or…?</li>
+<li><b>Tag:</b> + утверждение → − хвост, и наоборот. nobody/somebody → they, nothing → it; после never, hardly, little → положительный хвост.</li>
+<li><b>Indirect:</b> прямой порядок слов: <i>Can you tell me where she lives?</i></li></ul>
+
+<h2 id="q9"><span>9</span>Adjectives</h2>
+<ul><li><b>Только перед сущ.:</b> main, only, former, chief, elder, inner, outer, upper, principal.</li>
+<li><b>Только после глагола:</b> asleep, alike, afraid, alone, ashamed, awake, alive, glad, ill, unwell.</li>
+<li><b>the + adj</b> = группа людей: the rich, the poor, the blind.</li>
+<li>После get/make/keep/find + объект: <i>found it easy</i>.</li></ul>
+<div class="k"><b>Порядок:</b> quantifier → number → opinion → size → other quality → age → shape → temperature → colour → origin → material → type → purpose<br><i>a brilliant eccentric German author</i></div>
+<div class="tw"><table><tr><th>Правило</th><th>Comp.</th><th>Superl.</th></tr>
+<tr><td>1 слог</td><td>smaller</td><td>the smallest</td></tr>
+<tr><td>2 слога на -y</td><td>happier</td><td>the happiest</td></tr>
+<tr><td>3+ слогов, -ed, -ing</td><td>more famous</td><td>the most famous</td></tr>
+<tr><td>good</td><td>better</td><td>best</td></tr>
+<tr><td>bad</td><td>worse</td><td>worst</td></tr>
+<tr><td>far</td><td>farther (расст.) / further (ещё)</td><td>farthest / furthest</td></tr>
+<tr><td>little</td><td>less</td><td>least</td></tr></table></div>
+<ul><li>Оба варианта: clever, common, cruel, gentle, narrow, pleasant, polite, quiet, simple, stupid.</li>
+<li><b>older</b> (общее) / <b>elder</b> (родственники, только перед сущ.).</li>
+<li><b>than</b> после comparative; <b>the</b> + superlative + <b>in/of</b>; <b>as…as</b> (равно), <b>not so/as…as</b> (не равно).</li>
+<li>better and better — постепенное изменение; <b>The faster you run, the healthier you become.</b></li>
+<li>Степени только у gradable (very, extremely); classifying — really, absolutely.</li></ul>
+
+<h2 id="q10"><span>10</span>Adverbs</h2>
+<ul><li><b>Образование:</b> +ly (nice–nicely; но true–truly, whole–wholly); -y → -ily; -le → -ly; -ic → -ically.</li>
+<li><b>Прилагательные на -ly:</b> friendly, lively, lovely, elderly, likely, lonely, silly, ugly.</li>
+<li><b>Как прилагательное:</b> early, fast, hard, high, late, low, right, wrong, deep, long, near, straight.</li>
+<li><b>Две формы, разный смысл:</b> hard (трудно) / hardly (почти не); high / highly (очень); late / lately (недавно); near / nearly (почти); free (бесплатно) / freely (свободно); wide / widely.</li>
+<li>good — прилаг., <b>well</b> — нареч. (но He is not well = болен).</li></ul>
+<div class="tw"><table><tr><th>Тип</th><th>Позиция</th></tr>
+<tr><td>Frequency</td><td>mid (always, never); usually/sometimes/often также front, end; every day — front/end</td></tr>
+<tr><td>Time</td><td>today, yesterday — front; still, already — mid; still в отрицании — перед aux; yet, any more — end</td></tr>
+<tr><td>Place</td><td>end</td></tr>
+<tr><td>Manner</td><td>обычно end, иногда mid</td></tr>
+<tr><td>Sentence adv.</td><td>front, mid, end; probably/certainly в отрицании — перед aux</td></tr>
+<tr><td>also / too / as well</td><td>also — mid; too, as well — end</td></tr></table></div>
+<ul><li><b>Степень:</b> слабая (a little, slightly), средняя (fairly, pretty, rather), сильная (absolutely, completely, extremely, really).</li>
+<li><b>Сравнение:</b> fast–faster–fastest; fluently–more–most fluently. Исключения: well–better–best, badly–worse–worst, far–farther/further, little–less–least.</li></ul>
+
+</main></body></html>
