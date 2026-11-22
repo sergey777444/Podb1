@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Неправильные глаголы • ФЛ1 ПОДб-11</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="irregular-data.js?v=1"></script>
+<style>
+.hero{margin-bottom:6px;padding:16px 18px}
+.hero .badge{margin-bottom:8px}
+h2.sec{margin:16px 0 4px}
+.deck{height:270px;margin-top:14px;margin-bottom:12px}
+.hint-line{margin-top:10px;text-align:center;color:var(--soft);font-size:12.5px}
+.chips button .cnt{margin-left:6px;font-weight:600;opacity:.75;font-size:12px}
+.chips.opts button{font-size:12.5px}
+.deck .face .big{font-size:clamp(34px,10vw,52px)}
+.deck .face .def{font-size:18px;color:var(--blue);font-weight:700}
+.deck .face .tip{position:absolute;bottom:14px;left:0;right:0;text-align:center}
+.forms{width:100%;max-width:320px;display:grid;gap:6px}
+.forms div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:8px 0;border-bottom:2px dashed var(--grid)}
+.forms div:last-child{border-bottom:none}
+.forms small{color:var(--soft);font:800 11px var(--sans);letter-spacing:.07em;text-transform:uppercase;text-align:left}
+.forms b{font:800 24px var(--serif);text-align:right;word-break:break-word}
+.deck .face .note{max-width:92%;padding:8px 10px;border:2px dashed var(--line);border-radius:12px;color:var(--soft);font-size:12.5px;line-height:1.45}
+.deck-empty{padding:30px 10px;text-align:center;color:var(--soft)}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+#done[hidden],.deck[hidden],.ctl[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="container narrow">
+
+  <header class="hero">
+    <span class="badge">Грамматика</span>
+    <h1>Неправильные <span class="hl">глаголы</span></h1>
+  </header>
+
+  <h2 class="sec">Группы <small id="selInfo"></small></h2>
+  <div class="chips scroll" id="groups" role="group" aria-label="Группы глаголов"></div>
+  <div class="chips scroll opts" id="opts">
+    <button type="button" id="oNew" aria-pressed="false">Только невыученные</button>
+    <button type="button" id="oShuf" aria-pressed="true">🔀 Перемешать</button>
+    <button type="button" id="oReset">↺ Сбросить</button>
+  </div>
+
+  <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
+  <div class="stat"><span id="stL"></span><span id="stR"></span></div>
+
+  <div class="deck" id="deck"></div>
+  <div class="ctl" id="ctl">
+    <button type="button" class="no" id="bNo" aria-label="Ещё повторить">✗</button>
+    <button type="button" class="sm" id="bFlip" aria-label="Перевернуть">↻</button>
+    <button type="button" class="ok" id="bOk" aria-label="Знаю">✓</button>
+  </div>
+
+  <p class="hint-line">Вправо — знаю, влево — ещё повторить. Нажми на карточку, чтобы увидеть формы.</p>
+  <div class="box done" id="done" hidden></div>
+  <div class="status" id="status" role="status"></div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'grammar_irregular_verbs_learned';   /* Грамматика → Неправильные глаголы */
+  var K_SEL = 'irv_groups', K_NEW = 'irv_only_new', K_SHUF = 'irv_shuffle';
+  var GROUPS = window.IRREGULAR_VERBS || [];
+
+  var NOTES = {
+    burn: 'UK: чаще burnt, можно и burned. US: обычно burned. Но burnt toast говорят везде.',
+    learn: 'UK: learnt / learned. US: обычно learned.',
+    smell: 'UK: smelt / smelled. US: обычно smelled.',
+    spell: 'UK: spelt / spelled. US: обычно spelled.',
+    spill: 'UK: spilt / spilled. US: обычно spilled.',
+    spoil: 'UK: spoilt / spoiled. US: обычно spoiled.',
+    dream: 'UK: dreamt /dremt/ или dreamed /driːmd/. US: dreamed.',
+    lean: 'UK: leant /lent/ или leaned. US: leaned.',
+    leap: 'UK: leapt /lept/ или leaped. US: leaped.',
+    dive: 'UK: dived. US: dived или dove.',
+    get: 'got — Британия; gotten (как Past Participle) — США.'
+  };
+
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function shuffleArr(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  var learned = new Set(lsGet(KEY, []) || []);
+  var sel = new Set();
+  var savedSel = lsGet(K_SEL, null);
+  if (Array.isArray(savedSel)) savedSel.forEach(function (i) { if (GROUPS[i]) sel.add(i); });
+  if (!sel.size) GROUPS.forEach(function (g, i) { sel.add(i); });
+  var onlyNew = !!lsGet(K_NEW, false);
+  var shuffle = lsGet(K_SHUF, true) !== false;
+  var queue = [], sKnown = 0, sAgain = 0, busy = false;
+
+  function items() {
+    var out = [];
+    GROUPS.forEach(function (g, gi) { if (sel.has(gi)) g.words.forEach(function (w) { out.push({ g: gi, w: w }); }); });
+    return out;
+  }
+
+  /* ---------- сохранение: в профиль (облако) + запасной localStorage ---------- */
+  var pt = 0;
+  function status(msg) {
+    var el = $('#status');
+    if (msg) { el.textContent = msg; return; }
+    el.textContent = window.currentUser ? '☁️ Прогресс сохраняется в профиле (Грамматика → Неправильные глаголы)'
+      : '💾 Прогресс только в этом браузере — аккаунт не подтверждён админом';
+  }
+  function persist() {
+    lsSet(KEY, Array.from(learned));
+    clearTimeout(pt);
+    pt = setTimeout(function () {
+      Promise.resolve(window.userData ? window.userData.set(KEY, Array.from(learned)) : null)
+        .then(function () { status(); })
+        .catch(function (e) { console.error(e); status('⚠️ В облако не сохранилось — прогресс остался в браузере'); });
+    }, 500);
+  }
+
+  /* ---------- отрисовка ---------- */
+  function renderChips() {
+    var box = $('#groups');
+    var all = sel.size === GROUPS.length;
+    var html = '<button type="button" data-g="all" aria-pressed="' + all + '">Все группы</button>';
+    GROUPS.forEach(function (g, i) {
+      var n = g.words.filter(function (w) { return learned.has(w[0]); }).length;
+      html += '<button type="button" data-g="' + i + '" aria-pressed="' + sel.has(i) + '" title="' + esc(g.title) + '">Группа ' + (i + 1) +
+        '<span class="cnt">' + n + '/' + g.words.length + '</span></button>';
+    });
+    box.innerHTML = html;
+    var parts = GROUPS.filter(function (g, i) { return sel.has(i); }).map(function (g) { return g.title.split(' · ')[1]; });
+    $('#selInfo').textContent = all ? 'все' : parts.join(', ');
+    $('#oNew').setAttribute('aria-pressed', onlyNew);
+    $('#oShuf').setAttribute('aria-pressed', shuffle);
+  }
+
+  function renderStats() {
+    var all = items(), t = all.length;
+    var l = all.filter(function (x) { return learned.has(x.w[0]); }).length;
+    var pct = t ? Math.round(l / t * 100) : 0;
+    $('#barFill').style.width = pct + '%';
+    $('#stL').textContent = 'Выучено ' + l + ' из ' + t + ' · ' + pct + '%';
+    $('#stR').textContent = queue.length ? 'В колоде: ' + queue.length : '';
+  }
+
+  function cardHtml(x, cls) {
+    var v = x.w[0], p = x.w[1], pp = x.w[2], ru = x.w[3], g = GROUPS[x.g], note = NOTES[v];
+    return '<div class="card ' + cls + '"><div class="inner">' +
+      '<div class="face"><span class="tag">' + esc(g.title) + '</span><div class="big">' + esc(v) + '</div><div class="def">' + esc(ru) + '</div><div class="tip">нажми — увидеть формы</div></div>' +
+      '<div class="face back"><span class="tag">' + esc(v) + ' — ' + esc(ru) + '</span>' +
+      '<div class="forms"><div><small>Past Simple</small><b>' + esc(p) + '</b></div><div><small>Past Participle</small><b>' + esc(pp) + '</b></div></div>' +
+      (note ? '<div class="note">' + esc(note) + '</div>' : '') + '</div></div>' +
+      '<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ</div></div>';
+  }
+
+  function renderDeck() {
+    var deck = $('#deck'), done = $('#done'), ctl = $('#ctl');
+    busy = false;
+    if (!queue.length) {
+      deck.hidden = true; ctl.hidden = true; done.hidden = false;
+      var rest = items().filter(function (x) { return !learned.has(x.w[0]); }).length;
+      done.innerHTML = '<h3>' + (items().length ? '🎉 Колода пройдена' : 'Нет карточек') + '</h3>' +
+        '<p class="tip">' + (items().length ? 'Выучено за подход: ' + sKnown + ' · повторов: ' + sAgain + (rest ? ' · ещё не выучено: ' + rest : ' · всё выучено!') : (onlyNew ? 'В выбранных группах всё выучено — выключи «Только невыученные».' : 'Выбери хотя бы одну группу.')) + '</p>' +
+        '<div class="row-actions"><button type="button" id="dAll">Заново все</button>' + (rest ? '<button type="button" id="dNew">Только невыученные</button>' : '') + '</div>';
+      var a = $('#dAll'), n = $('#dNew');
+      if (a) a.onclick = function () { onlyNew = false; lsSet(K_NEW, false); rebuild(); };
+      if (n) n.onclick = function () { onlyNew = true; lsSet(K_NEW, true); rebuild(); };
+      return;
+    }
+    done.hidden = true; deck.hidden = false; ctl.hidden = false;
+    var html = '';
+    [2, 1, 0].forEach(function (i) { if (queue[i]) html += cardHtml(queue[i], i === 0 ? '' : (i === 1 ? 'under' : 'under2')); });
+    deck.innerHTML = html;
+    attach(deck.lastElementChild);
+  }
+
+  function render() { renderChips(); renderStats(); renderDeck(); }
+
+  function rebuild() {
+    var it = items();
+    if (onlyNew) it = it.filter(function (x) { return !learned.has(x.w[0]); });
+    if (shuffle) shuffleArr(it);
+    queue = it; sKnown = 0; sAgain = 0;
+    render();
+  }
+
+  /* ---------- действия ---------- */
+  function topCard() { return $('#deck .card:last-child'); }
+  function flip() { var c = topCard(); if (c && !busy) c.classList.toggle('flip'); }
+
+  function act(known) {
+    if (busy || !queue.length) return;
+    var c = topCard(); if (!c) return;
+    busy = true;
+    c.style.transition = 'transform .28s, opacity .28s';
+    c.style.transform = 'translateX(' + (known ? 520 : -520) + 'px) rotate(' + (known ? 22 : -22) + 'deg)';
+    c.style.opacity = '0';
+    setTimeout(function () {
+      var x = queue.shift();
+      if (known) { learned.add(x.w[0]); sKnown++; }
+      else { learned.delete(x.w[0]); sAgain++; queue.splice(Math.min(queue.length, 4), 0, x); }
+      persist();
+      renderChips(); renderStats(); renderDeck();
+    }, 260);
+  }
+
+  function attach(card) {
+    if (!card) return;
+    var st = null;
+    card.addEventListener('pointerdown', function (e) {
+      if (busy) return;
+      st = { x: e.clientX, y: e.clientY, dx: 0, moved: false };
+      try { card.setPointerCapture(e.pointerId); } catch (er) {}
+      card.style.transition = 'none';
+    });
+    card.addEventListener('pointermove', function (e) {
+      if (!st) return;
+      st.dx = e.clientX - st.x;
+      var dy = e.clientY - st.y;
+      if (Math.abs(st.dx) > 8 || Math.abs(dy) > 8) st.moved = true;
+      if (!st.moved) return;
+      card.style.transform = 'translateX(' + st.dx + 'px) rotate(' + (st.dx / 18) + 'deg)';
+      var r = card.querySelector('.stampR'), l = card.querySelector('.stampL');
+      r.style.opacity = Math.max(0, Math.min(1, st.dx / 90));
+      l.style.opacity = Math.max(0, Math.min(1, -st.dx / 90));
+    });
+    function end() {
+      if (!st) return;
+      var s = st; st = null;
+      if (!s.moved) { card.style.transition = ''; flip(); return; }
+      if (s.dx > 90) return act(true);
+      if (s.dx < -90) return act(false);
+      card.style.transition = 'transform .2s';
+      card.style.transform = '';
+      card.querySelector('.stampR').style.opacity = 0;
+      card.querySelector('.stampL').style.opacity = 0;
+    }
+    card.addEventListener('pointerup', end);
+    card.addEventListener('pointercancel', end);
+  }
+
+  /* ---------- управление ---------- */
+  $('#groups').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var g = b.dataset.g;
+    if (g === 'all') { sel = new Set(GROUPS.map(function (x, i) { return i; })); }
+    else {
+      var i = +g;
+      if (sel.has(i)) { if (sel.size > 1) sel.delete(i); } else sel.add(i);
+    }
+    lsSet(K_SEL, Array.from(sel));
+    rebuild();
+  });
+  $('#oNew').onclick = function () { onlyNew = !onlyNew; lsSet(K_NEW, onlyNew); rebuild(); };
+  $('#oShuf').onclick = function () { shuffle = !shuffle; lsSet(K_SHUF, shuffle); rebuild(); };
+  $('#oReset').onclick = function () {
+    var n = items().filter(function (x) { return learned.has(x.w[0]); }).length;
+    if (!n) return;
+    if (!confirm('Сбросить выученное в выбранных группах (' + n + ' глаг.)?')) return;
+    items().forEach(function (x) { learned.delete(x.w[0]); });
+    persist(); rebuild();
+  };
+  $('#bOk').onclick = function () { act(true); };
+  $('#bNo').onclick = function () { act(false); };
+  $('#bFlip').onclick = flip;
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight') act(true);
+    else if (e.key === 'ArrowLeft') act(false);
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+  });
+
+  /* ---------- старт: сразу рисуем из браузера, потом подтягиваем профиль ---------- */
+  status();
+  rebuild();
+  Promise.resolve(window.authReady).then(function () {
+    status();
+    if (!window.userData) return null;
+    return window.userData.get(KEY);
+  }).then(function (cloud) {
+    if (Array.isArray(cloud) && cloud.length) {
+      var a = Array.from(learned).sort().join('|'), b = cloud.slice().sort().join('|');
+      if (a !== b) { learned = new Set(cloud); lsSet(KEY, cloud); rebuild(); }
+    }
+  }).catch(function (e) { console.error(e); });
+})();
+</script>
+</body>
+</html>
