@@ -17,7 +17,9 @@ h2.sec{margin:16px 0 4px}
 .chips button .cnt{margin-left:6px;font-weight:600;opacity:.75;font-size:12px}
 .chips.opts button{font-size:12.5px}
 .deck .face .big{font-size:clamp(34px,10vw,52px)}
-.deck .face .def{font-size:18px;color:var(--blue);font-weight:700}
+.deck .face .big.ru{font-size:clamp(26px,7.5vw,38px)}
+.deck .face .bk{max-width:92%;font:800 clamp(24px,7vw,32px)/1.15 var(--serif);text-align:center;word-break:break-word}
+.deck .face .bk.ru{color:var(--blue)}
 .deck .face .tip{position:absolute;bottom:14px;left:0;right:0;text-align:center}
 .forms{width:100%;max-width:320px;display:grid;gap:6px}
 .forms div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:8px 0;border-bottom:2px dashed var(--grid)}
@@ -40,6 +42,7 @@ h2.sec{margin:16px 0 4px}
 
   <h2 class="sec">Группы <small id="selInfo"></small></h2>
   <div class="chips scroll" id="groups" role="group" aria-label="Группы глаголов"></div>
+  <div class="chips scroll" id="dirChips" role="group" aria-label="Что видно на лицевой стороне"></div>
   <div class="chips scroll opts" id="opts">
     <button type="button" id="oNew" aria-pressed="false">Только невыученные</button>
     <button type="button" id="oShuf" aria-pressed="true">🔀 Перемешать</button>
@@ -66,7 +69,7 @@ h2.sec{margin:16px 0 4px}
 (function () {
   'use strict';
   var KEY = 'grammar_irregular_verbs_learned';   /* Грамматика → Неправильные глаголы */
-  var K_SEL = 'irv_groups', K_NEW = 'irv_only_new', K_SHUF = 'irv_shuffle';
+  var K_SEL = 'irv_groups', K_NEW = 'irv_only_new', K_SHUF = 'irv_shuffle', K_DIR = 'irv_dir';
   var GROUPS = window.IRREGULAR_VERBS || [];
 
   var NOTES = {
@@ -96,6 +99,7 @@ h2.sec{margin:16px 0 4px}
   if (!sel.size) GROUPS.forEach(function (g, i) { sel.add(i); });
   var onlyNew = !!lsGet(K_NEW, false);
   var shuffle = lsGet(K_SHUF, true) !== false;
+  var dir = lsGet(K_DIR, 'en') === 'ru' ? 'ru' : 'en';   /* en: на карточке слово, ru: на карточке перевод */
   var queue = [], sKnown = 0, sAgain = 0, busy = false;
 
   function items() {
@@ -137,6 +141,8 @@ h2.sec{margin:16px 0 4px}
     $('#selInfo').textContent = all ? 'все' : parts.join(', ');
     $('#oNew').setAttribute('aria-pressed', onlyNew);
     $('#oShuf').setAttribute('aria-pressed', shuffle);
+    $('#dirChips').innerHTML = [['en', 'EN → RU', 'Видно слово, перевод на обороте'], ['ru', 'RU → EN', 'Виден перевод, слово на обороте']]
+      .map(function (d) { return '<button type="button" data-d="' + d[0] + '" aria-pressed="' + (dir === d[0]) + '" title="' + d[2] + '">' + d[1] + '</button>'; }).join('');
   }
 
   function renderStats() {
@@ -151,8 +157,8 @@ h2.sec{margin:16px 0 4px}
   function cardHtml(x, cls) {
     var v = x.w[0], p = x.w[1], pp = x.w[2], ru = x.w[3], g = GROUPS[x.g], note = NOTES[v];
     return '<div class="card ' + cls + '"><div class="inner">' +
-      '<div class="face"><span class="tag">' + esc(g.title) + '</span><div class="big">' + esc(v) + '</div><div class="def">' + esc(ru) + '</div><div class="tip">нажми — увидеть формы</div></div>' +
-      '<div class="face back"><span class="tag">' + esc(v) + ' — ' + esc(ru) + '</span>' +
+      '<div class="face"><span class="tag">' + esc(g.title) + '</span>' + (dir === 'en' ? '<div class="big">' + esc(v) + '</div>' : '<div class="big ru">' + esc(ru) + '</div>') + '<div class="tip">' + (dir === 'en' ? 'нажми — перевод и формы' : 'нажми — глагол и формы') + '</div></div>' +
+      '<div class="face back"><span class="tag">' + esc(g.title) + '</span>' + (dir === 'en' ? '<div class="bk ru">' + esc(ru) + '</div>' : '<div class="bk">' + esc(v) + '</div>') +
       '<div class="forms"><div><small>Past Simple</small><b>' + esc(p) + '</b></div><div><small>Past Participle</small><b>' + esc(pp) + '</b></div></div>' +
       (note ? '<div class="note">' + esc(note) + '</div>' : '') + '</div></div>' +
       '<div class="stampR">ЗНАЮ</div><div class="stampL">ЕЩЁ</div></div>';
@@ -255,6 +261,11 @@ h2.sec{margin:16px 0 4px}
     }
     lsSet(K_SEL, Array.from(sel));
     rebuild();
+  });
+  $('#dirChips').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || b.dataset.d === dir) return;
+    dir = b.dataset.d; lsSet(K_DIR, dir);
+    renderChips(); renderDeck();
   });
   $('#oNew').onclick = function () { onlyNew = !onlyNew; lsSet(K_NEW, onlyNew); rebuild(); };
   $('#oShuf').onclick = function () { shuffle = !shuffle; lsSet(K_SHUF, shuffle); rebuild(); };
