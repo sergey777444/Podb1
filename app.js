@@ -733,7 +733,8 @@
     ['phonetics.html', '🔤', 'Фонетика'],
     ['words.html', '🇬🇧', 'Слова'],
     ['latin.html', '🏛️', 'Латынь'],
-    ['china.html', '🀄', 'Китайский']
+    ['china.html', '🀄', 'Китайский'],
+    ['irregular.html', '📐', 'Глаголы']
   ];
   /* неподтверждённые не видят Конспекты, Базу и Журнал */
   const PAGES_GUEST = PAGES_ALL.filter(([h]) => h !== 'notes.html' && h !== 'base.html' && h !== 'journal.html');
@@ -782,7 +783,7 @@
     const close = () => back.remove();
     back.addEventListener('click', e => { if (e.target === back) close(); });
 
-    let learned = new Set(), enLearned = new Set(), chLearned = new Set(), laLearned = new Set();
+    let learned = new Set(), enLearned = new Set(), chLearned = new Set(), laLearned = new Set(), grLearned = new Set();
     try {
       const saved = await window.userData.get('phonetics_learned_words');
       if (Array.isArray(saved)) learned = new Set(saved);
@@ -798,6 +799,10 @@
     try {
       const saved = await window.userData.get('latin_learned_words');
       if (Array.isArray(saved)) laLearned = new Set(saved);
+    } catch (e) { console.error(e); }
+    try {
+      const saved = await window.userData.get('grammar_irregular_verbs_learned');
+      if (Array.isArray(saved)) grLearned = new Set(saved);
     } catch (e) { console.error(e); }
     /* если облако пустое — подтянуть localStorage (в т.ч. для неподтверждённых) */
     try {
@@ -818,6 +823,13 @@
         if (Array.isArray(a)) laLearned = new Set(a);
       }
     } catch (e) {}
+    try {
+      if (!grLearned.size) {
+        const a = JSON.parse(localStorage.getItem('grammar_irregular_verbs_learned') || '[]');
+        if (Array.isArray(a)) grLearned = new Set(a);
+      }
+    } catch (e) {}
+    const GR = await loadScriptOnce('irregular-data.js?v=1', 'IRREGULAR_VERBS');
     const EN = await loadEnWords();
     const LA = await loadLatWords();
 
@@ -872,6 +884,22 @@
       }).join('') +
       `<a class="go" href="latin.html">Открыть слова</a>` : '';
 
+    /* грамматика → неправильные глаголы */
+    const grTotal = GR.reduce((n, g) => n + g.words.length, 0);
+    const grDone = GR.reduce((n, g) => n + g.words.filter(w => grLearned.has(w[0])).length, 0);
+    const grPct = grTotal ? Math.round(grDone / grTotal * 100) : 0;
+
+    const grHtml = grTotal ?
+      `<h4>📐 Грамматика</h4>
+       <div class="gh" style="margin-top:10px"><span>Неправильные глаголы</span><small>${grDone} / ${grTotal} (${grPct}%)</small></div>
+       <div class="bar"><i style="width:${grPct}%"></i></div>` +
+      GR.map(g => {
+        const n = g.words.filter(w => grLearned.has(w[0])).length;
+        return `<div class="grp"><div class="gh"><span>${esc(g.title)}</span><small>${n} / ${g.words.length}</small></div>
+          <div class="ch">${g.words.map(w => { const ok = grLearned.has(w[0]); return `<span class="${ok ? 'ok' : ''}">${ok ? '✓ ' : ''}${esc(w[0])}</span>`; }).join('')}</div></div>`;
+      }).join('') +
+      `<a class="go" href="irregular.html">Открыть карточки</a>` : '';
+
     /* китайский */
     const chKeys = Object.keys(CH_WORDS);
     const chTotal = chKeys.reduce((n, k) => n + CH_WORDS[k].length, 0);
@@ -890,8 +918,8 @@
       `<a class="go" href="china.html">Открыть карточки</a>`;
 
     /* выбор предмета: запоминаем в браузере */
-    const SUBJ = [['all', 'Все'], ['en', '🇬🇧 Английский'], ['la', '🏛️ Латынь'], ['ph', '🔤 Фонетика'], ['ch', '🀄 Китайский']];
-    const BLOCK = { en: enHtml, la: laHtml, ph: phHtml, ch: chHtml };
+    const SUBJ = [['all', 'Все'], ['en', '🇬🇧 Английский'], ['la', '🏛️ Латынь'], ['ph', '🔤 Фонетика'], ['ch', '🀄 Китайский'], ['gr', '📐 Грамматика']];
+    const BLOCK = { en: enHtml, la: laHtml, ph: phHtml, ch: chHtml, gr: grHtml };
     let subj = 'all';
     try { subj = localStorage.getItem('prg_subject') || 'all'; } catch (e) {}
     if (!BLOCK[subj]) subj = 'all';
@@ -900,7 +928,7 @@
         `<div class="top"><h3>📊 Прогресс: ${esc((window.userProfile && window.userProfile.nick) || login || 'гость')}</h3><button class="x" aria-label="Закрыть">✕</button></div>` +
         (window.authUser ? `<div class="pcard">${avatarHtml(window.userProfile, 46, (login || '?').charAt(0).toUpperCase())}<div class="pn"><b>${esc((window.userProfile && window.userProfile.nick) || login)}</b><small>логин: ${esc(login)}</small></div><button type="button" class="pedit">✏️ Изменить</button></div>` : '') +
         `<div class="sel">${SUBJ.map(([k, t]) => `<button data-k="${k}" class="${subj === k ? 'on' : ''}">${t}</button>`).join('')}</div>` +
-        (subj === 'all' ? enHtml + laHtml + phHtml + chHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
+        (subj === 'all' ? enHtml + laHtml + phHtml + chHtml + grHtml : BLOCK[subj] || '<div class="sub">Нет данных</div>');
       back.querySelector('.x').onclick = close;
       const pe = back.querySelector('.pedit');
       if (pe) pe.onclick = () => openProfileEditor(login, paint);
