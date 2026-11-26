@@ -6,7 +6,7 @@
 <title>Неправильные глаголы • ФЛ1 ПОДб-11</title>
 <link rel="stylesheet" href="theme.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
-<script src="irregular-data.js?v=1"></script>
+<script src="irregular-data.js?v=2"></script>
 <script src="app.js?v=25"></script>
 <style>
 .hero{margin-bottom:6px;padding:16px 18px}
@@ -30,6 +30,40 @@ h2.sec{margin:16px 0 4px}
 .deck-empty{padding:30px 10px;text-align:center;color:var(--soft)}
 .row-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
 #done[hidden],.deck[hidden],.ctl[hidden]{display:none}
+.group{margin-bottom:22px}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 10px}
+.gh h2{font:italic 800 16px var(--serif)}.gh small{color:var(--soft);font-weight:700;white-space:nowrap}
+.w{display:flex;gap:12px;align-items:center;margin-bottom:8px;padding:11px 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;user-select:none}
+.w.ok{background:var(--ok-bg);border-color:var(--green)}
+.chk{flex:0 0 26px;height:26px;display:grid;place-items:center;border:2px solid var(--line);border-radius:8px;color:transparent;font-size:14px;font-weight:800}
+.w.ok .chk{background:var(--green);border-color:var(--green);color:#fff}
+.la{font:800 17px var(--serif);word-break:break-word}
+.ru2{margin-top:1px;color:var(--blue);font-size:13px;font-weight:700}
+.form-control{margin-top:14px}
+#tSetup[hidden],#tRun[hidden],#tRes[hidden]{display:none}
+.t-box{margin-bottom:14px}
+.t-lab{margin:16px 0 6px;color:var(--soft);font:800 11px var(--sans);letter-spacing:.07em;text-transform:uppercase}
+.t-lab:first-child{margin-top:0}
+.t-chips{display:flex;flex-wrap:wrap;gap:6px}
+.t-chips .chip{padding:7px 12px}
+.t-btn{padding:12px 16px;border:2px solid var(--line);border-radius:12px;background:var(--yel);color:#1b1f3b;font:800 15px var(--sans);box-shadow:3px 3px 0 var(--shc);cursor:pointer}
+.t-btn:disabled{opacity:.5}
+.t-btn.ghost{background:var(--card);color:var(--ink)}
+.t-btn.full{display:block;width:100%;margin-top:16px}
+.t-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.t-act .t-btn{flex:1 1 auto}
+.t-top{display:flex;justify-content:space-between;margin:12px 2px 8px;font-weight:800;font-size:13px}
+.t-q{margin-top:14px;padding:18px 16px;border:2px solid var(--line);border-radius:16px;background:var(--card);box-shadow:4px 4px 0 var(--shc);text-align:center}
+.t-ask{margin-top:8px;color:var(--soft);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.t-big{margin-top:8px;font:800 28px var(--serif);word-break:break-word}
+.t-sub{margin-top:6px;color:var(--soft);font-size:13px;font-weight:600}
+.t-in{display:block;width:100%;box-sizing:border-box;margin-top:14px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:600 18px var(--serif);outline:none}
+.t-opt{display:block;width:100%;margin-top:8px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:700 15px var(--sans);text-align:left;cursor:pointer}
+.t-opt.ok,.t-fb.ok{background:var(--ok-bg);border-color:var(--green)}
+.t-opt.no,.t-fb.no{background:var(--no-bg);border-color:var(--red)}
+.t-fb{margin-top:12px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:14px;line-height:1.5}
+.t-score{text-align:center;font:italic 800 46px var(--serif)}
+.t-wr{margin-top:8px;padding:10px 12px;border:2px solid var(--red);border-radius:12px;background:var(--no-bg);font-size:14px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -40,8 +74,18 @@ h2.sec{margin:16px 0 4px}
     <h1>Неправильные <span class="hl">глаголы</span></h1>
   </header>
 
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" aria-selected="true" data-t="c">Карточки</button>
+    <button type="button" role="tab" aria-selected="false" data-t="l">Список</button>
+    <button type="button" role="tab" aria-selected="false" data-t="t">Тест</button>
+  </nav>
+
+  <div id="common">
   <h2 class="sec">Группы <small id="selInfo"></small></h2>
   <div class="chips scroll" id="groups" role="group" aria-label="Группы глаголов"></div>
+  </div>
+
+  <section id="c" class="pane on">
   <div class="chips scroll" id="dirChips" role="group" aria-label="Что видно на лицевой стороне"></div>
   <div class="chips scroll opts" id="opts">
     <button type="button" id="oNew" aria-pressed="false">Только невыученные</button>
@@ -61,6 +105,19 @@ h2.sec{margin:16px 0 4px}
 
   <p class="hint-line">Вправо — знаю, влево — ещё повторить. Нажми на карточку, чтобы увидеть формы.</p>
   <div class="box done" id="done" hidden></div>
+  </section>
+
+  <section id="l" class="pane">
+    <input type="search" id="q" class="form-control" placeholder="🔍 Поиск по глаголу или переводу…" autocomplete="off">
+    <p class="hint-line">Нажми на глагол, чтобы отметить его выученным</p>
+    <div id="list"></div>
+  </section>
+
+  <section id="t" class="pane">
+    <div id="tSetup"></div>
+    <div id="tRun" hidden></div>
+    <div id="tRes" hidden></div>
+  </section>
   <div class="status" id="status" role="status"></div>
 
 </div>
@@ -133,7 +190,7 @@ h2.sec{margin:16px 0 4px}
     var html = '<button type="button" data-g="all" aria-pressed="' + all + '">Все группы</button>';
     GROUPS.forEach(function (g, i) {
       var n = g.words.filter(function (w) { return learned.has(w[0]); }).length;
-      html += '<button type="button" data-g="' + i + '" aria-pressed="' + sel.has(i) + '" title="' + esc(g.title) + '">Группа ' + (i + 1) +
+      html += '<button type="button" data-g="' + i + '" aria-pressed="' + sel.has(i) + '" title="' + esc(g.title) + '">' + esc(g.title.split(' · ')[0]) +
         '<span class="cnt">' + n + '/' + g.words.length + '</span></button>';
     });
     box.innerHTML = html;
@@ -185,7 +242,7 @@ h2.sec{margin:16px 0 4px}
     attach(deck.lastElementChild);
   }
 
-  function render() { renderChips(); renderStats(); renderDeck(); }
+  function render() { renderChips(); renderStats(); renderDeck(); renderList(); }
 
   function rebuild() {
     var it = items();
@@ -211,7 +268,7 @@ h2.sec{margin:16px 0 4px}
       if (known) { learned.add(x.w[0]); sKnown++; }
       else { learned.delete(x.w[0]); sAgain++; queue.splice(Math.min(queue.length, 4), 0, x); }
       persist();
-      renderChips(); renderStats(); renderDeck();
+      render();
     }, 260);
   }
 
@@ -280,11 +337,175 @@ h2.sec{margin:16px 0 4px}
   $('#bNo').onclick = function () { act(false); };
   $('#bFlip').onclick = flip;
   document.addEventListener('keydown', function (e) {
-    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (!$('#c').classList.contains('on') || (e.target && /INPUT|TEXTAREA|SELECT|BUTTON/.test(e.target.tagName))) return;
     if (e.key === 'ArrowRight') act(true);
     else if (e.key === 'ArrowLeft') act(false);
     else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
   });
+
+  /* ---------- список ---------- */
+  var query = '';
+  function renderList() {
+    var q = query.trim().toLowerCase(), out = '';
+    GROUPS.forEach(function (g, gi) {
+      if (!sel.has(gi)) return;
+      var list = g.words.filter(function (w) {
+        if (onlyNew && learned.has(w[0])) return false;
+        return !q || w.join(' ').toLowerCase().indexOf(q) > -1;
+      });
+      if (!list.length) return;
+      var n = g.words.filter(function (w) { return learned.has(w[0]); }).length;
+      out += '<div class="group"><div class="gh"><h2>' + esc(g.title) + '</h2><small>' + n + ' / ' + g.words.length + '</small></div>' +
+        list.map(function (w) {
+          return '<div class="w' + (learned.has(w[0]) ? ' ok' : '') + '" data-w="' + esc(w[0]) + '" role="button" tabindex="0"><div class="chk">✓</div><div><div class="la">' +
+            esc(w.slice(0, 3).join(' — ')) + '</div><div class="ru2">' + esc(w[3]) + '</div></div></div>';
+        }).join('') + '</div>';
+    });
+    $('#list').innerHTML = out || '<p class="hint-line">Ничего не найдено</p>';
+  }
+  function toggleWord(e) {
+    var w = e.target.closest('.w'); if (!w) return;
+    var k = w.dataset.w;
+    if (learned.has(k)) learned.delete(k); else learned.add(k);
+    persist(); rebuild();
+  }
+  $('#list').addEventListener('click', toggleWord);
+  $('#list').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleWord(e); } });
+  $('#q').addEventListener('input', function (e) { query = e.target.value; renderList(); });
+
+  /* ---------- тест ---------- */
+  var K_TEST = 'irv_test_cfg', K_ERR = 'irv_test_mistakes';
+  var MODES = { ru: 'EN → RU', en: 'RU → EN', fm: '2 и 3 формы' };
+  var T = lsGet(K_TEST, null) || {};
+  if (!MODES[T.mode]) T.mode = 'fm';
+  if (T.input !== 'mc') T.input = 'type';
+  if (typeof T.n !== 'number') T.n = 20;
+  if (T.status !== 'err') T.status = 'all';
+  var errs = new Set(lsGet(K_ERR, []) || []), tq = [], ti = 0, tView = 'setup';
+
+  function tPool() { return items().filter(function (x) { return T.status === 'err' ? errs.has(x.w[0]) : !(onlyNew && learned.has(x.w[0])); }); }
+  function tShow(v) { tView = v; $('#tSetup').hidden = v !== 'setup'; $('#tRun').hidden = v !== 'run'; $('#tRes').hidden = v !== 'res'; $('#common').hidden = v !== 'setup' && $('#t').classList.contains('on'); }
+  function chip(k, v, label) { return '<button type="button" class="chip' + (T[k] === v ? ' on' : '') + '" data-k="' + k + '" data-v="' + v + '">' + label + '</button>'; }
+  function tSetup() {
+    var n = tPool().length;
+    $('#tSetup').innerHTML = '<div class="box t-box"><div class="t-lab">Что спрашивать</div><div class="t-chips">' + Object.keys(MODES).map(function (m) { return chip('mode', m, MODES[m]); }).join('') +
+      '</div><div class="t-lab">Как отвечать</div><div class="t-chips">' + chip('input', 'type', '⌨️ Печатать') + chip('input', 'mc', '🔘 Выбор из 4') +
+      '</div><div class="t-lab">Какие слова</div><div class="t-chips">' + chip('status', 'all', 'Из выбранных групп') + chip('status', 'err', '❌ Мои ошибки (' + errs.size + ')') +
+      '</div><div class="t-lab">Сколько вопросов</div><div class="t-chips">' + [10, 20, 30, 50].map(function (v) { return chip('n', v, v); }).join('') + chip('n', 0, 'Все') +
+      '</div><button type="button" class="t-btn full" id="tStart"' + (n ? '' : ' disabled') + '>▶ Начать · ' + (T.n ? Math.min(T.n, n) : n) + ' вопр.</button></div>';
+  }
+  /* «was, were», «burnt / burned», «forbad(e)» → допустимые варианты */
+  function norm(s) { return String(s).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim(); }
+  function variants(f) {
+    var out = [];
+    f.replace(/\(US\)/g, '').split(/[\/,]/).forEach(function (p) {
+      p = norm(p); if (!p) return;
+      if (p.indexOf('(') > -1) out.push(p.replace(/\(.*?\)/g, ''), p.replace(/[()]/g, '')); else out.push(p);
+    });
+    return out;
+  }
+  function ruVariants(r) {
+    var out = [norm(r)];
+    r.split(/[;,]/).forEach(function (p) { out.push(norm(p), norm(p.replace(/\(.*?\)/g, '')), norm(p.replace(/[()]/g, ''))); });
+    return out.filter(Boolean);
+  }
+  function answer(w, m) { return m === 'ru' ? w[3] : m === 'en' ? w[0] : w[1] + ' — ' + w[2]; }
+  function check(q, a, b) {
+    var w = q.x.w;
+    if (q.mode === 'fm') return variants(w[1]).indexOf(norm(a)) > -1 && variants(w[2]).indexOf(norm(b)) > -1;
+    if (q.mode === 'ru') return norm(a).split(/[;,]/).some(function (u) { return ruVariants(w[3]).indexOf(u.trim()) > -1; });
+    /* одинаковый перевод (класть: lay / put) — подходит любой */
+    return GROUPS.some(function (g) { return g.words.some(function (y) { return y[3] === w[3] && norm(a) === y[0]; }); });
+  }
+  function options(x) {
+    var right = answer(x.w, T.mode), seen = [right];
+    var all = [];
+    GROUPS.forEach(function (g) { g.words.forEach(function (w) { all.push(w); }); });
+    shuffleArr(all).forEach(function (w) { var a = answer(w, T.mode); if (seen.length < 4 && w[3] !== x.w[3] && seen.indexOf(a) < 0) seen.push(a); });
+    return shuffleArr(seen);
+  }
+  function tStart(list) {
+    var p = list || shuffleArr(tPool());
+    if (!list && T.n) p = p.slice(0, T.n);
+    if (!p.length) return;
+    tq = p.map(function (x) { return { x: x, mode: T.mode, opts: T.input === 'mc' ? options(x) : null, done: false, ok: false, ans: '' }; });
+    ti = 0; tShow('run'); tRender();
+  }
+  function tRender() {
+    var q = tq[ti], w = q.x.w, m = q.mode, body;
+    var ask = m === 'ru' ? 'Переведи на русский' : m === 'en' ? 'Напиши инфинитив' : 'Past Simple и Past Participle';
+    if (q.opts) {
+      body = q.opts.map(function (o, i) {
+        var c = q.done ? (o === answer(w, m) ? ' ok' : o === q.ans ? ' no' : '') : '';
+        return '<button type="button" class="t-opt' + c + '" data-opt="' + i + '"' + (q.done ? ' disabled' : '') + '>' + esc(o) + '</button>';
+      }).join('');
+    } else {
+      var inp = function (id, ph) { return '<input class="t-in" id="' + id + '" placeholder="' + ph + '" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"' + (q.done ? ' disabled' : '') + '>'; };
+      body = m === 'fm' ? inp('tA', 'Past Simple') + inp('tB', 'Past Participle') : inp('tA', m === 'ru' ? 'перевод по-русски…' : 'по-английски…');
+    }
+    var fb = q.done ? '<div class="t-fb ' + (q.ok ? 'ok' : 'no') + '"><b>' + (q.ok ? '✓ Верно' : '✗ Неверно') + '</b><div>' + esc(w.slice(0, 3).join(' — ')) + ' · ' + esc(w[3]) + '</div></div>' : '';
+    var okN = tq.filter(function (z) { return z.ok; }).length;
+    $('#tRun').innerHTML = '<div class="t-top"><span>Вопрос ' + (ti + 1) + ' / ' + tq.length + '</span><span>✅ ' + okN + '</span></div>' +
+      '<div class="t-q"><span class="tag">' + esc(GROUPS[q.x.g].title) + '</span><div class="t-ask">' + ask + '</div><div class="t-big">' + esc(m === 'en' ? w[3] : w[0]) + '</div>' +
+      (m === 'fm' ? '<div class="t-sub">' + esc(w[3]) + '</div>' : '') + '</div>' + body + fb + '<div class="t-act">' +
+      (q.done ? '<button type="button" class="t-btn" id="tNext">' + (ti + 1 < tq.length ? 'Дальше →' : 'Результат') + '</button>'
+        : (q.opts ? '' : '<button type="button" class="t-btn" id="tCheck">Проверить</button>') + '<button type="button" class="t-btn ghost" id="tSkip">Не знаю</button>') +
+      '<button type="button" class="t-btn ghost" id="tStop">Завершить</button></div>';
+    if (q.done) { if (!q.opts) { var p = q.ans.split(' — '); $('#tA').value = p[0] || ''; if ($('#tB')) $('#tB').value = p[1] || ''; } }
+    else if ($('#tA')) $('#tA').focus({ preventScroll: true });
+  }
+  function tDone(ans, ok) {
+    var q = tq[ti]; q.done = true; q.ans = ans; q.ok = ok;
+    if (ok) errs.delete(q.x.w[0]); else errs.add(q.x.w[0]);
+    lsSet(K_ERR, Array.from(errs)); tRender();
+  }
+  function tSubmit() {
+    var q = tq[ti]; if (!q || q.done || q.opts) return;
+    var a = $('#tA').value.trim(), b = $('#tB') ? $('#tB').value.trim() : '';
+    if (!a) { $('#tA').focus(); return; }
+    if ($('#tB') && !b) { $('#tB').focus(); return; }
+    tDone($('#tB') ? a + ' — ' + b : a, check(q, a, b));
+  }
+  function tNext() { ti++; if (ti < tq.length) tRender(); else tFinish(); }
+  function tFinish() {
+    var dn = tq.filter(function (q) { return q.done; });
+    if (!dn.length) { tShow('setup'); tSetup(); return; }
+    var bad = dn.filter(function (q) { return !q.ok; }), pct = Math.round((dn.length - bad.length) / dn.length * 100);
+    $('#tRes').innerHTML = '<div class="box t-box"><div class="t-score">' + pct + '%</div><p class="hint-line">Верно ' + (dn.length - bad.length) + ' из ' + dn.length + '</p>' +
+      bad.map(function (q) { return '<div class="t-wr"><b>' + esc(q.x.w.slice(0, 3).join(' — ')) + '</b> · ' + esc(q.x.w[3]) + '<div>Твой ответ: ' + (esc(q.ans) || '—') + '</div></div>'; }).join('') +
+      '<div class="t-act">' + (bad.length ? '<button type="button" class="t-btn" id="tRetry">🔁 Повторить ошибки (' + bad.length + ')</button>' : '') +
+      '<button type="button" class="t-btn ghost" id="tBack">Новый тест</button></div></div>';
+    tq = bad; tShow('res');
+  }
+  $('#t').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var d = b.dataset;
+    if (d.k) { T[d.k] = d.k === 'n' ? +d.v : d.v; lsSet(K_TEST, T); tSetup(); }
+    else if (d.opt !== undefined) { var q = tq[ti], o = q.opts[+d.opt]; tDone(o, o === answer(q.x.w, q.mode)); }
+    else if (b.id === 'tStart') tStart();
+    else if (b.id === 'tCheck') tSubmit();
+    else if (b.id === 'tSkip') tDone('', false);
+    else if (b.id === 'tNext') tNext();
+    else if (b.id === 'tStop') tFinish();
+    else if (b.id === 'tRetry') tStart(tq.map(function (z) { return z.x; }));
+    else if (b.id === 'tBack') { tShow('setup'); tSetup(); }
+  });
+  $('#t').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || tView !== 'run' || e.target.tagName !== 'INPUT') return;
+    e.preventDefault(); tSubmit();
+  });
+
+  /* ---------- вкладки ---------- */
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.onclick = function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
+      document.querySelectorAll('section.pane').forEach(function (s) { s.classList.toggle('on', s.id === b.dataset.t); });
+      $('#common').hidden = b.dataset.t === 't' && tView !== 'setup';
+      if (b.dataset.t === 't' && tView === 'setup') tSetup();
+    };
+  });
+  /* смена групп пересчитывает число вопросов */
+  $('#common').addEventListener('click', function () { if (tView === 'setup') tSetup(); });
 
   /* ---------- старт: сразу рисуем из браузера, потом подтягиваем профиль ---------- */
   status();
