@@ -1,4 +1,4 @@
-/* Неправильные глаголы (Eastwood): 4 группы, 139 глаголов. Ключ слова в сохранении — инфинитив (w[0]).
+/* Неправильные глаголы (Eastwood): 4 группы (вторая разделена на 2.1 и 2.2), 139 глаголов. Ключ слова в сохранении — инфинитив (w[0]).
    Используется страницей irregular.html и окном прогресса в auth.js. */
 window.IRREGULAR_VERBS = [
   { title: "Группа 1 · arise → fight", words: [
@@ -42,7 +42,7 @@ window.IRREGULAR_VERBS = [
     ["feel", "felt", "felt", "чувствовать"],
     ["fight", "fought", "fought", "сражаться, драться"],
   ] },
-  { title: "Группа 2 · find → know", words: [
+  { title: "Группа 2.1 · find → know", words: [
     ["find", "found", "found", "находить"],
     ["flee", "fled", "fled", "убегать, спасаться бегством"],
     ["fly", "flew", "flown", "летать"],
@@ -66,7 +66,7 @@ window.IRREGULAR_VERBS = [
     ["kneel", "knelt", "knelt", "становиться на колени"],
     ["know", "knew", "known", "знать"],
   ] },
-  { title: "Группа 3 · lay → sleep", words: [
+  { title: "Группа 2.2 · lay → mow", words: [
     ["lay", "laid", "laid", "класть"],
     ["lead", "led", "led", "вести; руководить"],
     ["lean", "leant / leaned", "leant / leaned", "опираться; наклоняться"],
@@ -82,6 +82,8 @@ window.IRREGULAR_VERBS = [
     ["mean", "meant", "meant", "значить; иметь в виду"],
     ["meet", "met", "met", "встречать(ся)"],
     ["mow", "mowed", "mown / mowed", "косить"],
+  ] },
+  { title: "Группа 3 · pay → spring", words: [
     ["pay", "paid", "paid", "платить"],
     ["put", "put", "put", "класть, ставить"],
     ["read", "read", "read", "читать"],
@@ -106,8 +108,6 @@ window.IRREGULAR_VERBS = [
     ["sink", "sank", "sunk", "тонуть"],
     ["sit", "sat", "sat", "сидеть"],
     ["sleep", "slept", "slept", "спать"],
-  ] },
-  { title: "Группа 4 · slide → write", words: [
     ["slide", "slid", "slid", "скользить"],
     ["smell", "smelt / smelled", "smelt / smelled", "пахнуть; нюхать"],
     ["speak", "spoke", "spoken", "говорить"],
@@ -121,6 +121,8 @@ window.IRREGULAR_VERBS = [
     ["spoil", "spoilt / spoiled", "spoilt / spoiled", "портить"],
     ["spread", "spread", "spread", "распространять(ся)"],
     ["spring", "sprang", "sprung", "прыгать; возникать"],
+  ] },
+  { title: "Группа 4 · stand → write", words: [
     ["stand", "stood", "stood", "стоять"],
     ["steal", "stole", "stolen", "красть"],
     ["stick", "stuck", "stuck", "приклеивать; втыкать"],
